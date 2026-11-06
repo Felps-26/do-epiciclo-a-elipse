@@ -138,6 +138,14 @@ export function criarFitas(
     grupo.add(t.linha);
   }
 
+  // `corpos` e a lista viva do sandbox; o vetor de chaves e reaproveitado.
+  const chaves: string[] = [];
+  const chavesDosCorpos = (): readonly string[] => {
+    chaves.length = corpos.length;
+    for (let i = 0; i < corpos.length; i++) chaves[i] = corpos[i]!.chave;
+    return chaves;
+  };
+
   let quadro = 0;
   let orbitasLigadas = true;
   let trilhasLigadas = true;
@@ -229,6 +237,7 @@ export function criarFitas(
       maqueteAnterior = maquete;
 
       if (trilhasLigadas) {
+        conjunto.acompanhar(chavesDosCorpos());
         conjunto.registrar(estado.pos, tDias, estado.n);
         for (let i = 1; i < Math.min(corpos.length, estado.n); i++) {
           const pontos = conjunto.pontos(i);

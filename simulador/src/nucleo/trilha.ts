@@ -82,11 +82,44 @@ export class Trilha {
  */
 export class ConjuntoTrilhas {
   readonly trilhas: Trilha[];
+  /** A chave do corpo cujo rastro esta em cada casa; `null` e reserva sem dono. */
+  private readonly donos: (string | null)[];
 
   constructor(periodosDias: readonly (number | null)[], capacidade = 400, fracaoDaOrbita = 0.0025) {
     this.trilhas = periodosDias.map(
       (p) => new Trilha(capacidade, Math.max(0.25, (p ?? 365) * fracaoDaOrbita)),
     );
+    this.donos = periodosDias.map(() => null);
+  }
+
+  /**
+   * Poe a trilha de cada corpo na casa dele. Apagar um corpo desloca os seguintes uma
+   * casa para tras, e a trilha tem de seguir o corpo, e nao a casa. Quem nao tinha
+   * trilha recebe uma limpa; a de quem saiu e limpa e volta para as reservas.
+   */
+  acompanhar(chaves: readonly string[]): void {
+    let mudou = false;
+    for (let i = 0; i < this.donos.length && !mudou; i++) mudou = this.donos[i] !== (chaves[i] ?? null);
+    if (!mudou) return;
+
+    const presentes = new Set(chaves.slice(0, this.trilhas.length));
+    const porDono = new Map<string, Trilha>();
+    const livres: Trilha[] = [];
+    for (let i = 0; i < this.trilhas.length; i++) {
+      const dono = this.donos[i]!;
+      if (dono !== null && presentes.has(dono)) {
+        porDono.set(dono, this.trilhas[i]!);
+      } else {
+        this.trilhas[i]!.limpar();
+        livres.push(this.trilhas[i]!);
+      }
+    }
+    for (let i = 0; i < this.trilhas.length; i++) {
+      const chave = i < chaves.length ? chaves[i]! : null;
+      const herdada = chave === null ? undefined : porDono.get(chave);
+      this.trilhas[i] = herdada ?? livres.shift()!;
+      this.donos[i] = chave;
+    }
   }
 
   get tamanho(): number {

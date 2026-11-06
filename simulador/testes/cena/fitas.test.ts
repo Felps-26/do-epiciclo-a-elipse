@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import type { Line2 } from 'three/addons/lines/webgpu/Line2.js';
 import { criarFitas } from '@cena/linhas/fitas.ts';
 import { carregar } from '@dados/carregar.ts';
-import { inserirCorpo } from '@nucleo/estado.ts';
+import { inserirCorpo, removerCorpo } from '@nucleo/estado.ts';
 
 /** Os pontos que a fita de rastro do corpo `i` esta desenhando, relativos ao Sol. */
 function pontosDoRastro(grupo: { children: unknown[] }, i: number): [number, number, number][] {
@@ -55,5 +55,44 @@ describe('rastros do sandbox', () => {
     // O corpo nunca passou perto do Sol; um ponto ali e amostra de uma casa vazia.
     const naOrigem = rastro.filter((p) => Math.abs(p[0] + sol) < 1);
     expect(naOrigem.length, 'o rastro nasceu com amostras da origem').toBe(0);
+  });
+
+  it('apagar um corpo criado não transfere o rastro dele a outro corpo', () => {
+    const { corpos, fitas, estado, andar } = montar();
+    // Dois corpos criados, longe um do outro: o primeiro em x = 5, o segundo em x = -5.
+    inserirCorpo(estado, [5, 0, 0], [0, 0, 0], 0);
+    corpos.push({ chave: 'criado-1', nome: 'Criado 1' });
+    inserirCorpo(estado, [-5, 0, 0], [0, 0, 0], 0);
+    corpos.push({ chave: 'criado-2', nome: 'Criado 2' });
+    andar(30);
+
+    // Apaga o primeiro, como `sistemaVivo.apagar`: a fisica desloca, a lista tambem.
+    removerCorpo(estado, 9);
+    corpos.splice(9, 1);
+    andar(3);
+
+    const sol = estado.pos[0]!;
+    const rastro = pontosDoRastro(fitas.grupo, 9);
+    // Nenhum ponto do rastro do sobrevivente pode estar do lado do corpo apagado.
+    const doApagado = rastro.filter((p) => p[0] + sol > 0);
+    expect(doApagado.length, 'o sobrevivente herdou pontos do corpo apagado').toBe(0);
+    // E o rastro dele continua o mesmo de antes: 33 dias, um ponto por dia.
+    expect(rastro.filter((p) => p[0] + sol < -4).length).toBeGreaterThan(30);
+  });
+
+  it('um corpo criado depois de uma remoção não herda o rastro de quem saiu', () => {
+    const { corpos, fitas, estado, andar } = montar();
+    inserirCorpo(estado, [5, 0, 0], [0, 0, 0], 0);
+    corpos.push({ chave: 'criado-1', nome: 'Criado 1' });
+    andar(30);
+    removerCorpo(estado, 9);
+    corpos.splice(9, 1);
+    inserirCorpo(estado, [-5, 0, 0], [0, 0, 0], 0);
+    corpos.push({ chave: 'criado-2', nome: 'Criado 2' });
+    andar(3);
+
+    const sol = estado.pos[0]!;
+    const rastro = pontosDoRastro(fitas.grupo, 9);
+    expect(rastro.filter((p) => p[0] + sol > 0).length, 'herdou o rastro do apagado').toBe(0);
   });
 });
