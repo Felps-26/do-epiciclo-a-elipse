@@ -229,7 +229,7 @@ export function criarFitas(
       maqueteAnterior = maquete;
 
       if (trilhasLigadas) {
-        conjunto.registrar(estado.pos, tDias);
+        conjunto.registrar(estado.pos, tDias, estado.n);
         for (let i = 1; i < Math.min(corpos.length, estado.n); i++) {
           const pontos = conjunto.pontos(i);
           const fita = trilhas[i]!;
