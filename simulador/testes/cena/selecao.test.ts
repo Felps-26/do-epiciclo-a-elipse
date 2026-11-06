@@ -6,7 +6,7 @@
  * itens como parciais por causa disso.
  */
 import { describe, expect, it } from 'vitest';
-import { ALVO_MINIMO_PX, corpoSobOPonto, pontoNoPlanoDoPivo, type Alvo } from '@cena/selecao.ts';
+import { ALVO_MINIMO_PX, corpoSobOPonto, pontoNoPlanoDoPivo, raioDoContornoUa, type Alvo } from '@cena/selecao.ts';
 import {
   aproximar,
   aproximarEm,
@@ -171,5 +171,28 @@ describe('o zoom ancorado no cursor', () => {
     const rasante: [number, number, number] = [1, 0, -0.05];
     expect(pontoNoPlanoDoPivo([0, 0, 10], rasante, vista, 10)).toBeNull();
     expect(pontoNoPlanoDoPivo([0, 0, 10], vista, vista, 10)).not.toBeNull();
+  });
+});
+
+describe('o contorno do disco na tela', () => {
+  it('de perto, o anel de seleção acompanha o limbo do disco, não o raio no plano do centro', () => {
+    // Marte a 2,2 raios, como na dourada marte-em-orbita-baixa. Na perspectiva a borda
+    // do disco é a do cone tangente à esfera: ângulo asin(R/d), e não R/d.
+    const raio = 1;
+    const distancia = 2.2;
+    const limbo = distancia * Math.tan(Math.asin(raio / distancia));
+    expect(raioDoContornoUa(raio, distancia, true)).toBeCloseTo(limbo, 12);
+    // O erro do achado: 11% a menos que o disco.
+    expect(limbo / raio).toBeGreaterThan(1.1);
+  });
+
+  it('de longe a correção some, e na ortográfica não existe', () => {
+    expect(raioDoContornoUa(1, 1e4, true)).toBeCloseTo(1, 6);
+    expect(raioDoContornoUa(1, 2.2, false)).toBe(1);
+  });
+
+  it('com a câmera dentro da esfera, não devolve infinito nem NaN', () => {
+    expect(Number.isFinite(raioDoContornoUa(1, 0.5, true))).toBe(true);
+    expect(Number.isFinite(raioDoContornoUa(1, 1, true))).toBe(true);
   });
 });

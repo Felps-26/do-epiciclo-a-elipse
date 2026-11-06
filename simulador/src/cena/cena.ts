@@ -28,7 +28,7 @@ import {
   type Object3D,
 } from 'three';
 import type { WebGPURenderer } from 'three/webgpu';
-import { corpoSobOPonto } from './selecao.ts';
+import { corpoSobOPonto, raioDoContornoUa } from './selecao.ts';
 import { fatiasDeProfundidade, janelaOrtografica } from './camera/planoProximo.ts';
 import { alturaVisivelUa, posicaoDaCamera, type EstadoCamera } from './camera/cameraOrbital.ts';
 import { aplicarOrigem, distancias } from './origemFlutuante.ts';
@@ -537,7 +537,8 @@ export function criarCena(
         // O raio em pixels sai da PROJECAO, e nao de uma conta de fov: projeta
         // um segundo ponto deslocado de um raio na horizontal da tela e mede a
         // diferenca. Vale igual nas duas camaras, e nao precisa saber qual e.
-        const raioPx = raioEmPixels(p, c.montado.malha.scale.x, larguraPx, alturaCss);
+        const contorno = raioDoContornoUa(c.montado.malha.scale.x, p.length(), ativa === camera);
+        const raioPx = raioEmPixels(p, contorno, larguraPx, alturaCss);
         saida.push({
           chave: c.chave,
           x: ((auxiliar.x + 1) / 2) * larguraPx,

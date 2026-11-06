@@ -87,10 +87,9 @@ test('o halo de atmosfera da Terra acende no limbo iluminado, não no limbo em s
   // halo; basta para saber qual lado é o dia.
   expect(discoDeDia, 'o disco não tem um lado claramente aceso').toBeGreaterThan(discoDeNoite * 1.2);
 
-  // Onde a imagem deixa de ser escura, andando do centro para fora. O raio de
-  // `__projecoes` não serve de régua para o limbo (ver achado #16), mas o centro
-  // serve: a Terra está no meio do quadro e o contorno é simétrico em torno dele. O
-  // halo alarga o contorno do lado em que acende, em uns 1,5% do raio.
+  // Onde a imagem deixa de ser escura, andando do centro para fora. O halo alarga o
+  // contorno do lado em que acende, em uns 1,5% do raio; comparar os dois lados
+  // dispensa saber o raio do disco ao pixel.
   const borda = (a: number): number => {
     let d = 0.9 * r;
     while (d < 1.3 * r && (lum(cx + d * Math.cos(a), cy + d * Math.sin(a)) || 0) > 0.02) d += 0.5;
