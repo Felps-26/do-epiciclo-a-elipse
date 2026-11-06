@@ -1,6 +1,6 @@
-\chapter{Derivações complementares}\label{ap:derivacoes}
+\section{Derivações complementares}\label{ap:derivacoes}
 
-\section{Conservação do vetor de Laplace--Runge--Lenz}
+\subsection{Conservação do vetor de Laplace--Runge--Lenz}
 
 Queremos mostrar que $\ve = \dot{\vr}\times\vh/\mu - \vr/r$ é constante sob $\ddot{\vr} = -\mu\vr/r^3$. Como $\vh$ é constante,
 \[
@@ -16,7 +16,7 @@ em que se usou $\vr\cdot\dot{\vr} = \frac12\frac{\dd}{\dd t}(r^2) = r\dot r$. Lo
 \]
 Dividindo por $\mu$ e passando tudo para o lado esquerdo, $\dot{\ve} = \vetor{0}$. \qed
 
-\section{Coeficientes de Fourier da órbita kepleriana}
+\subsection{Coeficientes de Fourier da órbita kepleriana}
 
 Seja $z(M) = a(\cos E - e) + \ii b\sin E$, com $M = E - e\sin E$ e $b = a\sqrt{1-e^2}$. Para $n\neq0$,
 \[
@@ -58,7 +58,7 @@ As relações de recorrência $J_{n-1}(x) - J_{n+1}(x) = 2J_n'(x)$ e $J_{n-1}(x)
 \end{align*}
 Para $c_{-1}$ usou-se $J_{-1}(-x) = J_1(x)$; o caso geral $n<0$ segue da mesma fórmula. Esses valores foram conferidos numericamente: para os oito planetas, a razão entre $|c_{-1}|$ e $\frac18 ae^2$ fica entre 1,000 e 1,015, e entre $|c_2|$ e $\frac12 ae$, entre 0,968 e 1,000.
 
-\section{Os pesos de Yoshida}
+\subsection{Os pesos de Yoshida}
 
 O passo de leapfrog $S_2(h)$ é simétrico, $S_2(h)S_2(-h) = I$, e por isso o seu erro local contém só potências ímpares de $h$: $S_2(h) = \exp\bigl(h\,\mathcal{H} + h^3\,\mathcal{E}_3 + h^5\,\mathcal{E}_5 + \dots\bigr)$, em que $\mathcal{H}$ é o fluxo exato e $\mathcal{E}_k$ são operadores de erro. Compondo três passos com pesos $w_1, w_0, w_1$ e usando a fórmula de Baker--Campbell--Hausdorff, o expoente da composição simétrica é
 \[

@@ -1,0 +1,63 @@
+\section{Introdução}\label{cap:introducao}
+% orçamento: 600 palavras
+
+Ptolomeu descreveu o movimento dos planetas com círculos montados sobre círculos. Copérnico mudou o centro e manteve os círculos. Kepler trocou os círculos por elipses, e Newton mostrou de onde as elipses vêm.
+
+Este relatório descreve um programa que simula o Sistema Solar pela lei da gravitação de Newton, a partir de posições e velocidades medidas pelo JPL/NASA, e que mostra cada órbita também como uma cadeia de epiciclos, a construção de Ptolomeu e Copérnico. As duas descrições aparecem na mesma tela.
+
+\subsection{Origem do projeto}
+
+A ideia veio do trabalho de conclusão de curso de \citeonline{farias2016}, \emph{Copérnico estava certo? Uma análise de epiciclos e séries de Fourier}, defendido na Faculdade UnB Planaltina. O TCC perguntou se as órbitas de Mercúrio, Vênus, Marte, Júpiter e Saturno podem ser escritas como somas de senos e cossenos, e comparou os raios dos epiciclos que Copérnico publicou no \emph{Commentariolus} com os raios obtidos da série de Fourier. Concluiu que dois ou três termos da série já reproduzem bem as órbitas e que os raios de Copérnico têm a ordem de grandeza certa.
+
+Este projeto não continua aquele trabalho. Partiu da mesma pergunta para construir uma ferramenta interativa, em que a órbita vem da física e a série de Fourier é aplicada sobre ela, ao vivo. A pergunta do TCC virou uma das telas do programa, o \emph{laboratório de Fourier}. A resposta que encontramos é mais precisa que a do TCC e está na \autoref{sec:copernico-revisitado}.
+
+\subsection{Níveis de leitura}
+
+O programa pode ser usado do ensino médio à pós-graduação. A mesma tela mostra Mercúrio dando quatro voltas enquanto a Terra dá uma e mostra o desvio de energia do integrador, que um estudante de pós-graduação pode discutir. O professor, ou o próprio usuário, escolhe o que abrir.
+
+O texto segue a mesma divisão, com quatro tipos de caixa:
+
+\begin{paracomecar}
+Explicações sem cálculo, para a primeira leitura e para o ensino médio.
+\end{paracomecar}
+
+\begin{paraaprofundar}
+Detalhes técnicos que podem ser pulados sem perder o fio da exposição.
+\end{paraaprofundar}
+
+\begin{noprograma}
+Onde a ideia discutida aparece na tela do simulador.
+\end{noprograma}
+
+\begin{licao}
+Um erro real do projeto, como foi descoberto e o que mudou depois dele.
+\end{licao}
+
+\subsection{Objetivos}
+
+\subsubsection{Objetivo geral}
+
+Desenvolver e documentar um simulador do Sistema Solar fisicamente fundamentado, validado contra dados de referência e utilizável como ferramenta de ensino de física, matemática e computação em diferentes níveis de formação.
+
+\subsubsection{Objetivos específicos}
+
+\begin{enumerate}
+  \item Implementar a integração numérica do problema gravitacional de $N$ corpos com um método que conserve a energia a longo prazo, partindo de condições iniciais do JPL Horizons.
+  \item Validar quantitativamente as posições calculadas contra a efeméride de referência do JPL e publicar o erro medido.
+  \item Reconstruir a órbita de cada corpo por série de Fourier complexa e exibir a cadeia de epiciclos correspondente, ligando a astronomia antiga à moderna.
+  \item Documentar a fundamentação física e matemática em linguagem acessível, com derivações completas para quem quiser segui-las.
+  \item Registrar o processo de desenvolvimento, incluindo os erros encontrados e as práticas de teste adotadas, como material de ensino de engenharia de software.
+\end{enumerate}
+
+\subsection{Contribuições}
+
+\begin{itemize}
+  \item um simulador que roda em navegador comum, sem acesso à internet durante o uso, e que publica o próprio erro medido contra o JPL;
+  \item uma exposição autocontida da cadeia que vai da lei de Newton à série de Fourier de uma órbita, com a forma fechada dos coeficientes em funções de Bessel conferida numericamente;
+  \item uma releitura da pergunta do TCC: a série complexa da órbita kepleriana, até primeira ordem na excentricidade, tem a estrutura do modelo planetário do \emph{Commentariolus} (deslocamento de $\tfrac{3}{2}ae$, deferente e epiciclo de $\tfrac{1}{2}ae$ com frequência dupla), em acordo com análises da literatura \cite{gallavotti1999,sugon2008}, com uma comparação numérica, planeta a planeta, com os raios de Copérnico;
+  \item o registro de um desenvolvimento orientado por testes, em que as afirmações do programa sobre si mesmo (interface e documentação) têm verificação automática.
+\end{itemize}
+
+\subsection{Organização do texto}
+
+O \autoref{cap:historia} traz o contexto histórico, de Ptolomeu a Newton. O \autoref{cap:fisica} e o \autoref{cap:matematica} desenvolvem a física (gravitação, dois corpos, elementos orbitais, equação de Kepler) e a matemática (Fourier, epiciclos, amostragem, integração numérica). O \autoref{cap:implementacao} descreve as três versões do programa, e o \autoref{cap:processo}, o processo de desenvolvimento. O \autoref{cap:resultados} reúne os resultados quantitativos, o \autoref{cap:ensino} sugere usos em sala de aula por nível, e o \autoref{cap:limitacoes} trata de limitações e trabalhos futuros. O \autoref{cap:conclusao} conclui. Os apêndices trazem derivações, trechos do código, instruções de execução, os dados de partida e os roteiros que geram as figuras.
