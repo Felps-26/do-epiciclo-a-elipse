@@ -18,3 +18,5 @@ __pycache__/
 *.fdb_latexmk
 *.synctex.gz
 artigo/main.pdf
+artigo/experimentos/e1.json
+artigo/experimentos/e4.json
