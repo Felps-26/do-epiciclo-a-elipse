@@ -38,15 +38,16 @@
 \input{preambulo/comandos}
 
 % ---------------------------------------------------------------- dados do trabalho
-\title{Do epiciclo ao integrador simplético: a série de Fourier da órbita kepleriana e os modelos de Copérnico e Ptolomeu}
-\author{Filipi Ramos \and Thiago Vinícius\thanks{Curso de Ciência da Computação, Instituto Brasiliense de Direito Público (IDP), sob a supervisão do Prof.\ Alexandre.}}
-\date{}
+% fonte única do título, dos autores e da nota; usada no bloco da primeira página e no PDF
+\newcommand{\tituloartigo}{Do epiciclo ao integrador simplético: a série de Fourier da órbita kepleriana e os modelos de Copérnico e Ptolomeu}
+\newcommand{\autoresartigo}{Filipi Ramos e Thiago Vinícius}
+\newcommand{\credenciaisartigo}{Curso de Ciência da Computação, Instituto Brasiliense de Direito Público (IDP), sob a supervisão do Prof.\ Alexandre.}
 
 % ---------------------------------------------------------------- PDF
 \makeatletter
 \hypersetup{
-  pdftitle={Do epiciclo ao integrador simplético: a série de Fourier da órbita kepleriana e os modelos de Copérnico e Ptolomeu},
-  pdfauthor={Filipi Ramos; Thiago Vinícius},
+  pdftitle={\tituloartigo},
+  pdfauthor={\autoresartigo},
   pdfkeywords={epiciclos, séries de Fourier, problema de N corpos, integrador simplético, ensino de física},
   colorlinks=true,
   linkcolor=blue!50!black,
@@ -66,11 +67,14 @@
 
 % ------------------------------------------------ título, resumo e abstract
 \begin{center}
-  {\large\bfseries Do epiciclo ao integrador simplético: a série de Fourier da órbita kepleriana e os modelos de Copérnico e Ptolomeu\par}
+  {\large\bfseries \tituloartigo\par}
   \vspace{1em}
-  Filipi Ramos e Thiago Vinícius\footnote{Curso de Ciência da Computação, Instituto Brasiliense de Direito Público (IDP), sob a supervisão do Prof.\ Alexandre.}
+  \autoresartigo\footnotemark
 \end{center}
+% a nota fica na primeira página, onde está a marca, mesmo que o resumo transborde
+\footnotetext{\credenciaisartigo}
 \input{pretextuais/resumo}
+\clearpage  % o abstract começa em página própria
 \input{pretextuais/abstract}
 
 % ------------------------------------------------ elementos textuais
