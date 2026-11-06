@@ -203,9 +203,14 @@ const AMARRAS: Amarra[] = [
         porque: 'declarar a compressao sem comprimir e afirmar uma licenca nao tomada',
       },
       {
-        arquivo: 'src/cena/cena.ts',
+        arquivo: 'src/cena/posicoesDesenhadas.ts',
         contem: /comprimirBuffer\(/,
         porque: 'a cena tem de aplicar a compressao, e nao so conhece-la',
+      },
+      {
+        arquivo: 'src/cena/cena.ts',
+        contem: /posicoesDesenhadas\(/,
+        porque: 'as malhas tem de ser postas pelo calculo que comprime',
       },
       {
         arquivo: 'src/cena/linhas/fitas.ts',

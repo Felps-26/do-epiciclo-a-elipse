@@ -8,9 +8,8 @@
  */
 import { corDoCorpo } from '../dados/cores.ts';
 import { MAXIMO_DE_CORPOS_CRIADOS } from '../nucleo/guardas.ts';
-import { EMRAT, EPOCA_DAS_LUAS_JD, LUAS } from '../dados/luas.ts';
-import { deslocamentoDoCentroDaTerra, posicaoDaLua } from '../nucleo/luas.ts';
-import { comprimirBuffer } from './escala/escalaVisual.ts';
+import { LUAS } from '../dados/luas.ts';
+import { posicoesDesenhadas } from './posicoesDesenhadas.ts';
 import { atenuacaoDasLinhas, foco as calcularFoco } from './escala/foco.ts';
 import {
   Color,
@@ -350,7 +349,6 @@ export function criarCena(
   const comprimidas = new Float64Array(3 * nTotal);
   /** Posicoes REAIS de todos, luas inclusive. Alimenta a luz e a exposicao. */
   const reais = new Float64Array(3 * nTotal);
-  const deslocamento: [number, number, number] = [0, 0, 0];
   const posDoSolNaCena = new Vector3();
   const auxiliar = new Vector3();
   const _lateral = new Vector3();
@@ -576,52 +574,18 @@ export function criarCena(
       // alimenta tudo que e fisico daqui para baixo. Com os dois nomes a vista no mesmo
       // escopo, fica dificil usar o errado sem perceber.
       //
-      // Posicoes de todos, reais e desenhadas. `posUa` traz os nove corpos integrados. As
-      // treze luas entram aqui: a posicao delas e o centro do planeta mais o vetor que
-      // Kepler devolve.
-      //
-      // O vetor da lua nao e comprimido. A compressao e funcao da distancia ao Sol, e a
-      // raiz quadrada de 384.400 km (0,00257 UA) daria 0,0507 UA, vinte vezes mais: a Lua
-      // sairia da orbita da Terra e iria parar perto de Vênus. Comprime-se o sistema,
-      // nunca o que esta dentro de um planeta.
-      const diasDasLuas = jd - EPOCA_DAS_LUAS_JD;
-      reais.set(posUa.subarray(0, 3 * corpos.length));
-      for (let k = 0; k < luasNaCena.length; k++) {
-        const { lua, iPai } = luasNaCena[k]!;
-        const destino = 3 * (corpos.length + k);
-        posicaoDaLua(lua, lua.base, diasDasLuas, deslocamento);
-        reais[destino] = posUa[3 * iPai]! + deslocamento[0];
-        reais[destino + 1] = posUa[3 * iPai + 1]! + deslocamento[1];
-        reais[destino + 2] = posUa[3 * iPai + 2]! + deslocamento[2];
-      }
-
-      // O corpo 'terra' que o integrador move e o BARICENTRO Terra-Lua. O
-      // planeta desenhado fica a 4.671 km dele, do lado oposto ao da Lua — e
-      // sem isso a Lua orbitaria um ponto que nao e o centro do planeta, e a
-      // sombra dela cairia no lugar errado.
-      if (iTerra >= 0 && iLua >= 0) {
-        const lua = luasNaCena[iLua]!.lua;
-        posicaoDaLua(lua, lua.base, diasDasLuas, deslocamento);
-        deslocamentoDoCentroDaTerra(deslocamento, EMRAT, deslocamento);
-        reais[3 * iTerra] = posUa[3 * iTerra]! + deslocamento[0];
-        reais[3 * iTerra + 1] = posUa[3 * iTerra + 1]! + deslocamento[1];
-        reais[3 * iTerra + 2] = posUa[3 * iTerra + 2]! + deslocamento[2];
-      }
-
-      // A compressao age sobre o sistema, e as luas acompanham o planeta: o
-      // vetor lua-planeta e preservado, e so o planeta se move.
-      let posDesenho = reais;
-      if (maquete) {
-        comprimirBuffer(reais, corpos.length, comprimidas);
-        for (let k = 0; k < luasNaCena.length; k++) {
-          const { iPai } = luasNaCena[k]!;
-          const d = 3 * (corpos.length + k);
-          comprimidas[d] = comprimidas[3 * iPai]! + (reais[d]! - reais[3 * iPai]!);
-          comprimidas[d + 1] = comprimidas[3 * iPai + 1]! + (reais[d + 1]! - reais[3 * iPai + 1]!);
-          comprimidas[d + 2] = comprimidas[3 * iPai + 2]! + (reais[d + 2]! - reais[3 * iPai + 2]!);
-        }
-        posDesenho = comprimidas;
-      }
+      // Posicoes de todos, reais e desenhadas: ver `posicoesDesenhadas`.
+      const posDesenho = posicoesDesenhadas(
+        posUa,
+        corpos.length,
+        luasNaCena,
+        iTerra,
+        iLua,
+        jd,
+        maquete,
+        reais,
+        comprimidas,
+      );
 
       aplicarOrigem(posDesenho, camUa, grupos);
       distancias(posDesenho, naCena.length, camUa, dists);

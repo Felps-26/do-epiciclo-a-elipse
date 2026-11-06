@@ -44,7 +44,13 @@ export function posicaoDesenhada(
   if (!lua) return null;
   const iPai = indiceDe(lua.pai);
   if (iPai < 0) return null;
+  // O pai e o planeta desenhado (na Terra, o centro e nao o baricentro), e a lua
+  // mantem em relacao a ele o vetor que tem sem compressao, como em `posicoesDesenhadas`.
+  const pai = posicaoDesenhada(lua.pai, pos, jd, indiceDe)!;
   posicaoDaLua(lua, lua.base, jd - EPOCA_DAS_LUAS_JD, deslocamentoDaLua);
-  const pai = comprimir([pos[3 * iPai]!, pos[3 * iPai + 1]!, pos[3 * iPai + 2]!]);
-  return [pai[0] + deslocamentoDaLua[0], pai[1] + deslocamentoDaLua[1], pai[2] + deslocamentoDaLua[2]];
+  const vx = pos[3 * iPai]! + deslocamentoDaLua[0] - pai[0];
+  const vy = pos[3 * iPai + 1]! + deslocamentoDaLua[1] - pai[1];
+  const vz = pos[3 * iPai + 2]! + deslocamentoDaLua[2] - pai[2];
+  const paiDesenhado = comprimir(pai);
+  return [paiDesenhado[0] + vx, paiDesenhado[1] + vy, paiDesenhado[2] + vz];
 }

@@ -10,6 +10,7 @@ import { deslocamentoDoCentroDaTerra, posicaoDaLua } from '@nucleo/luas.ts';
 import { UA_KM } from '@nucleo/unidades.ts';
 import { posicaoDesenhada } from '@app/posicaoDesenhada.ts';
 import { comprimirPonto } from '@cena/escala/escalaVisual.ts';
+import { posicoesDesenhadas } from '@cena/posicoesDesenhadas.ts';
 
 const catalogo = carregar();
 const indices = new Map(catalogo.corpos.map((c, i) => [c.chave, i]));
@@ -76,5 +77,38 @@ describe('posicaoDesenhada', () => {
     const comprimir = (p: [number, number, number]) => comprimirPonto(p, sol);
     expect(posicaoDesenhada('marte', pos, jd, indiceDe, comprimir)).toEqual(comprimir(baricentro('marte')));
   });
+
+  for (const maquete of [false, true]) {
+    it(`o alvo da câmera é onde a cena desenha, para todo corpo e toda lua${maquete ? ', em maquete' : ''}`, () => {
+      // O mesmo calculo que `cena.ts` usa para pôr as malhas, e nao uma copia dele.
+      const n = catalogo.corpos.length;
+      const luas = LUAS.map((l) => ({ lua: l, iPai: indiceDe(l.pai) }));
+      const total = 3 * (n + luas.length);
+      const desenho = posicoesDesenhadas(
+        pos,
+        n,
+        luas,
+        indiceDe('terra'),
+        LUAS.findIndex((l) => l.chave === 'lua'),
+        jd,
+        maquete,
+        new Float64Array(total),
+        new Float64Array(total),
+      );
+      const sol = baricentro('sol');
+      const comprimir = maquete ? (p: [number, number, number]) => comprimirPonto(p, sol) : undefined;
+      const chaves = [...catalogo.corpos.map((c) => c.chave), ...LUAS.map((l) => l.chave)];
+      chaves.forEach((chave, k) => {
+        const alvo = posicaoDesenhada(chave, pos, jd, indiceDe, comprimir)!;
+        // Em km, para a mensagem dizer o tamanho do erro.
+        const km = Math.hypot(
+          alvo[0] - desenho[3 * k]!,
+          alvo[1] - desenho[3 * k + 1]!,
+          alvo[2] - desenho[3 * k + 2]!,
+        ) * UA_KM;
+        expect(km, `${chave} fora do lugar desenhado`).toBeLessThan(1e-3);
+      });
+    });
+  }
 });
 
