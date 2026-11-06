@@ -1,0 +1,57 @@
+/**
+ * O ponto que a camera recebe como alvo tem de ser o ponto onde a cena desenha o
+ * corpo. A cena desenha a Terra a uns 4.700 km do baricentro Terra-Lua; se o alvo for
+ * o baricentro, "chegar perto" deixa o planeta fora do centro e cortado pela borda.
+ */
+import { describe, expect, it } from 'vitest';
+import { carregar } from '@dados/carregar.ts';
+import { EMRAT, EPOCA_DAS_LUAS_JD, LUAS } from '@dados/luas.ts';
+import { deslocamentoDoCentroDaTerra, posicaoDaLua } from '@nucleo/luas.ts';
+import { UA_KM } from '@nucleo/unidades.ts';
+import { posicaoDesenhada } from '@app/posicaoDesenhada.ts';
+
+const catalogo = carregar();
+const indices = new Map(catalogo.corpos.map((c, i) => [c.chave, i]));
+const indiceDe = (chave: string): number => indices.get(chave) ?? -1;
+const pos = catalogo.estado.pos;
+const jd = catalogo.jdEpoca + 12.5;
+const lua = LUAS.find((l) => l.chave === 'lua')!;
+
+const baricentro = (chave: string): [number, number, number] => {
+  const i = indiceDe(chave);
+  return [pos[3 * i]!, pos[3 * i + 1]!, pos[3 * i + 2]!];
+};
+
+describe('posicaoDesenhada', () => {
+  it('duplo clique na Terra centra o planeta, não o baricentro Terra-Lua', () => {
+    // O mesmo calculo que `cena.ts` faz para pôr a malha da Terra no lugar.
+    const vetorDaLua: [number, number, number] = [0, 0, 0];
+    posicaoDaLua(lua, lua.base, jd - EPOCA_DAS_LUAS_JD, vetorDaLua);
+    const desvio: [number, number, number] = [0, 0, 0];
+    deslocamentoDoCentroDaTerra(vetorDaLua, EMRAT, desvio);
+    const b = baricentro('terra');
+    const desenhada = [b[0] + desvio[0], b[1] + desvio[1], b[2] + desvio[2]];
+
+    const alvo = posicaoDesenhada('terra', pos, jd, indiceDe)!;
+    for (let k = 0; k < 3; k++) expect(alvo[k]).toBeCloseTo(desenhada[k]!, 12);
+    const kmDoBaricentro = Math.hypot(alvo[0] - b[0], alvo[1] - b[1], alvo[2] - b[2]) * UA_KM;
+    expect(kmDoBaricentro).toBeGreaterThan(4000);
+  });
+
+  it('um planeta sem lua desenhada fica no ponto da física', () => {
+    expect(posicaoDesenhada('marte', pos, jd, indiceDe)).toEqual(baricentro('marte'));
+  });
+
+  it('uma lua fica no planeta mais o vetor de Kepler, como na cena', () => {
+    const io = LUAS.find((l) => l.chave === 'io')!;
+    const vetor: [number, number, number] = [0, 0, 0];
+    posicaoDaLua(io, io.base, jd - EPOCA_DAS_LUAS_JD, vetor);
+    const j = baricentro('jupiter');
+    expect(posicaoDesenhada('io', pos, jd, indiceDe)).toEqual([j[0] + vetor[0], j[1] + vetor[1], j[2] + vetor[2]]);
+  });
+
+  it('chave desconhecida ou nula não tem posição', () => {
+    expect(posicaoDesenhada(null, pos, jd, indiceDe)).toBeNull();
+    expect(posicaoDesenhada('apagado-1', pos, jd, indiceDe)).toBeNull();
+  });
+});

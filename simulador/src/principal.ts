@@ -33,8 +33,8 @@ import { UA_KM, kmPorS, mPorS2, uaParaKm } from './nucleo/unidades.ts';
 import { criarRenderizador } from './cena/renderizador.ts';
 import { distancia as distanciaEscrita } from './interface/formato.ts';
 import { criarSistemaVivo, type Recusa } from './app/sistemaVivo.ts';
-import { EPOCA_DAS_LUAS_JD, LUAS } from './dados/luas.ts';
-import { posicaoDaLua } from './nucleo/luas.ts';
+import { LUAS } from './dados/luas.ts';
+import { posicaoDesenhada } from './app/posicaoDesenhada.ts';
 import { PASSO_CURTO_DIAS } from './nucleo/integrador.ts';
 import { RECUSAS } from './dados/textos.ts';
 import { criarCena, type Cena } from './cena/cena.ts';
@@ -816,30 +816,10 @@ let capturaPendente = false;
  * com um termo que so existe em 3D: quando dois corpos disputam o mesmo espaco, ganha
  * o mais proximo da camera.
  */
-/**
- * Onde qualquer coisa desenhada esta, em UA, corpo da fisica ou lua. As luas nao tem
- * indice no estado fisico, entao `indiceDe` devolve −1 e tudo que indexa por numero
- * as perde. Esta funcao e o ponto unico onde as duas naturezas se encontram, e por
- * ela acompanhar uma lua funciona como acompanhar um planeta.
- */
-const deslocamentoDaLua: [number, number, number] = [0, 0, 0];
-
+/** Onde qualquer coisa desenhada esta, em UA: ver `posicaoDesenhada`. */
 function posicaoDe(chave: string | null): [number, number, number] | null {
-  if (!chave) return null;
   const e = laco.simulador.estado;
-  const i = indiceDe(chave);
-  if (i >= 0) return [e.pos[3 * i]!, e.pos[3 * i + 1]!, e.pos[3 * i + 2]!];
-
-  const lua = LUA_POR_CHAVE.get(chave);
-  if (!lua) return null;
-  const iPai = indiceDe(lua.pai);
-  if (iPai < 0) return null;
-  posicaoDaLua(lua, lua.base, catalogo.jdEpoca + e.tDias - EPOCA_DAS_LUAS_JD, deslocamentoDaLua);
-  return [
-    e.pos[3 * iPai]! + deslocamentoDaLua[0],
-    e.pos[3 * iPai + 1]! + deslocamentoDaLua[1],
-    e.pos[3 * iPai + 2]! + deslocamentoDaLua[2],
-  ];
+  return posicaoDesenhada(chave, e.pos, catalogo.jdEpoca + e.tDias, indiceDe);
 }
 
 /** O nome de qualquer coisa desenhada: corpo da fisica, lua ou corpo criado. */
