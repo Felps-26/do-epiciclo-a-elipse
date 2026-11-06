@@ -64,8 +64,8 @@ export function fatiasDeProfundidade(
  * 1/z da perspectiva, que gasta metade dos bits no primeiro por cento do alcance.
  */
 export function janelaOrtografica(distanciaMinimaUa: number, distanciaMaximaUa: number): Fatia {
-  // O near acompanha a superficie mais proxima, como na perspectiva: fixo em 1e-4 UA
-  // (15 mil km) ele ficava alem de Mercurio visto de perto e recortava o disco inteiro.
+  // O near acompanha a superficie mais proxima, como na perspectiva: perto de um corpo
+  // pequeno, um near fixo cai alem da superficie e recorta o disco. Longe, 1e-4 UA basta.
   const near = Math.min(1e-4, Math.max(NEAR_ABSOLUTO_UA, distanciaMinimaUa * 0.5));
   return { near, far: Math.max(distanciaMaximaUa * 1.2, 1) };
 }

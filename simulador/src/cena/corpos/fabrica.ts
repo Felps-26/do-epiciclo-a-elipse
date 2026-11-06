@@ -455,7 +455,7 @@ function montarAtmosfera(visual: CorpoVisual, u: UniformesDeLuz): Mesh | null {
 
   const paraACamera = cameraPosition.sub(positionWorld).normalize();
   // Em `BackSide` o three nega `normalWorld`. A normal da geometria aponta para fora,
-  // que é o que a vista e a luz precisam: com a negada, o halo acendia no limbo da noite.
+  // que é o que a vista e a luz precisam: com a negada, o halo acenderia no limbo da noite.
   const n = normalWorldGeometry;
   const nv = n.dot(paraACamera).abs();
   const caminho = float(1).sub(nv).pow(float(3));

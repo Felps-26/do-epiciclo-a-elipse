@@ -100,8 +100,8 @@ export function pontoNoPlanoDoPivo(
  * desenhado. `projetar` projeta o centro mais esse deslocamento e mede a diferenca.
  *
  * Na perspectiva a borda e a do cone tangente a esfera, com meio angulo asin(R/d), e
- * no plano do centro isso da R·d/√(d²−R²). Usar R deixava o anel 11% dentro do disco
- * a 2,2 raios. Na ortografica as linhas de visada sao paralelas e a borda e R.
+ * no plano do centro isso da R·d/√(d²−R²); com R o anel ficaria 11% dentro do disco a
+ * 2,2 raios. Na ortografica as linhas de visada sao paralelas e a borda e R.
  */
 export function raioDoContornoUa(raioUa: number, distanciaUa: number, perspectiva: boolean): number {
   // Dentro da esfera nao ha contorno; R evita a divisao por zero.

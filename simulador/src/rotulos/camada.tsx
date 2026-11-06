@@ -29,8 +29,8 @@ const MARCA: Record<string, string> = { a: 'A', b: 'B', acompanhado: '◎' };
 
 /**
  * Poe a posicao so quando o no nasce; dali em diante quem escreve `transform` e a
- * ancoragem. Com o `transform` no `style`, cada republicacao (8 Hz) trocava a posicao
- * do quadro por uma de ate 125 ms atras, e a placa dava um tranco.
+ * ancoragem. Com o `transform` no `style`, cada republicacao (8 Hz) trocaria a posicao
+ * do quadro por uma de ate 125 ms atras, e a placa daria um tranco.
  */
 function nascerEm(transform: string) {
   return (no: HTMLElement | null): void => {

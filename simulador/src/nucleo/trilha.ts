@@ -128,7 +128,7 @@ export class ConjuntoTrilhas {
 
   /**
    * So os `n` corpos em uso. As casas de reserva tem `pos` zerado, e gravar nelas
-   * dava ao proximo corpo criado um rastro que comecava na origem.
+   * daria ao proximo corpo criado um rastro que comeca na origem.
    */
   registrar(pos: Float64Array, tDias: number, n = this.trilhas.length): void {
     for (let i = 0; i < Math.min(n, this.trilhas.length); i++) {

@@ -501,7 +501,7 @@ export function criarCena(
         return projecaoEmCache.saida;
       }
 
-      /** Raio aparente, medido projetando um ponto a um raio de distancia. */
+      /** Pixels entre o centro e o centro deslocado de `raioUa` na horizontal da tela. */
       const raioEmPixels = (centro: Vector3, raioUa: number, lPx: number, aPx: number): number => {
         const direita = _lateral.set(1, 0, 0).applyQuaternion(ativa.quaternion).multiplyScalar(raioUa);
         _borda.copy(centro).add(direita).project(ativa);
@@ -532,9 +532,9 @@ export function criarCena(
         // `w <= 0` e o corpo ATRAS da camera. Em ortografica isso nao existia;
         // ignorar aqui faria o nome aparecer espelhado do outro lado da tela.
         const naFrente = auxiliar.z < 1 && p.dot(direcaoDaCamera(ativa)) > 0;
-        // O raio em pixels sai da PROJECAO, e nao de uma conta de fov: projeta
-        // um segundo ponto deslocado de um raio na horizontal da tela e mede a
-        // diferenca. Vale igual nas duas camaras, e nao precisa saber qual e.
+        // O raio em pixels sai da PROJECAO, e nao de uma conta de fov: projeta o
+        // centro deslocado na horizontal da tela ate o limbo (`raioDoContornoUa`) e
+        // mede a diferenca, com as mesmas matrizes que desenharam o quadro.
         const contorno = raioDoContornoUa(c.montado.malha.scale.x, p.length(), ativa === camera);
         const raioPx = raioEmPixels(p, contorno, larguraPx, alturaCss);
         saida.push({
