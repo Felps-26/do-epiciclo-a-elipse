@@ -243,7 +243,21 @@ export function criarFitas(
           const pontos = conjunto.pontos(i);
           const fita = trilhas[i]!;
           const n = pontos.length / 3;
-          if (n < 2) continue;
+          if (n < 2) {
+            // Trilha recem-limpa, ou de corpo recem-criado: a fita ainda guarda os
+            // pontos de quem ocupava a casa. Encolhida no corpo, nao desenha nada.
+            const x = estado.pos[3 * i]! - sx;
+            const y = estado.pos[3 * i + 1]! - sy;
+            const z = estado.pos[3 * i + 2]! - sz;
+            for (let k = 0; k < 420; k++) {
+              fita.buffer[3 * k] = x;
+              fita.buffer[3 * k + 1] = y;
+              fita.buffer[3 * k + 2] = z;
+            }
+            if (maquete) comprimirRelativos(fita.buffer, 420);
+            fita.geometria.setPositions(fita.buffer);
+            continue;
+          }
           // Guardados relativos ao Sol, como a geometria espera.
           for (let k = 0; k < n; k++) {
             fita.buffer[3 * k] = pontos[3 * k]! - sx;

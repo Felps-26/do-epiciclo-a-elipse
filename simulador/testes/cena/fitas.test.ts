@@ -37,7 +37,9 @@ function montar() {
       fitas.atualizar(estado, [0, 0, 0], t, false);
     }
   };
-  return { corpos, fitas, estado, andar };
+  /** Um quadro com o tempo parado, como com a simulacao pausada. */
+  const quadroParado = () => fitas.atualizar(estado, [0, 0, 0], t, false);
+  return { corpos, fitas, estado, andar, quadroParado };
 }
 
 describe('rastros do sandbox', () => {
@@ -95,4 +97,27 @@ describe('rastros do sandbox', () => {
     const rastro = pontosDoRastro(fitas.grupo, 9);
     expect(rastro.filter((p) => p[0] + sol > 0).length, 'herdou o rastro do apagado').toBe(0);
   });
+
+  it('com o tempo parado, o corpo criado numa casa reaproveitada não mostra a fita de quem a ocupava', () => {
+    const { corpos, fitas, estado, andar, quadroParado } = montar();
+    inserirCorpo(estado, [5, 0, 0], [0, 0, 0], 0);
+    corpos.push({ chave: 'criado-1', nome: 'Criado 1' });
+    inserirCorpo(estado, [-5, 0, 0], [0, 0, 0], 0);
+    corpos.push({ chave: 'criado-2', nome: 'Criado 2' });
+    andar(30);
+    // Apagar o primeiro desloca o segundo para a casa 9; a casa 10 fica com a fita
+    // desenhada do segundo. O terceiro nasce nela com a simulacao pausada.
+    removerCorpo(estado, 9);
+    corpos.splice(9, 1);
+    inserirCorpo(estado, [0, 8, 0], [0, 0, 0], 0);
+    corpos.push({ chave: 'criado-3', nome: 'Criado 3' });
+    quadroParado();
+    quadroParado();
+
+    const sol = [estado.pos[0]!, estado.pos[1]!];
+    const rastro = pontosDoRastro(fitas.grupo, 10);
+    const alheios = rastro.filter((p) => Math.hypot(p[0] + sol[0]! - 0, p[1] + sol[1]! - 8) > 0.01);
+    expect(alheios.length, 'a fita mostra pontos de outro corpo').toBe(0);
+  });
 });
+
