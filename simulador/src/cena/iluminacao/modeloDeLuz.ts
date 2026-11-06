@@ -78,10 +78,13 @@ export const criarUniformesDeLuz = criar;
  *
  * Funcao TypeScript comum e nao um `Fn` do TSL: ela so monta o grafo de nos, e o
  * `Fn` serve para reaproveitar codigo no shader, o que aqui nao se ganha.
+ *
+ * `normal` existe para material `BackSide`, em que o three entrega `normalWorld`
+ * negada (apontando para dentro) e a luz sairia do lado oposto ao Sol.
  */
-export function fatorDeLuz(u: UniformesDeLuz) {
+export function fatorDeLuz(u: UniformesDeLuz, normal: Node<'vec3'> = normalWorld) {
   const paraOSol = u.posicaoDoSol.sub(positionWorld).normalize();
-  const nl = normalWorld.normalize().dot(paraOSol);
+  const nl = normal.normalize().dot(paraOSol);
   return smoothstep(u.meioAngulo.negate(), u.meioAngulo, nl);
 }
 

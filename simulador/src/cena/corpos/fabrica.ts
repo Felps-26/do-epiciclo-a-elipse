@@ -31,7 +31,7 @@ import {
   cameraPosition,
   float,
   mix,
-  normalWorld,
+  normalWorldGeometry,
   positionWorld,
   smoothstep,
   texture,
@@ -454,12 +454,12 @@ function montarAtmosfera(visual: CorpoVisual, u: UniformesDeLuz): Mesh | null {
   });
 
   const paraACamera = cameraPosition.sub(positionWorld).normalize();
-  const n = normalWorld.normalize();
-  // `BackSide` inverte a normal interpolada; o que interessa é a geometria, e
-  // `abs` dispensa saber de que lado o driver a entregou.
+  // Em `BackSide` o three nega `normalWorld`. A normal da geometria aponta para fora,
+  // que é o que a vista e a luz precisam: com a negada, o halo acendia no limbo da noite.
+  const n = normalWorldGeometry;
   const nv = n.dot(paraACamera).abs();
   const caminho = float(1).sub(nv).pow(float(3));
-  const brilho = caminho.mul(fatorDeLuz(u)).mul(float(atm.densidade));
+  const brilho = caminho.mul(fatorDeLuz(u, n)).mul(float(atm.densidade));
 
   material.colorNode = vec4(vec3(...atm.cor).mul(brilho), float(1));
 
