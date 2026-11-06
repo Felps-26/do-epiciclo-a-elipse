@@ -16,7 +16,8 @@
  * Preact: o estado da interface e publicado a 8 Hz, e uma placa que so se move
  * oito vezes por segundo salta visivelmente enquanto a cena corre a sessenta.
  * Os `data-rotulo` e `data-anel` abaixo existem para ela achar os nos — sao o
- * unico acoplamento, e e por atributo, nao por estrutura.
+ * unico acoplamento, e e por atributo, nao por estrutura. Pelo mesmo motivo o
+ * `transform` nao vai no `style` do Preact: ver `nascerEm`.
  */
 import type { JSX } from 'preact';
 import type { RotuloColocado } from './posicionador.ts';
@@ -25,6 +26,17 @@ import { paraCss } from '../interface/contraste.ts';
 
 /** O que cada papel escreve na placa. Palavra, e nunca so cor. */
 const MARCA: Record<string, string> = { a: 'A', b: 'B', acompanhado: '◎' };
+
+/**
+ * Poe a posicao so quando o no nasce; dali em diante quem escreve `transform` e a
+ * ancoragem. Com o `transform` no `style`, cada republicacao (8 Hz) trocava a posicao
+ * do quadro por uma de ate 125 ms atras, e a placa dava um tranco.
+ */
+function nascerEm(transform: string) {
+  return (no: HTMLElement | null): void => {
+    if (no && !no.style.transform) no.style.transform = transform;
+  };
+}
 
 export function CamadaDeRotulos({ rotulos }: { rotulos: readonly RotuloColocado[] }): JSX.Element {
   return (
@@ -42,8 +54,8 @@ export function CamadaDeRotulos({ rotulos }: { rotulos: readonly RotuloColocado[
               class="rotulos__anel"
               data-anel={r.chave}
               data-raio={raio}
+              ref={nascerEm(`translate(${r.centroX - raio}px, ${r.centroY - raio}px)`)}
               style={{
-                transform: `translate(${r.centroX - raio}px, ${r.centroY - raio}px)`,
                 width: `${2 * raio}px`,
                 height: `${2 * raio}px`,
               }}
@@ -56,17 +68,15 @@ export function CamadaDeRotulos({ rotulos }: { rotulos: readonly RotuloColocado[
             key={r.chave}
             class="rotulos__ponto"
             data-rotulo={r.chave}
-            style={{
-              transform: `translate(${r.x}px, ${r.y}px)`,
-              background: paraCss(corDoCorpo(r.chave)),
-            }}
+            ref={nascerEm(`translate(${r.x}px, ${r.y}px)`)}
+            style={{ background: paraCss(corDoCorpo(r.chave)) }}
           />
         ) : (
           <span
             key={r.chave}
             class={`rotulos__placa${r.ocluido ? ' rotulos__placa--atras' : ''}`}
             data-rotulo={r.chave}
-            style={{ transform: `translate(${r.x}px, ${r.y}px)` }}
+            ref={nascerEm(`translate(${r.x}px, ${r.y}px)`)}
           >
             {/* A barra colorida carrega a cor; o NOME e sempre `texto`, em
                 16:1. Netuno reprovaria como texto, e a regra vale para todos. */}
