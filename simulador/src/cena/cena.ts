@@ -29,7 +29,7 @@ import {
 } from 'three';
 import type { WebGPURenderer } from 'three/webgpu';
 import { corpoSobOPonto } from './selecao.ts';
-import { fatiasDeProfundidade } from './camera/planoProximo.ts';
+import { fatiasDeProfundidade, janelaOrtografica } from './camera/planoProximo.ts';
 import { alturaVisivelUa, posicaoDaCamera, type EstadoCamera } from './camera/cameraOrbital.ts';
 import { aplicarOrigem, distancias } from './origemFlutuante.ts';
 import { fatorDeProjecao, raioDesenhadoUa } from './escala/exageroDeTamanho.ts';
@@ -794,12 +794,8 @@ export function criarCena(
         fitas.atualizar(estadoParaTrilhas as never, camUa, estadoParaTrilhas.tDias, maquete);
       }
 
-      // A ortografica nao precisa de fatias. A profundidade dela e linear
-      // em z, entao a precisao e uniforme em toda a faixa — as fatias existem
-      // para o 1/z da perspectiva, que gasta metade dos bits no primeiro por
-      // cento do alcance.
       const janelas = ehOrtografica
-        ? [{ near: 1e-4, far: Math.max(maisDistante * 1.2, 1) }]
+        ? [janelaOrtografica(maisProximo, maisDistante)]
         : fatiasDeProfundidade(maisProximo, maisDistante, 2);
       fatias = janelas.length;
 

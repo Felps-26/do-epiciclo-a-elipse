@@ -17,7 +17,7 @@ import {
   orbitar,
   posicaoDaCamera,
 } from '@cena/camera/cameraOrbital.ts';
-import { RAZAO_MAXIMA_POR_FATIA, fatiasDeProfundidade } from '@cena/camera/planoProximo.ts';
+import { RAZAO_MAXIMA_POR_FATIA, fatiasDeProfundidade, janelaOrtografica } from '@cena/camera/planoProximo.ts';
 import { RAIO_INTERNOS_UA, RAIO_SISTEMA_UA, enquadrar } from '@cena/camera/enquadramento.ts';
 import { DURACAO_S, avancarTransicao, iniciarTransicao } from '@cena/camera/transicao.ts';
 import { ampliacao, pisoEmPixels, raioDesenhadoUa,
@@ -112,6 +112,22 @@ describe('fatias de profundidade', () => {
     const fatias = fatiasDeProfundidade(1e-6, 60, 3);
     const razoes = fatias.map((f) => f.far / f.near);
     for (const r of razoes) expect(r).toBeCloseTo(razoes[0]!, 6);
+  });
+});
+
+describe('janela da vista ortografica', () => {
+  it('na vista ortográfica o plano próximo fica antes da superfície do corpo em foco', () => {
+    // Câmera "perto" de Mercúrio: três raios do centro, dois da superfície (4,9e-5 UA).
+    // Com o plano próximo além da superfície, o disco inteiro é recortado.
+    const superficie = 2 * (2439.7 / 1.495978707e8);
+    const j = janelaOrtografica(superficie, 40);
+    expect(j.near).toBeLessThan(superficie);
+    expect(j.near).toBeGreaterThan(0);
+    expect(j.far).toBeGreaterThanOrEqual(40);
+  });
+
+  it('o plano distante cobre o corpo mais longe, mesmo de muito longe', () => {
+    expect(janelaOrtografica(10, 60).far).toBeGreaterThan(60);
   });
 });
 
