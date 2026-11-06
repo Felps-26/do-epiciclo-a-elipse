@@ -260,11 +260,11 @@ function dadosDoAlvo(chave: string | null): Parameters<typeof enquadrar>[2] {
   const lua = LUA_POR_CHAVE.get(chave);
   if (lua) {
     // Acompanhar uma lua enquadra a orbita DELA em torno do planeta, e nao a
-    // do planeta em torno do Sol. A compressao nao entra: o vetor lua-planeta
-    // nunca e comprimido, pelo mesmo motivo que "chegar perto" nao e — e uma
-    // escala local.
+    // do planeta em torno do Sol. A compressao nao entra no afelio nem na posicao
+    // (`posicaoDesenhada` comprime so o planeta): o vetor lua-planeta e uma escala
+    // local, pelo mesmo motivo que "chegar perto" nao e comprimido.
     return {
-      posicao: paraDesenho(posicao),
+      posicao,
       afelioUa: (lua.aKm / UA_KM) * (1 + lua.excentricidade),
       raioKm: lua.raioMedioKm,
     };
@@ -280,7 +280,7 @@ function dadosDoAlvo(chave: string | null): Parameters<typeof enquadrar>[2] {
   const afelio = i === 0 ? null : elementosOsculadores(e, i).afelio;
   const util = afelio !== null && Number.isFinite(afelio) ? afelio : null;
   return {
-    posicao: paraDesenho(posicao),
+    posicao,
     // O afelio enquadra a orbita inteira, e a orbita desenhada encolheu junto.
     afelioUa: util === null ? null : emMaquete() ? comprimirRaio(util) : util,
     raioKm: corpo.raioKm,
@@ -469,7 +469,7 @@ const laco = criarLaco({
       // Sem perseguicao: o pivo E a posicao do corpo. Erro exatamente zero.
       // Vale tambem para uma lua, que nao tem indice na fisica: quem resolve a
       // posicao e `posicaoDe`, e ela conhece as duas naturezas.
-      camera.pivo = paraDesenho(posicaoDoAlvo);
+      camera.pivo = posicaoDoAlvo;
     }
 
     // O voo vem depois do acompanhamento, e a ordem importa: o acompanhamento reescreve o
@@ -816,10 +816,10 @@ let capturaPendente = false;
  * com um termo que so existe em 3D: quando dois corpos disputam o mesmo espaco, ganha
  * o mais proximo da camera.
  */
-/** Onde qualquer coisa desenhada esta, em UA: ver `posicaoDesenhada`. */
+/** Onde qualquer coisa esta desenhada, em UA do espaco desenhado: ver `posicaoDesenhada`. */
 function posicaoDe(chave: string | null): [number, number, number] | null {
   const e = laco.simulador.estado;
-  return posicaoDesenhada(chave, e.pos, catalogo.jdEpoca + e.tDias, indiceDe);
+  return posicaoDesenhada(chave, e.pos, catalogo.jdEpoca + e.tDias, indiceDe, paraDesenho);
 }
 
 /** O nome de qualquer coisa desenhada: corpo da fisica, lua ou corpo criado. */

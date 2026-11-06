@@ -9,6 +9,7 @@ import { EMRAT, EPOCA_DAS_LUAS_JD, LUAS } from '@dados/luas.ts';
 import { deslocamentoDoCentroDaTerra, posicaoDaLua } from '@nucleo/luas.ts';
 import { UA_KM } from '@nucleo/unidades.ts';
 import { posicaoDesenhada } from '@app/posicaoDesenhada.ts';
+import { comprimirPonto } from '@cena/escala/escalaVisual.ts';
 
 const catalogo = carregar();
 const indices = new Map(catalogo.corpos.map((c, i) => [c.chave, i]));
@@ -54,4 +55,26 @@ describe('posicaoDesenhada', () => {
     expect(posicaoDesenhada(null, pos, jd, indiceDe)).toBeNull();
     expect(posicaoDesenhada('apagado-1', pos, jd, indiceDe)).toBeNull();
   });
+
+  it('em modo maquete o pivô de uma lua é o planeta comprimido mais o vetor lua-planeta inteiro', () => {
+    // A cena comprime o sistema e preserva o vetor lua-planeta (`cena.ts`). Comprimir
+    // a soma levaria a camera para dentro de Jupiter, longe de Io.
+    const sol = baricentro('sol');
+    const comprimir = (p: [number, number, number]) => comprimirPonto(p, sol);
+    const io = LUAS.find((l) => l.chave === 'io')!;
+    const vetor: [number, number, number] = [0, 0, 0];
+    posicaoDaLua(io, io.base, jd - EPOCA_DAS_LUAS_JD, vetor);
+    const j = comprimir(baricentro('jupiter'));
+    const esperado = [j[0] + vetor[0], j[1] + vetor[1], j[2] + vetor[2]];
+
+    const alvo = posicaoDesenhada('io', pos, jd, indiceDe, comprimir)!;
+    for (let k = 0; k < 3; k++) expect(alvo[k]).toBeCloseTo(esperado[k]!, 12);
+  });
+
+  it('em modo maquete um planeta vai para o ponto comprimido', () => {
+    const sol = baricentro('sol');
+    const comprimir = (p: [number, number, number]) => comprimirPonto(p, sol);
+    expect(posicaoDesenhada('marte', pos, jd, indiceDe, comprimir)).toEqual(comprimir(baricentro('marte')));
+  });
 });
+
