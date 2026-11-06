@@ -1,0 +1,72 @@
+===========================================================================
+  SISTEMA SOLAR - simulacao gravitacional do Sol e dos oito planetas
+===========================================================================
+
+COMO ABRIR
+---------------------------------------------------------------------------
+  macOS     abra run.command no Finder
+            (se o macOS bloquear, botao direito no arquivo > Abrir)
+  Linux     execute ./run.sh nesta pasta
+  Windows   abra run.bat
+
+  E preciso ter Python 3.9 ou mais novo. A primeira abertura demora alguns
+  segundos enquanto as bibliotecas sao instaladas; depois disso nao e
+  preciso usar o terminal.
+
+
+O QUE O PROGRAMA FAZ
+---------------------------------------------------------------------------
+  O Sol e os oito planetas se atraem pela gravidade, todos ao mesmo tempo e
+  no mesmo relogio. As posicoes de partida foram medidas pelo JPL, da NASA,
+  para 1 de janeiro de 2026. Dai em diante o programa calcula o resto.
+
+  Mercurio da uma volta em 88 dias e Netuno em 165 anos. Como os dois
+  compartilham o mesmo relogio, isso aparece na tela.
+
+
+OS CONTROLES
+---------------------------------------------------------------------------
+  Pausar / Continuar       para e retoma o tempo
+  - e +                    mudam a velocidade do tempo
+  Sistema completo         mostra os oito planetas
+  Planetas internos        aproxima dos quatro de dentro
+  Focar planeta            a camera viaja junto com um planeta
+  Ajuda                    explicacoes e atalhos
+  Mais opcoes              rastros, nomes, escala comprimida, texto maior
+
+  Clique em um planeta para ver distancia, velocidade e periodo orbital.
+  A roda do mouse da zoom. Arrastar move a vista.
+
+
+ATALHOS DE TECLADO (todos tem botao equivalente)
+---------------------------------------------------------------------------
+  Espaco      pausa e continua          Tab     anda pelos controles
+  1, 2, 3     modo de exploracao        Enter   aciona o controle em foco
+  + e -       zoom                      Setas   movem a vista
+  [ e ]       velocidade do tempo       H       volta a visao geral
+  F1 ou ?     ajuda                     R       volta a data inicial
+  S           salva uma imagem          Esc     fecha a caixa aberta
+
+
+LEIA DEPOIS
+---------------------------------------------------------------------------
+  README.md        explicacao completa, fontes dos dados e precisao medida
+  INSTALACAO.md    instalacao passo a passo
+  ARQUITETURA.md   para quem vai mexer no codigo
+
+
+LIMITES DO MODELO
+---------------------------------------------------------------------------
+  Esta e uma integracao simplificada de nove corpos, nao uma reproducao da
+  efemeride do JPL por tempo indefinido.
+
+  O modelo nao inclui a Lua como corpo separado (Terra e Lua contam como um
+  ponto so), nem Plutao, asteroides ou relatividade geral. Comparado com a
+  efemeride de referencia, o desvio fica abaixo de 0,5% da distancia ao Sol
+  ao longo de cem anos para frente ou para tras.
+
+  Os planetas sao desenhados muito maiores que o tamanho real - a tela avisa
+  isso o tempo todo. Se voce ligar "Comprimir distancias", o desenho deixa de
+  estar em escala e a tela tambem avisa, o tempo todo.
+
+===========================================================================

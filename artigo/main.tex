@@ -1,0 +1,146 @@
+% =============================================================================
+%  Do epiciclo ao integrador simplético — relatório acadêmico (abnTeX2)
+%  Compilar no Overleaf: Menu > Compiler = pdfLaTeX; o arquivo principal é este.
+%  Sequência local: pdflatex main && bibtex main && pdflatex main && pdflatex main
+% =============================================================================
+%
+%  Para trocar o formato de "trabalho acadêmico" (capa, folha de rosto,
+%  capítulos) por formato de ARTIGO (título no topo, seções), basta
+%  acrescentar a opção  article  na linha abaixo e comentar \imprimircapa
+%  e \imprimirfolhaderosto mais adiante.
+%
+\documentclass[
+  12pt,
+  openany,          % capítulos começam em qualquer página
+  oneside,          % impressão em um lado (troque por twoside se for imprimir frente e verso)
+  a4paper,
+  chapter=TITLE,    % títulos de capítulo em maiúsculas
+  section=TITLE,
+  english,          % idioma adicional (abstract)
+  brazilian,        % idioma principal (último da lista)
+  sumario=tradicional
+]{abntex2}
+
+% ---------------------------------------------------------------- pacotes
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{indentfirst}
+% \usepackage{microtype}   % desligado: deixa cada compilação ~15% mais lenta
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{icomma}                 % vírgula decimal correta no modo matemático
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs,multirow,array,tabularx}
+\usepackage{caption,subcaption}
+\usepackage[portuguese,portuguesekw,ruled,vlined,linesnumbered]{algorithm2e}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric,fit,backgrounds}
+\usepackage[alf,abnt-emphasize=bf]{abntex2cite}  % citações autor-data (ABNT NBR 10520)
+
+\graphicspath{{figuras/}}
+
+% ---------------------------------------------------------------- comandos do texto
+\input{preambulo/comandos}
+
+% ---------------------------------------------------------------- dados do trabalho
+\titulo{Do epiciclo ao integrador simplético: um simulador do Sistema Solar como ferramenta de ensino de física, matemática e computação}
+\autor{Filipi Ramos \\ \relax Thiago Vinicius}
+\local{Brasília -- DF}
+\data{2026}
+\orientador{Prof.\ Alexandre}
+\instituicao{%
+  Instituto Brasiliense de Direito Público -- IDP
+  \par
+  Ciência da Computação}
+\tipotrabalho{Relatório técnico-científico}
+\preambulo{Relatório técnico-científico apresentado ao curso de Ciência da Computação do Instituto Brasiliense de Direito Público -- IDP, sob a supervisão do Prof.\ Alexandre.}
+
+% ---------------------------------------------------------------- PDF
+\makeatletter
+\hypersetup{
+  pdftitle={\@title},
+  pdfauthor={\@author},
+  pdfsubject={\imprimirpreambulo},
+  pdfkeywords={Fourier, epiciclos, Copérnico, problema de N corpos, integrador simplético, ensino de física},
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  citecolor=blue!50!black,
+  urlcolor=blue!50!black,
+  bookmarksdepth=4
+}
+\makeatother
+
+\setlength{\parindent}{1.3cm}
+\setlength{\parskip}{0.2cm}
+\SingleSpacing   % o corpo em 1,5 é exigência de alguns cursos: troque por \OnehalfSpacing
+
+% =============================================================================
+%  COMPILAR EM PARTES (plano gratuito do Overleaf: limite de 10 s por compilação)
+%  O documento inteiro passa do limite. Para editar, descomente UMA das linhas
+%  abaixo: só os capítulos listados são compilados; os outros mantêm a
+%  numeração e as referências da última compilação em que entraram.
+% -----------------------------------------------------------------------------
+% \includeonly{capitulos/01_introducao,capitulos/02_historia,capitulos/03_fisica}
+% \includeonly{capitulos/04_matematica,capitulos/05_implementacao}
+% \includeonly{capitulos/06_processo,capitulos/07_resultados}
+% \includeonly{capitulos/08_ensino,capitulos/09_limitacoes,capitulos/10_conclusao}
+% \includeonly{apendices/A_derivacoes,apendices/B_codigo,apendices/C_execucao,apendices/D_dados,apendices/E_experimentos}
+% -----------------------------------------------------------------------------
+\begin{document}
+\selectlanguage{brazilian}
+\frenchspacing
+
+% ------------------------------------------------ elementos pré-textuais
+\pretextual
+\imprimircapa
+% folha de rosto (forma explícita, que funciona em todas as versões do abnTeX2)
+\begin{folhaderosto*}{\folhaderostoname}
+  \folhaderostocontent
+\end{folhaderosto*}
+\input{pretextuais/agradecimentos}
+\input{pretextuais/resumo}
+\input{pretextuais/abstract}
+
+\pdfbookmark[0]{\listfigurename}{lof}
+\listoffigures*
+\cleardoublepage
+\pdfbookmark[0]{\listtablename}{lot}
+\listoftables*
+\cleardoublepage
+\input{pretextuais/siglas_simbolos}
+
+\pdfbookmark[0]{\contentsname}{toc}
+\tableofcontents*
+\cleardoublepage
+
+% ------------------------------------------------ elementos textuais
+\textual
+
+\include{capitulos/01_introducao}
+\include{capitulos/02_historia}
+\include{capitulos/03_fisica}
+\include{capitulos/04_matematica}
+\include{capitulos/05_implementacao}
+\include{capitulos/06_processo}
+\include{capitulos/07_resultados}
+\include{capitulos/08_ensino}
+\include{capitulos/09_limitacoes}
+\include{capitulos/10_conclusao}
+
+% ------------------------------------------------ elementos pós-textuais
+\postextual
+\bibliography{referencias}
+
+\begin{apendicesenv}
+\partapendices
+\include{apendices/A_derivacoes}
+\include{apendices/B_codigo}
+\include{apendices/C_execucao}
+\include{apendices/D_dados}
+\include{apendices/E_experimentos}
+\end{apendicesenv}
+
+\end{document}

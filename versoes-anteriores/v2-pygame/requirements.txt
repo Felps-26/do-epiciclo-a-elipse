@@ -1,0 +1,12 @@
+# Bibliotecas necessarias para rodar o programa.
+numpy>=1.24
+pygame-ce>=2.5
+
+# Opcional. Usada so por um bloco de tests/test_fisica_lab.py, que compara os
+# coeficientes de Fourier com a solucao analitica de Fourier-Bessel. Sem ela,
+# esse bloco e pulado e o restante dos testes roda normalmente.
+scipy>=1.10
+
+# NAO e necessaria para usar o programa. So para regenerar os dados de
+# partida com ferramentas/gerar_efemeride.py, que precisa de internet:
+#   astropy>=5.0

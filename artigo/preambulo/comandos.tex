@@ -1,0 +1,99 @@
+% =============================================================================
+%  Comandos, ambientes e estilos usados no texto
+% =============================================================================
+\usepackage[most]{tcolorbox}
+
+% ---- notação
+\newcommand{\vetor}[1]{\bm{#1}}
+\newcommand{\vr}{\vetor{r}}
+\newcommand{\vv}{\vetor{v}}
+\newcommand{\va}{\vetor{a}}
+\newcommand{\vh}{\vetor{h}}
+\newcommand{\ve}{\vetor{e}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\UA}{\,\mathrm{UA}}
+\newcommand{\dia}{\,\mathrm{dia}}
+\newcommand{\km}{\,\mathrm{km}}
+\newcommand{\sgn}{\operatorname{sgn}}
+\newcommand{\codigo}[1]{\texttt{\small #1}}
+\newcommand{\arquivo}[1]{\texttt{\small #1}}
+
+% ---- teoremas (numeração por capítulo)
+\theoremstyle{plain}
+\newtheorem{proposicao}{Proposição}[chapter]
+\theoremstyle{definition}
+\newtheorem{definicao}{Definição}[chapter]
+\newtheorem{exemplo}{Exemplo}[chapter]
+\theoremstyle{remark}
+\newtheorem*{observacao}{Observação}
+
+% ---- caixas didáticas
+% "Para começar": leitura de entrada, sem cálculo (ensino médio)
+\newtcolorbox{paracomecar}[1][]{enhanced,breakable,colback=blue!3,colframe=blue!45!black,
+  boxrule=0.5pt,arc=1mm,left=2mm,right=2mm,top=1mm,bottom=1mm,
+  fonttitle=\bfseries\small,title={Para começar#1}}
+% "Para aprofundar": detalhe técnico que pode ser pulado na primeira leitura
+\newtcolorbox{paraaprofundar}[1][]{enhanced,breakable,colback=orange!4,colframe=orange!60!black,
+  boxrule=0.5pt,arc=1mm,left=2mm,right=2mm,top=1mm,bottom=1mm,
+  fonttitle=\bfseries\small,title={Para aprofundar#1}}
+% "Lição de projeto": um erro real que o projeto cometeu e corrigiu
+\newtcolorbox{licao}[1][]{enhanced,breakable,colback=red!3,colframe=red!50!black,
+  boxrule=0.5pt,arc=1mm,left=2mm,right=2mm,top=1mm,bottom=1mm,
+  fonttitle=\bfseries\small,title={Lição de projeto#1}}
+% "No programa": onde a ideia aparece na tela
+\newtcolorbox{noprograma}[1][]{enhanced,breakable,colback=green!3,colframe=green!40!black,
+  boxrule=0.5pt,arc=1mm,left=2mm,right=2mm,top=1mm,bottom=1mm,
+  fonttitle=\bfseries\small,title={No programa#1}}
+
+% ---- código-fonte
+\definecolor{fundocodigo}{RGB}{248,248,250}
+\definecolor{comentario}{RGB}{90,110,90}
+\definecolor{palavra}{RGB}{20,60,150}
+\definecolor{textocod}{RGB}{150,40,40}
+\lstdefinelanguage{TypeScript}{
+  keywords={const,let,var,function,return,if,else,for,while,break,continue,new,
+    export,import,from,type,interface,readonly,as,of,in,throw,true,false,null,undefined},
+  morekeywords=[2]{number,string,boolean,void,Float64Array,Math},
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]",
+  morestring=[b]`
+}
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  backgroundcolor=\color{fundocodigo},
+  keywordstyle=\color{palavra}\bfseries,
+  keywordstyle=[2]\color{palavra},
+  commentstyle=\color{comentario}\itshape,
+  stringstyle=\color{textocod},
+  numbers=left, numberstyle=\tiny\color{gray}, numbersep=6pt,
+  frame=single, rulecolor=\color{gray!40}, framexleftmargin=4pt,
+  breaklines=true, breakatwhitespace=false, columns=fullflexible, keepspaces=true,
+  showstringspaces=false, tabsize=2, captionpos=t,
+  literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+           {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+           {ã}{{\~a}}1 {õ}{{\~o}}1 {Ã}{{\~A}}1 {Õ}{{\~O}}1
+           {â}{{\^a}}1 {ê}{{\^e}}1 {ô}{{\^o}}1 {Â}{{\^A}}1 {Ê}{{\^E}}1 {Ô}{{\^O}}1
+           {ç}{{\c c}}1 {Ç}{{\c C}}1 {à}{{\`a}}1 {ü}{{\"u}}1
+           {—}{{---}}1 {−}{{-}}1 {·}{{$\cdot$}}1 {×}{{$\times$}}1 {≤}{{$\le$}}1 {≥}{{$\ge$}}1
+           {π}{{$\pi$}}1 {μ}{{$\mu$}}1 {√}{{$\surd$}}1 {°}{{$^\circ$}}1 {≈}{{$\approx$}}1
+}
+\renewcommand{\lstlistingname}{Código}
+\renewcommand{\lstlistlistingname}{Lista de códigos}
+
+% ---- algoritmos
+\SetAlgoCaptionSeparator{ --}
+\SetKwComment{Com}{$\triangleright$\ }{}
+\SetAlFnt{\small}
+% palavras-chave em português (independe da versão do algorithm2e)
+\SetKwInput{KwIn}{Entrada}
+\SetKwInput{KwOut}{Saída}
+\SetKwFor{For}{para}{faça}{fim}
+\SetKwFor{ForEach}{para cada}{faça}{fim}
+\SetKwFor{While}{enquanto}{faça}{fim}
+\SetKwIF{If}{ElseIf}{Else}{se}{então}{senão se}{senão}{fim}
+\SetKw{KwTo}{até}
+\SetKw{Return}{retorne}

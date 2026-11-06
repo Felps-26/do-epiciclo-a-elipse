@@ -1,0 +1,118 @@
+\chapter{Processo de desenvolvimento}\label{cap:processo}
+
+Este capítulo descreve como o programa foi construído: o método de trabalho, os testes que sustentam as afirmações do texto e alguns erros encontrados pelo caminho. As instruções para instalar e executar o programa estão no fim do capítulo e, com mais detalhe, no \autoref{ap:execucao}.
+
+\section{Princípio: toda afirmação tem um teste}
+
+Desde a versão 2D, o documento de arquitetura estabelece que o que está escrito nele foi medido ou testado. Quando o programa afirma algo sobre si mesmo, na interface, na documentação ou num comentário de código, deve existir um teste automatizado que falhe se a afirmação deixar de valer.
+
+A regra nasceu de três defeitos:
+
+\begin{itemize}
+  \item a documentação da versão 2D dizia que a física não dependia da camada de desenho, mas um módulo de interface importava um atalho da raiz do projeto. Hoje um teste lê a árvore sintática de cada arquivo e falha se a separação for quebrada;
+  \item o ``modo maquete'' da versão 3D teve, durante uma fase inteira, o botão, o aviso falado e a etiqueta ``distâncias comprimidas'' na tela, e não comprimia nada;
+  \item uma auditoria encontrou o contrato de funcionalidades citando catorze arquivos de teste que nunca existiram, em dezessete dos quarenta e três itens.
+\end{itemize}
+
+\section{O contrato de funcionalidades}\label{sec:contrato}
+
+Antes de escrever o código da versão 3D, foi escrito um \emph{contrato}: a lista das 43 funcionalidades que a versão 2D entregava e que a 3D precisava entregar, agrupadas em tempo, câmera, cena, seleção, aprendizado e sistema. Sem ele, o risco era terminar com a física correta e os gráficos prontos, mas com parte do conteúdo educativo faltando, o que seria um retrocesso em relação ao programa que já funcionava.
+
+Cada linha do contrato tem uma coluna \emph{prova}, com o teste automatizado que a verifica ou, em poucos casos, um roteiro manual de uma frase, e uma coluna \emph{estado}: pendente, feito, mudado (entrega o mesmo valor por outro meio, com justificativa) ou defeito. Nenhuma fase começava com uma linha vermelha na anterior. Ao final, 31 funcionalidades foram entregues como especificadas e 12 por outro meio, cada uma com uma nota. Um teste lê o contrato e exige que todo arquivo de prova citado exista e que a contagem do resumo bata com as linhas da tabela.
+
+\section{Fases}
+
+O desenvolvimento da versão 3D foi dividido em fases, cada uma com um critério de saída verificável:
+
+\begin{description}
+  \item[F0 -- Fundação.] Estrutura de pastas, regras de camada, servidor local, persistência de preferências.
+  \item[F1 -- Física.] Porte do núcleo de Python para TypeScript, com os mesmos testes de conservação e reversibilidade.
+  \item[F2 -- Interface acessível.] Controles por teclado e mouse, rótulos, avisos.
+  \item[F3 -- Precisão do desenho.] Câmera, origem flutuante, fatias de profundidade, seleção em espaço de tela.
+  \item[F4 -- Cena elaborada.] Texturas, iluminação, anéis, estrelas, rótulos.
+  \item[F5 -- Conteúdo.] Fichas, ajuda, atividades, laboratório de Fourier.
+  \item[F6 -- Luas.] Geração dos elementos, propagação e medida do erro.
+  \item[F7 -- Sandbox.] Criação de corpos, guardas e desfazer.
+  \item[F8 -- Entrega.] Empacotamento, cenas de referência, execução por duplo clique.
+  \item[F9--F14 -- Refinamento.] Aproximação dos corpos, reorganização da interface, texturas 8K, desempenho e uma varredura sistemática de defeitos visuais.
+\end{description}
+
+Na última rodada, a busca de defeitos visuais foi feita em sete dimensões em paralelo, e cada achado foi depois atacado por um segundo revisor, encarregado de tentar refutá-lo lendo o código e os testes. Dos 40 achados, 35 resistiram à refutação.
+% CONFERIR: o texto anterior dizia que os 35 "foram corrigidos". O tracker ACHADOS-VISUAIS.md marca só 7 como consertados.
+% Atualizar esta frase quando o estado real for confirmado.
+
+\section{Os testes}
+
+O comando \codigo{npm test} roda cinco etapas em ordem, e qualquer falha interrompe as seguintes (\autoref{tab:portao}).
+
+\begin{table}[htb]
+  \centering
+  \caption{O que cada etapa dos testes verifica}
+  \label{tab:portao}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    Etapa & O que trava \\
+    \midrule
+    tipos & TypeScript em modo estrito, inclusive acesso a índice possivelmente inexistente \\
+    lint & funções globais proibidas no núcleo; leitura de layout no caminho executado a cada quadro \\
+    arquitetura & as sete regras de dependência entre camadas \\
+    unidade & o núcleo físico em ambiente sem navegador (se a física tocar a página, quebra aqui); conservação, reversibilidade, validação contra o JPL, Kepler, Fourier, luas, sandbox; as guardas de texto \\
+    ponta a ponta & o programa construído, num navegador sem janela: funcionamento sem internet, acessibilidade, teclado, conteúdo, contraste de rótulos medido no pixel, precisão de profundidade nos dois backends, laboratório, maquete, sandbox e doze cenas de referência \\
+    \bottomrule
+  \end{tabularx}
+  \legend{A versão 3D tem 61 arquivos de teste, cerca de 10\,500 linhas e pouco mais de 500 casos. Fonte: elaborada pelos autores a partir de \arquivo{README.md}.}
+\end{table}
+
+Dois testes verificam texto, o que as ferramentas comuns não fazem. O \codigo{honestidade.test.ts} liga cada simplificação listada no bloco ``o que a tela simplifica'' a um fato do código, nos dois sentidos: listar uma simplificação que o código não faz reprova, e fazer uma que não está listada também. O \codigo{contrato.test.ts} faz o mesmo com o contrato de funcionalidades.
+
+\begin{licao}[: um teste que mede o próprio teste]
+Quatro testes passavam sem medir nada. Uma leitura de canvas feita fora do quadro devolvia um buffer vazio, e um buffer vazio é estável entre dois quadros, então o teste de tremulação passava com zero. Uma asserção algébrica era verdadeira para qualquer entrada. Um corpo de teste ``se movia'' com a gravidade desligada. Um teste de texto passou com o parágrafo apagado, porque as palavras apareciam em outro lugar da página. Desde então, toda medição vem com uma guarda que afirma que ela mede alguma coisa. Para conferir, basta sabotar o código e ver o teste ficar vermelho; se continuar verde, ele não mede o que diz.
+\end{licao}
+
+\section{Erros registrados}
+
+O documento de arquitetura mantém uma tabela com os erros encontrados e a correção de cada um. A \autoref{tab:armadilhas} seleciona alguns, de classes diferentes.
+
+\begin{table}[htb]
+  \centering
+  \caption{Alguns erros registrados durante o desenvolvimento}
+  \label{tab:armadilhas}
+  \small
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.6cm}X}
+    \toprule
+    Erro & O que acontecia e o que se fez \\
+    \midrule
+    Ajustar e medir na mesma janela de dados &
+    Mínimos quadrados forçam resíduo sem tendência \emph{dentro} da janela ajustada; medir ali mede o ajuste, não o modelo. As luas são ajustadas em 2000--2016 e conferidas em 2020--2040. \\
+    Buscar corpo por índice numa lista que cresce &
+    Depois de criar um corpo no sandbox, o índice de uma lua passou a apontar para o asteroide recém-criado, e a lua saía com o nome dele. Toda busca passou a ser por chave. \\
+    $\mu = GM_i + GM_j$ numa guarda &
+    Asteroides e cometas têm massa zero no programa; com a soma, dois deles poderiam nascer sobrepostos. A guarda passou a usar a $GM$ do vizinho. \\
+    Abrir o programa por \codigo{file://} &
+    O navegador bloqueia a leitura dos arquivos de dados por segurança. O programa sempre sobe um servidor local, que escuta só em \codigo{127.0.0.1}. \\
+    Trava de servidor que sobrevive ao processo &
+    Se o processo morria sem limpar a trava, o programa nunca mais abria e nada na tela dizia por quê. Agora a abertura verifica se o processo da trava ainda existe. \\
+    Polo da IAU para Marte transcrito pela metade &
+    A IAU publica o polo de Marte como constante mais um termo periódico de $1{,}59^\circ$, e só a constante fora copiada. Uma conferência cruzada entre o polo e a obliquidade de cada planeta achou o erro, e o de Netuno junto. \\
+    \bottomrule
+  \end{tabularx}
+  \legend{Fonte: elaborada pelos autores a partir de \arquivo{ARQUITETURA.md} e \arquivo{CONTRATO.md}.}
+\end{table}
+
+\section{Ferramentas e uso de assistente de IA}
+
+O desenvolvimento usou Python com NumPy \cite{harris2020} e Pygame nas duas primeiras versões, e TypeScript, Vite, three.js, Preact, Vitest e Playwright na terceira. Parte da programação, da revisão de código e da investigação de defeitos foi feita com o apoio do assistente Claude, da Anthropic \cite{anthropic2026}. Os resultados numéricos do \autoref{cap:resultados} podem ser reproduzidos pelos roteiros do \autoref{ap:experimentos}.
+% CONFERIR: a frase anterior ("nenhuma afirmação entrou sem teste ou medição") não vale para os textos
+% da interface. Ex.: a dica "Mercúrio está oito vezes mais perto do Sol que Júpiter" é falsa (são ~13 vezes).
+
+\section{Como executar}
+
+O programa é entregue como uma pasta. Na versão 3D, a pasta já traz o programa construído e os dados, e não exige instalação na máquina de quem recebe além do Node.js (ou, na falta dele, do Python, que serve como alternativa para o servidor local):
+
+\begin{itemize}
+  \item Windows: duplo clique em \arquivo{run.bat};
+  \item macOS: duplo clique em \arquivo{run.command};
+  \item Linux: \codigo{./run.sh}.
+\end{itemize}
+
+O lançador sobe um servidor local e abre o navegador. Fechar a aba encerra o programa. A versão 2D abre da mesma forma, com Python 3.9 ou superior, e prepara o ambiente sozinha na primeira execução. O \autoref{ap:execucao} traz o passo a passo, os comandos para desenvolvedores e a solução dos problemas mais comuns.

@@ -1,0 +1,71 @@
+\chapter{Derivações complementares}\label{ap:derivacoes}
+
+\section{Conservação do vetor de Laplace--Runge--Lenz}
+
+Queremos mostrar que $\ve = \dot{\vr}\times\vh/\mu - \vr/r$ é constante sob $\ddot{\vr} = -\mu\vr/r^3$. Como $\vh$ é constante,
+\[
+  \frac{\dd}{\dd t}(\dot{\vr}\times\vh) = \ddot{\vr}\times\vh = -\frac{\mu}{r^3}\,\vr\times(\vr\times\dot{\vr}).
+\]
+Pela identidade $\vetor{a}\times(\vetor{b}\times\vetor{c}) = \vetor{b}(\vetor{a}\cdot\vetor{c}) - \vetor{c}(\vetor{a}\cdot\vetor{b})$,
+\[
+  \vr\times(\vr\times\dot{\vr}) = \vr\,(\vr\cdot\dot{\vr}) - \dot{\vr}\,r^2 = \vr\,r\dot r - \dot{\vr}\,r^2,
+\]
+em que se usou $\vr\cdot\dot{\vr} = \frac12\frac{\dd}{\dd t}(r^2) = r\dot r$. Logo
+\[
+  \frac{\dd}{\dd t}(\dot{\vr}\times\vh) = \mu\left(\frac{\dot{\vr}}{r} - \frac{\vr\,\dot r}{r^2}\right) = \mu\,\frac{\dd}{\dd t}\left(\frac{\vr}{r}\right).
+\]
+Dividindo por $\mu$ e passando tudo para o lado esquerdo, $\dot{\ve} = \vetor{0}$. \qed
+
+\section{Coeficientes de Fourier da órbita kepleriana}
+
+Seja $z(M) = a(\cos E - e) + \ii b\sin E$, com $M = E - e\sin E$ e $b = a\sqrt{1-e^2}$. Para $n\neq0$,
+\[
+  c_n = \frac{1}{2\pi}\int_0^{2\pi} z\,e^{-\ii nM}\,\dd M.
+\]
+
+\medskip\noindent\textbf{Integração por partes.} Como $z$ é periódica, os termos de fronteira se cancelam e
+\[
+  c_n = \frac{1}{2\pi\ii n}\int_0^{2\pi}\frac{\dd z}{\dd M}\,e^{-\ii nM}\,\dd M
+      = \frac{1}{2\pi\ii n}\int_0^{2\pi}\frac{\dd z}{\dd E}\,e^{-\ii n(E - e\sin E)}\,\dd E,
+\]
+em que a segunda igualdade troca a variável de integração usando $\frac{\dd z}{\dd M}\dd M = \frac{\dd z}{\dd E}\dd E$. A vantagem da troca é que o integrando passa a depender de $E$ explicitamente.
+
+\medskip\noindent\textbf{Derivada em exponenciais.}
+\[
+  \frac{\dd z}{\dd E} = -a\sin E + \ii b\cos E = \frac{\ii}{2}\bigl[(a+b)\,e^{\ii E} + (b-a)\,e^{-\ii E}\bigr].
+\]
+
+\medskip\noindent\textbf{Integrais de Bessel.} A representação integral $J_k(x) = \frac{1}{2\pi}\int_0^{2\pi}\cos(k\tau - x\sin\tau)\,\dd\tau$ e a simetria do seno, que anula a parte imaginária, dão
+\[
+  \int_0^{2\pi} e^{\pm\ii E}\,e^{-\ii n(E - e\sin E)}\,\dd E = 2\pi\,J_{n\mp1}(ne).
+\]
+
+\medskip\noindent\textbf{Montagem.}
+\[
+  c_n = \frac{1}{2\pi\ii n}\cdot\frac{\ii}{2}\cdot 2\pi\bigl[(a+b)J_{n-1}(ne) + (b-a)J_{n+1}(ne)\bigr]
+      = \frac{1}{2n}\Bigl[a\bigl(J_{n-1}-J_{n+1}\bigr) + b\bigl(J_{n-1}+J_{n+1}\bigr)\Bigr].
+\]
+As relações de recorrência $J_{n-1}(x) - J_{n+1}(x) = 2J_n'(x)$ e $J_{n-1}(x)+J_{n+1}(x) = \frac{2n}{x}J_n(x)$, com $x = ne$, levam a
+\[
+  c_n = \frac{a}{n}\,J_n'(ne) + \frac{b}{ne}\,J_n(ne). \qquad\qed
+\]
+
+\medskip\noindent\textbf{Pequena excentricidade.} Com $J_1(x) = \frac x2 - \frac{x^3}{16} + \dots$, $J_1'(x) = \frac12 - \frac{3x^2}{16} + \dots$, $J_2(x) = \frac{x^2}{8} + \dots$ e $J_2'(x) = \frac{x}{4} + \dots$, e $b = a(1 - \frac{e^2}{2} + \dots)$:
+\begin{align*}
+  c_1 &= a\Bigl(\tfrac12 - \tfrac{3e^2}{16}\Bigr) + a\Bigl(1-\tfrac{e^2}{2}\Bigr)\Bigl(\tfrac12 - \tfrac{e^2}{16}\Bigr) + O(e^4) = a\Bigl(1 - \tfrac{e^2}{2}\Bigr) + O(e^4),\\
+  c_{-1} &= a\Bigl(\tfrac12 - \tfrac{3e^2}{16}\Bigr) - a\Bigl(1-\tfrac{e^2}{2}\Bigr)\Bigl(\tfrac12 - \tfrac{e^2}{16}\Bigr) + O(e^4) = \tfrac18 ae^2 + O(e^4),\\
+  c_2 &= \tfrac{a}{2}\cdot\tfrac{2e}{4} + \tfrac{b}{2e}\cdot\tfrac{(2e)^2}{8} + O(e^3) = \tfrac14 ae + \tfrac14 ae + O(e^3) = \tfrac12 ae + O(e^3).
+\end{align*}
+Para $c_{-1}$ usou-se $J_{-1}(-x) = J_1(x)$; o caso geral $n<0$ segue da mesma fórmula. Esses valores foram conferidos numericamente: para os oito planetas, a razão entre $|c_{-1}|$ e $\frac18 ae^2$ fica entre 1,000 e 1,015, e entre $|c_2|$ e $\frac12 ae$, entre 0,968 e 1,000.
+
+\section{Os pesos de Yoshida}
+
+O passo de leapfrog $S_2(h)$ é simétrico, $S_2(h)S_2(-h) = I$, e por isso o seu erro local contém só potências ímpares de $h$: $S_2(h) = \exp\bigl(h\,\mathcal{H} + h^3\,\mathcal{E}_3 + h^5\,\mathcal{E}_5 + \dots\bigr)$, em que $\mathcal{H}$ é o fluxo exato e $\mathcal{E}_k$ são operadores de erro. Compondo três passos com pesos $w_1, w_0, w_1$ e usando a fórmula de Baker--Campbell--Hausdorff, o expoente da composição simétrica é
+\[
+  (2w_1 + w_0)\,h\,\mathcal{H} + (2w_1^3 + w_0^3)\,h^3\,\mathcal{E}_3 + O(h^5),
+\]
+porque os comutadores de ordem par se cancelam pela simetria. Exigir que o primeiro coeficiente seja 1 e o segundo seja 0 dá o sistema
+\[
+  2w_1 + w_0 = 1,\qquad 2w_1^3 + w_0^3 = 0,
+\]
+cuja solução real é $w_0 = -2^{1/3}w_1$ e $w_1 = 1/(2-2^{1/3})$ \cite{yoshida1990}.

@@ -1,0 +1,39 @@
+\chapter{Limitações e trabalhos futuros}\label{cap:limitacoes}
+
+\section{Limitações do modelo físico}
+
+\begin{itemize}
+  \item Relatividade geral: não incluída. A estimativa do efeito sobre Mercúrio é da ordem de mil quilômetros em dez anos (\autoref{sec:nao-inclui}). No passo de 0,5 dia, o erro medido para Mercúrio em dez anos é de cerca de 14\,000\,km (\autoref{tab:validacao}) e vem sobretudo do truncamento do integrador, de modo que o efeito relativístico só apareceria com passo menor. Como o termo não foi implementado, essa estimativa não foi testada. A correção pós-newtoniana de primeira ordem pode entrar como termo extra na \autoref{eq:nbody}, se o professor supervisor julgar que ela serve ao uso didático.
+  \item Plutão, Ceres, Vesta e os demais asteroides não entram. A Lua entra somada à Terra, no baricentro do par.
+  \item As treze luas são propagadas por Kepler com precessão secular e não interagem com nada. O erro, medido e publicado, chega a 15\,\% do semieixo em Tritão.
+  \item Achatamento, marés e pressão de radiação estão fora do modelo.
+\end{itemize}
+
+\section{Limitações da representação}
+
+\begin{itemize}
+  \item Na visão geral, os planetas são desenhados maiores que o real. O fator de ampliação aparece na tela e cai para 1 quando a câmera chega perto.
+  \item O lado noturno dos planetas recebe 14\,\% da luz do dia, e a coroa solar e o halo atmosférico são acréscimos visuais. Os três estão avisados na Ajuda do programa.
+  \item A cadeia de epiciclos do laboratório é uma construção matemática sobre a órbita osculadora, não a física do modelo. A tela diz isso.
+  \item Cinco luas têm mapas de imageamento real. As outras oito são desenhadas com a cor média, porque não existe mosaico global delas.
+\end{itemize}
+
+\section{Limitações de verificação}
+
+\begin{itemize}
+  \item Os testes rodam num navegador sem janela. O programa construído ainda não foi aberto por duplo clique, a partir da pasta de entrega, em outros navegadores além do Chromium.
+  \item As cenas de referência visuais detectam regressões estruturais, como um corpo faltando ou a ordem de desenho errada, mas não regressões finas de cor.
+  \item As sugestões didáticas do \autoref{cap:ensino} não foram testadas com estudantes.
+  % CONFERIR: o tracker ACHADOS-VISUAIS.md marca só 7 dos 35 achados como consertados.
+  % Se for o caso, dizer aqui quantos continuam abertos.
+\end{itemize}
+
+\section{Trabalhos futuros}
+
+\begin{enumerate}
+  \item Avaliar o uso do simulador em sala de aula, nos três níveis, com instrumento de avaliação de aprendizagem.
+  \item Acrescentar, como opção, a correção relativística e Plutão, e medir o efeito sobre a validação.
+  \item Levar a análise do \autoref{sec:copernico-revisitado} à segunda ordem na excentricidade e ao modelo de Ptolomeu com equante, e investigar a hipótese levantada para Vênus.
+  \item Comprimir as texturas no formato KTX2/Basis para reduzir o tamanho da entrega, hoje de cerca de 160\,MB por causa dos mapas de 8K.
+  \item Traduzir a interface para outros idiomas, a começar pelo inglês.
+\end{enumerate}

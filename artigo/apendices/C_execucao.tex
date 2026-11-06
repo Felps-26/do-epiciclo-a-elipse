@@ -1,0 +1,59 @@
+\chapter{Como instalar e executar}\label{ap:execucao}
+
+\section{Versão 3D (recomendada)}
+
+\subsection{Para usar}
+
+A pasta \arquivo{Sim3D\_2.0} já traz o programa construído (\arquivo{dist/}), as texturas, o catálogo de estrelas e os dados. Na máquina de quem recebe, nada é instalado nem construído: só um servidor local sobe.
+
+\begin{enumerate}
+  \item Instale o Node.js 20.19 ou mais novo (\url{https://nodejs.org}). Se a máquina não tiver Node.js, o lançador tenta usar o Python 3, com o servidor equivalente de \arquivo{ferramentas/servidor.py}.
+  \item Abra o lançador do seu sistema:
+  \begin{itemize}
+    \item \textbf{Windows}: duplo clique em \arquivo{run.bat}, ou \codigo{./run.ps1} no PowerShell;
+    \item \textbf{macOS}: duplo clique em \arquivo{run.command}. Se o sistema bloquear na primeira vez, clique com o botão direito e escolha \emph{Abrir};
+    \item \textbf{Linux}: \codigo{./run.sh} no terminal.
+  \end{itemize}
+  \item O navegador abre sozinho no endereço local. Para encerrar, basta fechar a aba.
+\end{enumerate}
+
+O programa funciona sem internet. O servidor escuta apenas em \codigo{127.0.0.1}, de modo que nem outra máquina da mesma rede o enxerga. Por padrão o desenho usa WebGPU; para forçar WebGL2, acrescente \codigo{?render=webgl2} ao endereço.
+
+\subsection{Para desenvolver}
+
+\begin{lstlisting}[language=bash,numbers=none]
+npm install
+npm run dev      # servidor de desenvolvimento em http://localhost:5173
+npm test         # tipos, lint, arquitetura, unidade e ponta a ponta
+npm run build    # gera dist/
+\end{lstlisting}
+
+\subsection{Problemas comuns}
+
+\begin{description}
+  \item[Abrir o \arquivo{index.html} direto não funciona.] O navegador bloqueia a leitura dos dados a partir de \codigo{file://}. Use sempre o lançador.
+  \item[No macOS, aberto pelo Finder, ``nada acontece''.] O Finder não lê a configuração do terminal, e um Node.js instalado por nvm ou volta pode não ser encontrado. O \arquivo{run.sh} procura nos lugares usuais; se ainda falhar, rode \codigo{./run.sh} pelo Terminal para ver a mensagem.
+  \item[A tela fica preta.] Atualize o navegador ou force o backend WebGL2 com \codigo{?render=webgl2}.
+\end{description}
+
+\section{Versão 2D}
+
+Requer Python 3.9 ou mais novo. Os lançadores \arquivo{run.bat}, \arquivo{run.command} e \arquivo{run.sh}, na pasta \arquivo{Sim\_NewVer\_1.0}, criam um ambiente virtual, instalam NumPy e Pygame na primeira execução e abrem a janela. Os testes rodam com \codigo{./testes.sh}. Para regenerar as condições iniciais em outra época (requer internet):
+
+\begin{lstlisting}[language=bash,numbers=none]
+.venv/bin/python ferramentas/gerar_efemeride.py --epoca 2030-01-01 --validacao
+\end{lstlisting}
+
+\section{Versão original}
+
+\begin{lstlisting}[language=bash,numbers=none]
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python main.py
+\end{lstlisting}
+
+O programa pergunta o planeta e o número de termos e abre o gráfico. Há também um caderno Jupyter em \arquivo{ipynb/simulacao\_orbitas.ipynb}.
+
+\section{Compilar este relatório}
+
+No Overleaf, envie a pasta \arquivo{artigo/} compactada, escolha o compilador \emph{pdfLaTeX} e o arquivo principal \arquivo{main.tex}. Localmente: \codigo{pdflatex main}, \codigo{bibtex main} e mais duas vezes \codigo{pdflatex main}. É preciso ter instalados os pacotes \emph{abntex2} e \emph{babel-portuges}, presentes nas distribuições TeX Live e MiKTeX completas.

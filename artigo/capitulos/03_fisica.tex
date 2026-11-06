@@ -1,0 +1,237 @@
+\chapter{Fundamentação física}\label{cap:fisica}
+
+Este capítulo desenvolve a física que o simulador calcula. Partimos da lei da gravitação, escrevemos as equações de movimento de $N$ corpos e resolvemos o caso de dois corpos, que é o que dá as leis de Kepler e a linguagem dos elementos orbitais. As derivações seguem a linha de textos clássicos de mecânica e mecânica celeste \cite{symon1982,goldstein2002,murray1999,danby1988}. Algumas passagens mais longas estão no \autoref{ap:derivacoes}.
+
+\section{Gravitação universal}
+
+Dois corpos de massas $m_1$ e $m_2$, nas posições $\vr_1$ e $\vr_2$, atraem-se com força
+\begin{equation}
+  \vetor{F}_{12} = G\,\frac{m_1 m_2}{|\vr_2-\vr_1|^3}\,(\vr_2-\vr_1),
+  \label{eq:newton}
+\end{equation}
+dirigida de um para o outro e proporcional ao inverso do quadrado da distância. Pela segunda lei de Newton, a aceleração do corpo 1 é $\va_1 = \vetor{F}_{12}/m_1$, e a massa $m_1$ se cancela: a aceleração que um corpo sofre não depende da própria massa, só da massa de quem o puxa.
+
+\begin{paracomecar}
+Uma pena e um martelo caem juntos na Lua, onde não há ar. Pela mesma razão, a Terra e um satélite artificial percorreriam a mesma órbita em torno do Sol se estivessem no mesmo lugar com a mesma velocidade.
+\end{paracomecar}
+
+\subsection{Unidades e o parâmetro gravitacional}
+
+Em mecânica celeste é mais conveniente trabalhar com o produto $GM$, o \emph{parâmetro gravitacional}, do que com $G$ e $M$ separados. O motivo é prático: $GM$ do Sol é conhecido com mais de dez algarismos significativos, porque é medido diretamente pelo movimento dos planetas e das sondas, enquanto $G$ é conhecido com apenas cerca de cinco \cite{park2021}. O simulador usa exclusivamente $GM$, em $\mathrm{UA^3/dia^2}$, com posições em unidades astronômicas ($1\UA = 149\,597\,870{,}7\km$) e tempo em dias. Nessas unidades, $GM_\odot \approx 2{,}959\times10^{-4}\,\mathrm{UA^3/dia^2}$, e os números das contas ficam todos numa faixa confortável para a aritmética de ponto flutuante.
+
+\section{O problema de \texorpdfstring{$N$}{N} corpos}\label{sec:nbody}
+
+Com $N$ corpos, cada um sente a soma das atrações de todos os outros:
+\begin{equation}
+  \ddot{\vr}_i \;=\; \sum_{\substack{j=1\\ j\neq i}}^{N} GM_j\,\frac{\vr_j-\vr_i}{|\vr_j-\vr_i|^3},
+  \qquad i = 1,\dots,N.
+  \label{eq:nbody}
+\end{equation}
+São $3N$ equações diferenciais de segunda ordem, acopladas. Para $N=2$ elas têm solução fechada (\autoref{sec:doiscorpos}). Para $N\geq 3$, em geral, não têm, e é preciso integrá-las numericamente (\autoref{sec:integradores}). O simulador integra $N=9$: o Sol e os oito planetas.
+
+\subsection{Grandezas conservadas}
+
+Embora a \autoref{eq:nbody} não tenha solução geral, três grandezas permanecem constantes ao longo de qualquer solução exata, e por isso servem para medir a qualidade de uma solução numérica. Escrevendo $\mu_i = GM_i$:
+\begin{align}
+  \vetor{P} &= \sum_i \mu_i\,\dot{\vr}_i \quad\text{(momento linear, a menos do fator $1/G$)},\\
+  \vetor{L} &= \sum_i \mu_i\,\vr_i\times\dot{\vr}_i \quad\text{(momento angular)},\\
+  E &= \sum_i \tfrac12\mu_i\,|\dot{\vr}_i|^2 \;-\; \sum_{i<j}\frac{\mu_i\mu_j}{|\vr_i-\vr_j|} \quad\text{(energia)}.
+  \label{eq:energia}
+\end{align}
+A conservação de $\vetor{P}$ implica que o centro de massa se move em linha reta com velocidade constante. Em particular, \emph{o Sol não fica parado}. Ele é puxado sobretudo por Júpiter e descreve em torno do centro de massa do sistema uma trajetória que chega a quase dois raios solares (\autoref{fig:sol-baricentro}, no \autoref{cap:resultados}).
+
+\begin{paraaprofundar}[: por que a terceira lei economiza metade do trabalho]
+Pela terceira lei de Newton, a força que $j$ exerce em $i$ é igual e oposta à que $i$ exerce em $j$. Na \autoref{eq:nbody} isso significa que o vetor $(\vr_j-\vr_i)/|\vr_j-\vr_i|^3$ é o mesmo, a menos do sinal, para os dois corpos do par. O código percorre cada par uma única vez, calcula esse vetor uma vez e o aplica aos dois, com pesos $GM_j$ e $-GM_i$. São $N(N-1)/2$ raízes quadradas em vez de $N(N-1)$ (\autoref{alg:forca}).
+\end{paraaprofundar}
+
+\section{O problema de dois corpos}\label{sec:doiscorpos}
+
+Com apenas o Sol (massa $M$) e um planeta (massa $m$), subtraindo as duas equações de \eqref{eq:nbody} e chamando $\vr = \vr_\text{planeta}-\vr_\odot$ a posição \emph{relativa}, obtém-se
+\begin{equation}
+  \ddot{\vr} = -\mu\,\frac{\vr}{r^3},\qquad \mu = G(M+m).
+  \label{eq:doiscorpos}
+\end{equation}
+O problema de dois corpos se reduz ao de um corpo só, atraído por um centro fixo com parâmetro $\mu$. Note que $\mu$ contém a soma das massas. Esse detalhe importa na \autoref{sec:elementos}.
+
+\subsection{Momento angular e a segunda lei de Kepler}
+
+Defina o momento angular específico $\vh = \vr\times\dot{\vr}$. Derivando,
+\[
+  \dot{\vh} = \dot{\vr}\times\dot{\vr} + \vr\times\ddot{\vr} = \vetor{0} + \vr\times\Bigl(-\mu\frac{\vr}{r^3}\Bigr) = \vetor{0},
+\]
+porque o produto vetorial de um vetor consigo mesmo é nulo. Logo $\vh$ é constante. Duas consequências seguem imediatamente:
+
+\begin{enumerate}
+  \item $\vr$ é sempre perpendicular ao vetor fixo $\vh$, então o movimento acontece num plano;
+  \item a área varrida pelo raio vetor num intervalo $\dd t$ é a de um triângulo de lados $\vr$ e $\dot{\vr}\,\dd t$, isto é, $\dd A = \tfrac12|\vr\times\dot{\vr}|\,\dd t$, de modo que
+  \begin{equation}
+    \frac{\dd A}{\dd t} = \frac{h}{2} = \text{constante}.
+    \label{eq:segundalei}
+  \end{equation}
+\end{enumerate}
+Essa é a segunda lei de Kepler, e ela vale para qualquer força central, não só para a gravitação.
+
+\subsection{O vetor de Laplace--Runge--Lenz e a primeira lei}\label{sec:lrl}
+
+A força gravitacional tem uma simetria a mais que outras forças centrais, e ela se manifesta numa segunda grandeza conservada, o vetor excentricidade
+\begin{equation}
+  \ve = \frac{\dot{\vr}\times\vh}{\mu} - \frac{\vr}{r}.
+  \label{eq:lrl}
+\end{equation}
+A verificação de que $\dot{\ve} = \vetor{0}$ é feita no \autoref{ap:derivacoes}. Supondo-a, faça o produto escalar de $\ve$ com $\vr$ e chame de $\nu$ o ângulo entre os dois:
+\[
+  \ve\cdot\vr = e\,r\cos\nu = \frac{\vr\cdot(\dot{\vr}\times\vh)}{\mu} - r = \frac{h^2}{\mu} - r,
+\]
+onde se usou $\vr\cdot(\dot{\vr}\times\vh) = (\vr\times\dot{\vr})\cdot\vh = h^2$. Isolando $r$:
+\begin{equation}
+  r(\nu) = \frac{h^2/\mu}{1 + e\cos\nu}.
+  \label{eq:conica}
+\end{equation}
+É a equação de uma cônica em coordenadas polares com origem num foco. Para $e<1$ é uma elipse, a primeira lei de Kepler. O vetor $\ve$ aponta do foco para o periélio, e seu módulo é a excentricidade. O ângulo $\nu$, medido a partir do periélio, é a \emph{anomalia verdadeira}. Escrevendo o semilatus rectum como $p = h^2/\mu = a(1-e^2)$, recupera-se a forma $r = a(1-e^2)/(1+e\cos\nu)$ usada no TCC de \citeonline[Equação 16]{farias2016}.
+
+\subsection{Energia e a terceira lei}
+
+A energia por unidade de massa, $\varepsilon = \tfrac12 v^2 - \mu/r$, também se conserva. Avaliando-a no periélio, onde $r = a(1-e)$ e $v = h/r$, chega-se a
+\begin{equation}
+  \varepsilon = -\frac{\mu}{2a}
+  \qquad\Longleftrightarrow\qquad
+  v^2 = \mu\Bigl(\frac{2}{r} - \frac{1}{a}\Bigr),
+  \label{eq:visviva}
+\end{equation}
+a relação conhecida como \emph{vis-viva}. Ela diz que o semieixo maior depende apenas da energia: corpos com a mesma energia têm órbitas de mesmo tamanho, qualquer que seja a forma.
+
+A terceira lei sai da segunda. Em um período $T$ o raio vetor varre a elipse inteira, de área $\pi ab$, com $b = a\sqrt{1-e^2}$. Pela \autoref{eq:segundalei}, $\pi ab = \tfrac12 h T$. Com $h = \sqrt{\mu p} = \sqrt{\mu a(1-e^2)}$,
+\begin{equation}
+  T = 2\pi\sqrt{\frac{a^3}{\mu}},
+  \qquad\text{ou seja}\qquad
+  n \equiv \frac{2\pi}{T} = \sqrt{\frac{\mu}{a^3}},
+  \label{eq:terceiralei}
+\end{equation}
+onde $n$ é o \emph{movimento médio}, a velocidade angular média.
+
+\section{Elementos orbitais}\label{sec:elementos}
+
+Uma elipse no espaço, com o corpo situado sobre ela, fica determinada por seis números, os \emph{elementos keplerianos} (\autoref{fig:elementos}): dois dão a forma ($a$ e $e$), três dão a orientação no espaço ($i$, $\Omega$ e $\omega$) e um dá a posição do corpo sobre a órbita (a anomalia média $M$ numa época).
+
+\begin{figure}[htb]
+  \centering
+  \caption{Os elementos orbitais}
+  \label{fig:elementos}
+  \includegraphics[width=0.85\textwidth]{elementos.pdf}
+  \legend{$\Omega$: longitude do nodo ascendente, medida no plano de referência a partir da direção do equinócio $\gamma$; $i$: inclinação entre o plano da órbita e o de referência; $\omega$: argumento do periélio, medido no plano da órbita a partir do nodo; $\nu$: anomalia verdadeira. A parte tracejada da órbita está abaixo do plano de referência. O desenho é esquemático. Fonte: elaborada pelos autores.}
+\end{figure}
+
+Para levar um ponto da órbita ao espaço, escreve-se a posição na \emph{base perifocal}, com o eixo $x$ apontando para o periélio e o $y$ a $90^\circ$ no sentido do movimento, e aplica-se a rotação
+\begin{equation}
+  \vr = R_z(\Omega)\,R_x(i)\,R_z(\omega)\,
+  \begin{pmatrix} x_P \\ y_P \\ 0 \end{pmatrix}.
+  \label{eq:rotacao}
+\end{equation}
+A ordem importa. $R_z(\omega)$ gira o periélio a partir do nodo, $R_x(i)$ inclina o plano e $R_z(\Omega)$ leva o nodo à longitude certa. Trocar duas dessas rotações produz uma órbita plausível e errada, o tipo de erro que só aparece quando se compara com uma referência.
+
+\subsection{Elementos osculadores}
+
+Num sistema real, a órbita de um planeta não é uma elipse fixa: os outros planetas a deformam devagar. Os \emph{elementos osculadores} num instante são os da elipse que o corpo seguiria se, a partir daquele instante, só o Sol existisse. Eles são calculados diretamente da posição e da velocidade relativas ao Sol:
+\begin{align}
+  a &= -\frac{\mu}{2\varepsilon} = \left(\frac{2}{r} - \frac{v^2}{\mu}\right)^{-1}, \label{eq:osc-a}\\
+  \ve &= \frac{\vv\times\vh}{\mu} - \frac{\vr}{r}, \qquad e = |\ve|, \label{eq:osc-e}\\
+  \cos i &= \frac{h_z}{|\vh|}, \label{eq:osc-i}
+\end{align}
+com $T$ dado pela \autoref{eq:terceiralei}. É o que o programa faz para desenhar o \emph{caminho previsto} de cada planeta e para alimentar o laboratório de Fourier.
+
+\begin{licao}[: de onde se mede faz diferença]
+A primeira versão do projeto (\autoref{sec:v-original}) calculava os elementos com a posição e a velocidade de cada planeta medidas a partir do \emph{baricentro} do Sistema Solar, que é o que a biblioteca Astropy devolve, mas usava nas fórmulas a gravidade do \emph{Sol}. As equações \eqref{eq:osc-a} a \eqref{eq:osc-i} valem para o estado \emph{relativo ao corpo central}. Como o Sol oscila em torno do baricentro cerca de 0,005 a 0,008\,UA, o erro era grande para os planetas internos: o semieixo de Mercúrio saía 1,7\,\% maior e a excentricidade de Vênus saía 0,0173 em vez de 0,0068, duas vezes e meia o valor correto. A correção é subtrair o estado do Sol antes de aplicar as fórmulas.
+\end{licao}
+
+\section{A equação de Kepler}\label{sec:kepler}
+
+A segunda lei diz como a área varrida cresce com o tempo, mas não dá diretamente a posição em função do tempo. Para isso introduz-se a \emph{anomalia excêntrica} $E$, o ângulo medido do centro da elipse até a projeção do corpo sobre o círculo circunscrito de raio $a$ (\autoref{fig:anomalias}). Em termos de $E$, as coordenadas perifocais são
+\begin{equation}
+  x_P = a(\cos E - e),\qquad y_P = b\sin E = a\sqrt{1-e^2}\,\sin E,\qquad r = a(1 - e\cos E).
+  \label{eq:perifocal}
+\end{equation}
+
+\begin{figure}[htb]
+  \centering
+  \caption{Anomalia excêntrica e anomalia verdadeira}
+  \label{fig:anomalias}
+  \begin{tikzpicture}[scale=1.5,>=Stealth]
+    \def\semA{2.0}\def\exc{0.6}\def\angE{62}
+    \pgfmathsetmacro{\semB}{\semA*sqrt(1-\exc*\exc)}
+    \pgfmathsetmacro{\focC}{\semA*\exc}
+    \pgfmathsetmacro{\angNu}{atan2(\semB*sin(\angE),\semA*cos(\angE)-\focC)}
+    \coordinate (O) at (0,0);
+    \coordinate (F) at (\focC,0);
+    \coordinate (Q) at ({\semA*cos(\angE)},{\semA*sin(\angE)});
+    \coordinate (P) at ({\semA*cos(\angE)},{\semB*sin(\angE)});
+    \draw[gray!60,dashed] (O) circle (\semA);
+    \draw[thick,blue!60!black] (O) ellipse ({\semA} and {\semB});
+    \draw (-2.25,0) -- (2.35,0);
+    \draw[gray] (O) -- (Q);
+    \draw[gray,dotted] (Q) -- ({\semA*cos(\angE)},0);
+    \draw[red!70!black,thick] (F) -- (P);
+    \draw[->,gray!70!black] (0.45,0) arc (0:\angE:0.45);
+    \node[font=\small] at ({0.62*cos(\angE/2)},{0.62*sin(\angE/2)}) {$E$};
+    \draw[->,red!70!black] ($(F)+(0.32,0)$) arc (0:\angNu:0.32);
+    \node[red!70!black,font=\small] at ($(F)+({0.5*cos(\angNu/2)},{0.5*sin(\angNu/2)})$) {$\nu$};
+    \fill (O) circle (1pt) node[below,font=\scriptsize] {centro};
+    \fill[orange!90!black] (F) circle (2pt) node[below=3pt,font=\scriptsize] {Sol (foco)};
+    \fill[red!70!black] (P) circle (1.8pt) node[left,font=\scriptsize] {corpo};
+    \fill[gray] (Q) circle (1.2pt) node[above right,font=\scriptsize] {projeção no círculo};
+    \fill (\semA,0) circle (1pt) node[above right,font=\scriptsize] {periélio};
+    \draw[<->] (0,-0.55) -- node[below,font=\scriptsize] {$ae$} (\focC,-0.55);
+  \end{tikzpicture}
+  \legend{O círculo tracejado tem raio $a$; a elipse é o círculo comprimido na vertical pelo fator $b/a$. Fonte: elaborada pelos autores.}
+\end{figure}
+
+A área do setor elíptico varrido desde o periélio, vista do foco, é a área do setor circular correspondente comprimida pelo fator $b/a$, menos o triângulo entre o centro e o foco:
+\[
+  A(E) = \frac{b}{a}\left(\frac{a^2E}{2} - \frac{a\cdot ae\,\sin E}{2}\right) = \frac{ab}{2}\,(E - e\sin E).
+\]
+Pela segunda lei, essa área cresce uniformemente no tempo e vale $\pi ab$ após um período. Logo $A = \pi ab\,(t-\tau)/T$, em que $\tau$ é o instante de passagem pelo periélio. Igualando as duas expressões e definindo a \emph{anomalia média} $M = n(t-\tau)$:
+\begin{equation}
+  \boxed{\;M = E - e\sin E\;}
+  \label{eq:kepler}
+\end{equation}
+Esta é a equação de Kepler. Ela dá $M$ a partir de $E$ de forma explícita, mas o problema prático é o inverso: dado o tempo (e portanto $M$), achar $E$. Não há fórmula fechada com funções elementares, e a solução é numérica.
+
+\subsection{Solução pelo método de Newton}
+
+Defina $f(E) = E - e\sin E - M$. O método de Newton itera
+\begin{equation}
+  E_{k+1} = E_k - \frac{f(E_k)}{f'(E_k)} = E_k - \frac{E_k - e\sin E_k - M}{1 - e\cos E_k}.
+  \label{eq:newton-kepler}
+\end{equation}
+Para órbitas planetárias, com $e<0{,}21$, quatro ou cinco iterações a partir de $E_0 = M$ bastam para a precisão da máquina. O modo de criação de corpos do programa, porém, permite criar cometas com excentricidade próxima de 1, e nesse regime a escolha do ponto de partida importa. O programa usa o chute de \citeonline{danby1988},
+\begin{equation}
+  E_0 = M + 0{,}85\,e\,\sgn(\sin M),
+\end{equation}
+que coloca a primeira estimativa do lado certo do periélio. Como rede de segurança, se Newton não convergir o programa recorre à bisseção no intervalo $[M-e,\,M+e]$, que sempre contém a raiz porque $|E-M| = |e\sin E| \leq e$ e porque $f$ é monótona. A bisseção é lenta, mas nunca falha. O \autoref{cap:resultados} mede o número de iterações dos dois chutes (\autoref{fig:kepler-iteracoes}).
+
+Com $E$ conhecido, a velocidade perifocal é
+\begin{equation}
+  \dot{x}_P = -\frac{\sqrt{\mu a}}{r}\sin E,\qquad \dot{y}_P = \frac{\sqrt{\mu a}}{r}\sqrt{1-e^2}\cos E,
+\end{equation}
+e a anomalia verdadeira, se necessária, sai da forma de meio ângulo
+\[
+  \tan\frac{\nu}{2} = \sqrt{\frac{1+e}{1-e}}\,\tan\frac{E}{2},
+\]
+calculada com a função \codigo{atan2} para não perder o quadrante.
+
+\section{Referenciais e escala de tempo}
+
+Todas as posições do simulador estão no referencial da eclíptica e equinócio de J2000, alinhado ao ICRF, com origem no baricentro do Sistema Solar \cite{park2021}. O tempo é o Tempo Dinâmico Baricêntrico (TDB), a variável independente das efemérides do JPL. A eclíptica de J2000 faz com o equador celeste o ângulo $\varepsilon_0 = 23{,}4392911^\circ$ (a obliquidade), usado para converter dados equatoriais, como os polos de rotação dos planetas publicados pela IAU \cite{archinal2018} e o catálogo de estrelas \cite{hoffleit1991}.
+
+Os planetas são representados pelos \emph{baricentros dos seus sistemas}: o ponto chamado ``Terra'' é o centro de massa Terra--Lua, e o ponto ``Júpiter'' é o centro de massa de Júpiter com suas luas, cada um com a $GM$ do sistema inteiro. É assim que o próprio JPL integra os planetas, porque um sistema com luas se move, visto de longe, como um ponto de massa igual à soma das massas. O centro da Terra gira em torno do baricentro Terra--Lua a cerca de 4\,700\,km, o que na visão geral do sistema vale menos de um milésimo de pixel.
+
+\section{O que o modelo físico não inclui}\label{sec:nao-inclui}
+
+Ficam fora da integração:
+
+\begin{itemize}
+  \item a relatividade geral. O efeito mais conhecido é a precessão adicional do periélio de Mercúrio, de 43 segundos de arco por século \cite{will2018}. Em dez anos isso desloca o periélio de cerca de $2\times10^{-5}$\,rad, o que, multiplicado pela distância de Mercúrio ao Sol, dá da ordem de mil quilômetros. Esse valor é da ordem do patamar abaixo do qual o erro não cai ao reduzir o passo (\autoref{fig:trabalho-precisao}). Com o passo de 0,5 dia usado no programa, o erro de Mercúrio é maior que isso e vem sobretudo do truncamento do integrador;
+  \item Plutão, os asteroides (inclusive Ceres e Vesta) e as luas como corpos dinâmicos separados;
+  \item achatamento, marés e pressão de radiação.
+\end{itemize}
+
+Por isso os resultados se afastam devagar da efeméride do JPL, e o programa avisa o usuário. A versão 3D acrescenta treze luas, mas por outro método, sem integração (\autoref{sec:luas}).

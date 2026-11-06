@@ -1,0 +1,286 @@
+\chapter{Implementação: três gerações de um mesmo programa}\label{cap:implementacao}
+
+O projeto passou por três versões, cada uma nascida das limitações da anterior (\autoref{fig:linha-do-tempo}). Este capítulo descreve o que cada uma fez, como a física e a matemática dos capítulos anteriores viraram código e por que algumas decisões foram tomadas. Os algoritmos aparecem em pseudocódigo; os trechos correspondentes do código real estão no \autoref{ap:codigo}.
+
+\begin{figure}[htb]
+  \centering
+  \caption{As três gerações do projeto}
+  \label{fig:linha-do-tempo}
+  \begin{tikzpicture}[
+      node distance=0.55cm and 0.5cm,
+      caixa/.style={draw,rounded corners=2pt,align=left,font=\scriptsize,text width=4.1cm,inner sep=4pt},
+      titulo/.style={font=\small\bfseries,align=center},
+      >=Stealth]
+    \node[caixa,fill=gray!8] (tcc) {\textbf{TCC de referência} (2016)\\ Maple + Gnuplot\\ epiciclos de Copérnico $\times$ série de Fourier, 5 planetas};
+    \node[caixa,fill=blue!6,right=of tcc] (v1) {\textbf{1. Versão original}\\ Python, NumPy, Matplotlib, Astropy\\ elipse de Kepler e reconstrução por Fourier, um gráfico por planeta};
+    \node[caixa,fill=green!6,below=of v1] (v2) {\textbf{2. Versão 2D}\\ Python, NumPy, Pygame\\ 9 corpos integrados (Yoshida 4), efeméride do JPL, laboratório de Fourier, testes automatizados};
+    \node[caixa,fill=orange!8,left=of v2] (v3) {\textbf{3. Versão 3D}\\ TypeScript, three.js (WebGPU/WebGL2), Preact\\ mesma física, 13 luas, texturas, epiciclos complexos, sandbox, 43 funcionalidades com prova};
+    \draw[->,thick,gray] (tcc) -- node[above,font=\tiny]{ideia} (v1);
+    \draw[->,thick,gray] (v1) -- node[right,font=\tiny,align=left]{física em vez de\\fórmula fixa} (v2);
+    \draw[->,thick,gray] (v2) -- node[above,font=\tiny,align=center]{desenho novo,\\física portada} (v3);
+  \end{tikzpicture}
+  \legend{Fonte: elaborada pelos autores.}
+\end{figure}
+
+\section{Versão original: a elipse e a série}\label{sec:v-original}
+
+A primeira versão, em Python, tem cerca de 300 linhas e faz uma coisa só: dado um planeta e um número de termos, desenha a elipse de Kepler e a aproximação por série de Fourier no mesmo gráfico do Matplotlib. Ela reproduz, com ferramentas modernas, o experimento numérico de \citeonline{farias2016}.
+
+O passo que essa versão acrescentou ao TCC foi obter os elementos orbitais de uma efeméride em vez de copiá-los de uma tabela. A biblioteca Astropy \cite{astropy2022} fornece posição e velocidade de cada planeta na época J2000, e as equações \eqref{eq:osc-a} a \eqref{eq:osc-i} dão $a$, $e$ e $T$. Foi aqui que apareceu o erro de referencial descrito na lição do \autoref{sec:elementos}: os vetores vinham do baricentro, e a excentricidade de Vênus saía duas vezes e meia maior que a real. A \autoref{tab:v1-baricentro} mostra o efeito, medido no próprio código depois da correção.
+
+\begin{table}[htb]
+  \centering
+  \caption{Elementos calculados na versão original, antes e depois da correção de referencial}
+  \label{tab:v1-baricentro}
+  \begin{tabular}{lccc}
+    \toprule
+    Planeta & $a$ com vetores baricêntricos (UA) & $a$ corrigido (UA) & referência (UA) \\
+    \midrule
+    Mercúrio & 0,39378 \;(+1,73\,\%) & 0,38710 & 0,38710 \\
+    Vênus    & 0,73868 \;(+2,12\,\%) & 0,72332 & 0,72333 \\
+    Terra    & 0,99657 \;($-$0,34\,\%) & 1,00000 & 1,00000 \\
+    Marte    & 1,50514 \;($-$1,22\,\%) & 1,52376 & 1,52371 \\
+    \bottomrule
+  \end{tabular}
+  \legend{Época J2000, efeméride embutida do Astropy. A excentricidade de Vênus passou de 0,01734 para 0,00677. Fonte: documentação do módulo \arquivo{utils/lib.py} da versão original.}
+\end{table}
+
+Essa versão também amostrava a elipse \emph{em ângulo}, e não no tempo, o que, como vimos no \autoref{sec:param-tempo}, dá coeficientes de outra função. Ela permanece no repositório como referência científica e como registro do ponto de partida.
+
+\section{Versão 2D: a física no lugar da fórmula}\label{sec:v2d}
+
+A segunda versão deixou de desenhar uma elipse a partir de uma fórmula e passou a \emph{simular} o Sistema Solar: o Sol e os oito planetas se atraem mutuamente pela \autoref{eq:nbody}, todos no mesmo relógio, a partir das posições e velocidades medidas pelo JPL para 1º de janeiro de 2026. A elipse passou a ser uma consequência da simulação: ao abrir o laboratório de Fourier, o programa calcula os elementos osculadores do planeta naquele instante e a decompõe.
+
+\begin{figure}[htb]
+  \centering
+  \caption{A versão 2D, em Python e Pygame}
+  \label{fig:v2}
+  \begin{subfigure}[b]{0.49\textwidth}
+    \centering\includegraphics[width=\textwidth]{v2_visao_geral.jpg}
+    \caption{Visão geral, em escala real}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.49\textwidth}
+    \centering\includegraphics[width=\textwidth]{v2_comprimida.jpg}
+    \caption{Com distâncias comprimidas}
+  \end{subfigure}\\[4pt]
+  \begin{subfigure}[b]{0.49\textwidth}
+    \centering\includegraphics[width=\textwidth]{v2_laboratorio.jpg}
+    \caption{Laboratório: Mercúrio com 3 ondas}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.49\textwidth}
+    \centering\includegraphics[width=\textwidth]{v2_laboratorio_ampliado.jpg}
+    \caption{Diferença ampliada 6\,926 vezes}
+  \end{subfigure}
+  \legend{Em (b) a tela avisa por escrito que o desenho não está em escala. Em (d) a curva rosa mostra a diferença entre a série com 6 ondas e a elipse, multiplicada para ficar visível; o gráfico à direita mostra a convergência. Fonte: capturas do programa.}
+\end{figure}
+
+\subsection{Dados de partida}
+
+Um roteiro separado, \arquivo{ferramentas/gerar\_efemeride.py}, consulta uma única vez a API do JPL Horizons \cite{giorgini1996} e grava num arquivo JSON:
+
+\begin{itemize}
+  \item posição e velocidade de cada corpo em 1/1/2026, 0h TDB, relativas ao baricentro do Sistema Solar, no referencial da eclíptica J2000 (o Horizons informa a efeméride DE441 como origem);
+  \item os parâmetros gravitacionais $GM$ do cabeçalho da efeméride DE440 \cite{park2021};
+  \item os raios médios dos corpos;
+  \item posições de validação em $-100$, $-10$, $+1$, $+10$ e $+100$ anos, que os testes usam para medir o erro;
+  \item a procedência de cada número.
+\end{itemize}
+
+O programa em si \emph{nunca acessa a internet}: o arquivo é copiado junto. A versão 3D usa o mesmo arquivo, byte a byte, o que mantém válida a mesma tabela de erro.
+
+\subsection{Integração e relógio}
+
+O integrador é o Yoshida de quarta ordem com passo fixo de 0,5 dia (\autoref{sec:integradores}), com o leapfrog mantido como referência independente nos testes. A força é calculada pelo \autoref{alg:forca} e o passo pelo \autoref{alg:yoshida}.
+
+\begin{algorithm}[htb]
+  \caption{Aceleração gravitacional mútua de $N$ corpos}\label{alg:forca}
+  \KwIn{posições $\vr_1,\dots,\vr_N$ e parâmetros $\mu_1,\dots,\mu_N$}
+  \KwOut{acelerações $\va_1,\dots,\va_N$}
+  $\va_i \leftarrow \vetor{0}$ para todo $i$\;
+  \For{$i\leftarrow 1$ \KwTo $N-1$}{
+    \For{$j\leftarrow i+1$ \KwTo $N$}{
+      $\vetor{d} \leftarrow \vr_j - \vr_i$;\quad $s \leftarrow 1/(|\vetor{d}|^2\,|\vetor{d}|)$\Com*[r]{uma raiz por par}
+      $\va_i \leftarrow \va_i + \mu_j\, s\,\vetor{d}$\Com*[r]{$j$ puxa $i$}
+      $\va_j \leftarrow \va_j - \mu_i\, s\,\vetor{d}$\Com*[r]{terceira lei}
+    }
+  }
+\end{algorithm}
+
+\begin{algorithm}[htb]
+  \caption{Um passo de Yoshida de quarta ordem}\label{alg:yoshida}
+  \KwIn{estado $(\vr,\vv)$, passo $\Delta t$}
+  $w_1 \leftarrow 1{,}3512071919596578$;\quad $w_0 \leftarrow -1{,}7024143839193155$\;
+  \ForEach{$w \in (w_1, w_0, w_1)$}{
+    $\vr \leftarrow \vr + \tfrac12 w\,\Delta t\,\vv$\Com*[r]{meio deslocamento}
+    $\va \leftarrow$ \textsc{Aceleração}$(\vr)$\Com*[r]{\autoref{alg:forca}}
+    $\vv \leftarrow \vv + w\,\Delta t\,\va$\Com*[r]{impulso}
+    $\vr \leftarrow \vr + \tfrac12 w\,\Delta t\,\vv$\Com*[r]{meio deslocamento}
+  }
+\end{algorithm}
+
+Quando a pessoa pede, por exemplo, 3\,650 dias simulados por segundo, cada quadro de tela precisa de dezenas de passos. Se a máquina não der conta, há três saídas ruins: aumentar o passo (a física piora sem aviso), acumular a dívida (o programa trava tentando alcançar) ou pular passos (a data na tela deixa de corresponder ao desenho). O simulador mede a velocidade da máquina na abertura, oferece só as velocidades que ela sustenta, entrega em cada quadro os passos que cabem no orçamento, \emph{descarta} o excedente e avisa na tela que está atrasado (\autoref{alg:relogio}). A data mostrada é sempre $t_0 + k\cdot0{,}5$ dia exatos.
+
+\begin{algorithm}[htb]
+  \caption{Avanço do relógio dentro do orçamento do quadro (simplificado)}\label{alg:relogio}
+  \KwIn{tempo real decorrido $\delta$, velocidade pedida $s$ (dias/segundo), orçamento $B$ (ms), cronômetro injetado}
+  $\text{dívida} \leftarrow \text{dívida} + s\,\delta$\;
+  $k \leftarrow 0$;\quad $t_\text{ini} \leftarrow$ cronômetro()\;
+  \While{$\text{dívida} \geq \Delta t$ \textbf{e} cronômetro()$ - t_\text{ini} < B$}{
+    \textsc{PassoYoshida}$(\Delta t)$;\quad $\text{dívida} \leftarrow \text{dívida} - \Delta t$;\quad $k \leftarrow k+1$\;
+  }
+  \If{$\text{dívida} \geq \Delta t$}{
+    $\text{atrasado} \leftarrow$ verdadeiro;\quad $\text{dívida} \leftarrow \text{dívida} \bmod \Delta t$\Com*[r]{descarta, não acumula}
+  }
+  \Return $k$ passos dados, atrasado\;
+\end{algorithm}
+
+\subsection{Laboratório de Fourier}
+
+O laboratório pausa a simulação, calcula os elementos osculadores do corpo escolhido, gera a elipse de Kepler com 720 pontos igualmente espaçados no tempo (resolvendo a equação de Kepler para cada um) e calcula os coeficientes até 24 harmônicos. Mostrar mais ou menos harmônicos é só truncar a soma, sem recalcular, e por isso o controle responde na hora. A tela mostra o desvio médio e máximo e um gráfico de convergência (\autoref{fig:v2}c e d).
+
+\subsection{Limites declarados na Ajuda}
+
+A partir da versão 2D, a Ajuda do programa traz três blocos: \emph{o que calcula}, \emph{o que a tela simplifica} e \emph{o que o modelo não inclui}. Os planetas são desenhados maiores que o real, e uma opção mostra o tamanho verdadeiro, em que eles somem. A escala comprimida é avisada por escrito, e a régua de distância é trocada pelo aviso, porque uma régua linear sobre uma escala não linear daria leituras erradas. O erro contra o JPL aparece em números.
+
+\begin{licao}[: a câmera que nunca alcançava o planeta]
+A câmera que acompanha um planeta usava amortecimento exponencial em direção à posição do corpo. Esse método nunca alcança um alvo em movimento: estabiliza a uma distância proporcional à velocidade do alvo. Medimos 11 pixels de atraso com Marte a 30 dias por segundo e 237 pixels a 3\,650. A solução foi dar prazo à transição, 0,45\,s de animação, e depois prender a câmera ao corpo. Um defeito assim só aparece quando alguém mede, porque a olho a câmera ``parece'' seguir o planeta.
+\end{licao}
+
+\section{Versão 3D: a mesma física, outro desenho}\label{sec:v3d}
+
+A terceira versão reescreveu o programa em TypeScript para rodar no navegador, com three.js \cite{threejs} desenhando em WebGPU \cite{webgpu} e, como alternativa, em WebGL2. A física, os dados e os textos vieram da versão 2D, e o contrato do projeto foi explícito: a versão 3D tinha de entregar as 43 funcionalidades da 2D antes de qualquer novidade (\autoref{sec:contrato}). O código tem cerca de 15\,000 linhas em 86 arquivos, e os testes outras 10\,000.
+
+\begin{figure}[htb]
+  \centering
+  \caption{A versão 3D}
+  \label{fig:v3-galeria}
+  \begin{subfigure}[b]{0.49\textwidth}
+    \centering\includegraphics[width=\textwidth]{v3_visao_geral.jpg}
+    \caption{Visão geral, a 31,5\,UA}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.49\textwidth}
+    \centering\includegraphics[width=\textwidth]{v3_maquete.jpg}
+    \caption{Modo maquete, com o aviso}
+  \end{subfigure}\\[4pt]
+  \begin{subfigure}[b]{0.49\textwidth}
+    \centering\includegraphics[width=\textwidth]{v3_jupiter_e_as_galileanas.jpg}
+    \caption{Júpiter e as luas galileanas}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.49\textwidth}
+    \centering\includegraphics[width=\textwidth]{v3_saturno_e_os_aneis.jpg}
+    \caption{Saturno, anéis e as duas sombras}
+  \end{subfigure}\\[4pt]
+  \begin{subfigure}[b]{0.49\textwidth}
+    \centering\includegraphics[width=\textwidth]{v3_marte_em_orbita_baixa.jpg}
+    \caption{Marte a três raios, textura 8K}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.49\textwidth}
+    \centering\includegraphics[width=\textwidth]{v3_urano_deitado.jpg}
+    \caption{Urano, com eixo inclinado a $98^\circ$}
+  \end{subfigure}
+  \legend{Cenas de referência usadas pelos testes visuais automatizados. A barra inferior de cada cena traz a largura visível, a distância da câmera e o fator de exposição, escritos pelo próprio programa. Fonte: capturas do programa.}
+\end{figure}
+
+\subsection{Arquitetura em camadas}
+
+O código é dividido em camadas com regras de dependência verificadas automaticamente (\autoref{fig:camadas}). A regra central é que o núcleo físico não enxerga nada além de si mesmo: não sabe que existe uma tela, não lê o relógio do sistema, não sorteia números e não acessa a rede. Isso garante que a física possa ser testada sem navegador e que seja determinística. Sete regras, escritas num arquivo de configuração da ferramenta \emph{dependency-cruiser}, travam a compilação se alguém importar uma camada proibida. Uma regra de \emph{lint} proíbe ainda, dentro do núcleo, as quatro funções globais que quebrariam essas garantias em silêncio: \codigo{Math.random}, \codigo{Date.now}, \codigo{performance} e \codigo{fetch}.
+
+\begin{figure}[htb]
+  \centering
+  \caption{Camadas da versão 3D e o sentido das dependências}
+  \label{fig:camadas}
+  \begin{tikzpicture}[
+      node distance=0.35cm and 0.6cm,
+      cam/.style={draw,rounded corners=2pt,font=\scriptsize,align=center,minimum width=2.6cm,minimum height=0.85cm,inner sep=3pt},
+      >=Stealth]
+    \node[cam,fill=blue!8] (nucleo) {\textbf{nucleo/}\\física pura};
+    \node[cam,fill=gray!10,below=of nucleo] (contratos) {\textbf{contratos/}\\tipos compartilhados};
+    \node[cam,fill=green!8,right=1.2cm of nucleo] (dados) {\textbf{dados/}\\fatos com procedência};
+    \node[cam,fill=yellow!12,above=of nucleo] (app) {\textbf{app/}\\ações, laço do quadro};
+    \node[cam,fill=orange!10,left=1.2cm of app] (cena) {\textbf{cena/}\\three.js};
+    \node[cam,fill=red!6,right=1.2cm of app] (interface) {\textbf{interface/}\\Preact};
+    \node[cam,fill=purple!6,above=of app] (rotulos) {\textbf{rotulos/}\\geometria de tela};
+    \draw[->] (app) -- (nucleo);
+    \draw[->] (app) -- (dados);
+    \draw[->] (app) -- (cena);
+    \draw[->] (app) -- (interface);
+    \draw[->] (app) -- (rotulos);
+    \draw[->] (dados) -- (contratos);
+    \draw[->] (nucleo) -- (contratos);
+    \draw[->] (cena) |- (contratos);
+    \draw[->] (interface) |- (contratos);
+  \end{tikzpicture}
+  \legend{Uma seta de A para B significa ``A pode importar B''. O núcleo e os dados não importam nenhuma camada de desenho; a cena não importa a aplicação, e por isso não consegue abrir uma janela nem disparar uma ação. Fonte: elaborada pelos autores a partir de \arquivo{ARQUITETURA.md}.}
+\end{figure}
+
+\subsection{A origem flutuante}\label{sec:origem-flutuante}
+
+Como discutido na \autoref{sec:float}, a placa gráfica trabalha em float32, e a subtração entre a posição da câmera e a de um corpo, ambas grandes, destrói a precisão. A solução adotada é a \emph{origem flutuante}: a câmera fica sempre na origem da cena, e a posição de cada corpo \emph{relativa à câmera} é calculada em float64, na CPU, antes de ir para a placa. A coluna de translação da matriz de vista é zero por construção. A alternativa ingênua, enviar as posições absolutas em float32, quantizaria a posição em cerca de 270\,km a 30\,UA e 13\,km a 1,5\,UA, e Fobos, com cerca de 11\,km de raio, ficaria do tamanho do quantum de posição do próprio planeta.
+
+\subsection{Fatias de profundidade}
+
+Entre a superfície de um planeta vista de perto (cerca de 1\,km) e a órbita de Netuno ($4{,}5\times10^9$\,km) há nove ordens de grandeza. Um \emph{z-buffer} de 24 bits, que guarda a profundidade de cada pixel para decidir o que fica na frente, não distingue nada nessa faixa. O programa desenha a cena em \emph{fatias de profundidade}: a mais distante primeiro, depois limpa o z-buffer e desenha a mais próxima por cima, cada fatia com razão entre o plano distante e o próximo de no máximo $10^5$. A técnica não depende de recursos específicos do renderizador e funciona igualmente nos dois backends.
+
+\subsection{Luz, superfície e céu}
+
+A iluminação tem uma única fonte, pontual, no Sol. A borda entre dia e noite, o \emph{terminador}, recebe uma penumbra da largura angular do disco solar visto do planeta,
+\begin{equation}
+  s = \frac{R_\odot}{d},\qquad
+  \text{luz} = \operatorname{smoothstep}\bigl(-s,\,s,\,\hat{\vetor{n}}\cdot\hat{\vetor{l}}\bigr),
+\end{equation}
+em que $d$ é a distância real ao Sol, $\hat{\vetor{n}}$ a normal da superfície e $\hat{\vetor{l}}$ a direção do Sol. Sem ela o terminador vira uma linha dura que denuncia a computação gráfica. O lado noturno recebe um piso de 14\,\% da luz do meio-dia, um ajuste visual avisado na Ajuda: sem ele, Marte visto com o Sol atrás era um disco preto, e o programa existe para mostrar como os planetas são.
+
+A orientação de cada corpo segue as constantes de rotação da IAU \cite{archinal2018}: polo norte em ascensão reta e declinação $(\alpha_0,\delta_0)$ e meridiano principal $W = W_0 + \dot W d$. Como a simulação roda na eclíptica, a matriz completa é $R_x(-\varepsilon_0)\,R_z(\alpha_0 + 90^\circ)\,R_x(90^\circ - \delta_0)\,R_z(W)$. As texturas de superfície vêm do Solar System Scope e, para cinco luas, dos mosaicos de imageamento real Voyager, Galileo e Cassini do USGS. O céu de fundo é o \emph{Yale Bright Star Catalogue} \cite{hoffleit1991}: 8\,404 estrelas na posição correta, com brilho dado pela magnitude, $L\propto 10^{-0{,}4(V-6{,}5)}$, e cor de corpo negro dada pela temperatura de cada uma.
+
+\begin{licao}[: a esfera girada noventa graus]
+O gerador de esferas do three.js constrói os polos sobre o eixo $y$, enquanto todo o resto do programa trata $z$ como polo. Durante várias fases, a textura de cada planeta esteve desenhada com o polo sobre o equador do corpo. Nenhum teste acusava: o teste de orientação media a \emph{matriz}, que sempre esteve certa, e as imagens de referência tinham sido gravadas já com o defeito, de modo que travavam o erro em vez de denunciá-lo. O defeito foi achado por uma pergunta que nenhum teste fazia, onde a textura cai na geometria, e passou a ter um teste com resposta conhecida: como a Lua tem rotação sincronizada, da Terra vê-se sempre a face com os grandes mares escuros. A área escura medida na imagem só sai certa se matriz, geometria, meridiano e mapa estiverem certos ao mesmo tempo.
+\end{licao}
+
+\subsection{As luas}\label{sec:luas}
+
+A versão 3D acrescenta treze luas: a Lua, Fobos, Deimos, as quatro galileanas, Encélado, Titã, Titânia, Oberon, Miranda e Tritão. Elas \emph{não} entram no integrador. Io dá uma volta em 1,77 dia; com passo de meio dia seriam três passos e meio por órbita, regime em que nenhum integrador de passo fixo funciona. Reduzir o passo global para atender a Io custaria o desempenho de todo o resto e alteraria a camada dinâmica validada contra o JPL.
+
+As luas são propagadas analiticamente pela \autoref{sec:kepler}, a partir dos elementos médios publicados pelo JPL, com taxas seculares de precessão do nodo e do periastro:
+\begin{equation}
+  M(t) = M_0 + \dot M\,t,\qquad
+  \Omega(t) = \Omega_0 + \dot\Omega\,t,\qquad
+  \omega(t) = \omega_0 + \dot\omega\,t.
+\end{equation}
+Elas não puxam nada e não alteram o estado dos nove corpos. O preço é um erro limitado, medido numa janela de vinte anos que os dados de ajuste nunca viram (\autoref{sec:res-luas}). Ao gerar esses dados, apareceram três problemas que a página do JPL não menciona:
+
+\begin{itemize}
+  \item a coluna de período não é o período sideral de todas as luas. Em Io ela difere 0,36\,\% do período medido, o que em um ano desloca a lua 270 graus. O programa mede o período casando a fase entre duas janelas de vetores do Horizons separadas por dezesseis anos;
+  \item cada lua usa um plano de referência: a eclíptica (só a Lua), o plano de Laplace (a maioria) ou o equador do planeta (as luas de Urano). Misturar os planos põe a lua no lugar errado sem nenhum erro visível;
+  \item o polo de Urano: com o polo publicado pela IAU, Titânia, Oberon e Miranda saem retrógradas e erram 600 mil quilômetros. O gerador testa as duas orientações e grava a que reproduz as posições, com o erro de cada uma ao lado. O mesmo procedimento decidiu um fator $\cos i$ na relação entre as taxas, que só importa em Tritão, retrógrada: sem ele, o erro foi de 378 mil quilômetros, a lua do outro lado de Netuno.
+\end{itemize}
+
+\subsection{O laboratório de Fourier complexo}
+
+O laboratório da versão 3D implementa a série complexa (\autoref{alg:fourier}): a órbita osculadora do corpo selecionado é projetada no próprio plano, amostrada no tempo, decomposta uma única vez e desenhada como cadeia de epiciclos ordenada por raio decrescente. O termo $n=0$ é desenhado como um deslocamento fixo, e não como mais um círculo, porque desenhá-lo girando mostraria um movimento que não existe. A tela rotula a cadeia como ``construção histórica, não é a física do modelo'', para que ninguém saia achando que a simulação calcula epiciclos.
+
+\begin{algorithm}[htb]
+  \caption{Coeficientes de Fourier e cadeia de epiciclos}\label{alg:fourier}
+  \KwIn{elementos $a$, $e$; número de amostras $A$; harmônicos $N$ com $2N < A$; instante $t\in[0,1)$}
+  \KwOut{coeficientes $c_{-N..N}$ e os elos da cadeia no instante $t$}
+  \For{$k\leftarrow 0$ \KwTo $A-1$}{
+    $M \leftarrow 2\pi k/A$;\quad $E \leftarrow$ \textsc{ResolverKepler}$(M, e)$\;
+    $z_k \leftarrow a(\cos E - e) + \ii\, a\sqrt{1-e^2}\sin E$\Com*[r]{amostra no tempo}
+  }
+  \For{$n\leftarrow -N$ \KwTo $N$}{
+    $c_n \leftarrow \frac1A\sum_k z_k\,e^{-2\pi\ii nk/A}$\Com*[r]{\autoref{eq:dft}}
+  }
+  $p \leftarrow c_0$\Com*[r]{excêntrico: não gira}
+  \ForEach{$n \neq 0$, em ordem decrescente de $|c_n|$}{
+    $q \leftarrow p + c_n\,e^{2\pi\ii nt}$\;
+    registrar elo (centro $p$, raio $|c_n|$, ponta $q$);\quad $p\leftarrow q$\;
+  }
+  \Return $c$, elos; a ponta $p$ é a posição reconstruída\;
+\end{algorithm}
+
+\subsection{O modo de criação}
+
+No \emph{sandbox}, a pessoa aponta um lugar da cena, escolhe um tipo de corpo (asteroide, cometa, planeta rochoso ou gasoso, estrela) e ajusta a velocidade num controle marcado de ``órbita redonda'' a ``escapa''. Antes de soltar, o programa mostra a órbita que o corpo teria. Duas guardas recusam, por escrito e com alternativa, criações que produziriam resultado numérico sem sentido: uma exige pelo menos 40 passos de integração por órbita, calculados no \emph{periélio} previsto e não na distância do clique, porque um corpo largado longe com velocidade quase radial passa raspando pelo Sol; a outra impede que o corpo nasça dentro da vizinhança gravitacional de outro. Quando a primeira recusa, o programa oferece um passo menor, de 0,125 dia, e o anuncia na tela enquanto ele estiver ligado. Todo sistema modificado exibe um distintivo permanente, ``não é mais a efeméride do JPL'', com o botão de voltar ao original.
+
+\subsection{Interface e acessibilidade}
+
+A interface foi reorganizada \emph{por pergunta} e não por tipo de controle. A barra de cima responde a \emph{quando} (pausar, velocidade, data) e a \emph{o que estou fazendo} (explorar, criar, voar). O painel lateral responde a \emph{de onde vejo} e \emph{qual corpo}. Sobre a cena não há nenhum controle clicável. Todo o programa é operável por teclado, cada controle tem rótulo para leitores de tela, há uma opção que descreve a cena em forma de tabela, os contrastes de cor são medidos, e o modo de criação funciona sem arrastar, como pede o critério 2.5.7 das WCAG 2.2 \cite{wcag22}.
