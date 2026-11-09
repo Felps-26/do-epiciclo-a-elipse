@@ -2,15 +2,13 @@
  * O que impede o sandbox de produzir orbita-lixo.
  *
  * Um corpo criado a 0,1 UA do Sol tem periodo de 11,55 dias, ou 23 passos de meio
- * dia por orbita, e nesse regime o Yoshida4 nao integra: produz uma orbita que
- * precessa e decai, bonita e errada. E o mesmo motivo pelo qual a Lua nao entra no
- * integrador. Em vez de oferecer o gesto em silencio, a criacao e recusada por
- * escrito, com a alternativa junto.
+ * dia por orbita, e nesse regime o Yoshida4 produz uma orbita que precessa e
+ * decai, bonita e errada. E o mesmo motivo pelo qual a Lua nao entra no
+ * integrador. A criacao e recusada por escrito, com a alternativa junto.
  *
- * A guarda e sobre o periastro, nao sobre a distancia no clique. Perto da
- * velocidade de escape o periastro despenca mesmo com o apoastro grande: um corpo
- * largado a 5 UA com velocidade quase radial passa raspando no Sol, e no clique
- * parecia inofensivo.
+ * A guarda e sobre o periastro, e nao sobre a distancia no clique: perto da
+ * velocidade de escape o periastro despenca mesmo com o apoastro grande, e um
+ * corpo largado a 5 UA com velocidade quase radial passa raspando no Sol.
  */
 import { PASSO_CURTO_DIAS, PASSO_PADRAO_DIAS } from './integrador.ts';
 import type { ElementosOsculadores } from './efemerides.ts';
@@ -22,13 +20,9 @@ import type { ElementosOsculadores } from './efemerides.ts';
 export const PASSOS_MINIMOS_POR_ORBITA = 40;
 
 /**
- * O veredito e um fato, nao uma frase.
- *
- * A primeira versao montava a mensagem aqui e saiu com "11.6 dias", com ponto
- * decimal, porque o nucleo nao sabe escrever numero em portugues. Alem disso, toda
- * string de interface fica em `dados/textos.ts` para ser revisada de uma vez, e uma
- * frase escondida na fisica escapa dessa revisao. Aqui saem os numeros, e a
- * interface compoe a frase.
+ * O veredito e um fato, nao uma frase: o nucleo nao sabe escrever numero em
+ * portugues, e toda string de interface fica em `dados/textos.ts` para ser
+ * revisada de uma vez. Saem os numeros, e a interface compoe a frase.
  */
 export type Veredito =
   | { aceito: true }
@@ -56,14 +50,14 @@ export function passosPorOrbita(periodoDias: number, dtDias: number): number {
  * Tempo orbital local na passagem pelo periastro: `2*pi*sqrt(q^3/mu)`.
  *
  * E este numero que decide, e nao o periodo. O periodo depende so do semieixo
- * maior: numa orbita muito alongada `a` fica grande, o periodo longo, e "passos por
- * volta" da um numero enorme e tranquilizador, mas a passagem pelo periastro, onde
- * o integrador quebra, dura horas.
+ * maior: numa orbita muito alongada, "passos por volta" da um numero enorme e
+ * tranquilizador, mas a passagem pelo periastro, onde o integrador quebra, dura
+ * horas.
  *
- * Medido: um corpo largado a 5 UA com 10% da velocidade circular tem a = 2,51 UA,
- * e = 0,990 e periodo de 1.455 dias (2.909 passos por volta, que a versao anterior
- * da guarda aceitava). O tempo no periastro e 1,46 dia, ou 2,9 passos, e depois de
- * uma volta o corpo e expulso do sistema com `a = Infinity`, sem NaN e sem aviso.
+ * Exemplo medido: um corpo largado a 5 UA com 10% da velocidade circular tem
+ * a = 2,51 UA, e = 0,990 e periodo de 1.455 dias (2.909 passos por volta). O
+ * tempo no periastro e 1,46 dia, ou 2,9 passos, e depois de uma volta o corpo e
+ * expulso do sistema com `a = Infinity`, sem NaN e sem aviso.
  */
 export function passosNoPeriastro(perielioUa: number, mu: number, dtDias: number): number {
   if (!(perielioUa > 0) || !(mu > 0)) return Infinity;
@@ -81,9 +75,9 @@ export function avaliarCriacao(
   mu: number,
   dtDias = PASSO_PADRAO_DIAS,
 ): Veredito {
-  // Uma hiperbole nao tem periodo, mas pode ter periastro minusculo, e ai o corpo vai
-  // embora por um caminho que o integrador inventou. Medido num caso quase radial:
-  // dE/E = 1,5e3 em 2.000 dias.
+  // Uma hiperbole nao tem periodo, mas pode ter periastro minusculo, e ai o
+  // corpo segue um caminho inventado pelo integrador (num caso quase radial,
+  // dE/E = 1,5e3 em 2.000 dias).
   const noPeriastro = passosNoPeriastro(elementos.perielio, mu, dtDias);
   const naVolta = elementos.ligada ? passosPorOrbita(elementos.periodoDias, dtDias) : Infinity;
   const passos = Math.min(noPeriastro, naVolta);
@@ -118,15 +112,13 @@ export function avaliarCriacao(
  *
  *     d_min = (gm * (N*dt / 2*pi)^2)^(1/3)
  *
- * Usa a GM do vizinho, nunca a soma das duas. "Asteroide" e "Cometa" tem massa
- * exatamente zero, e `mu = gm_i + gm_j` daria `d_min = 0` para um par deles,
- * aceitando dois corpos sobrepostos. Com a GM do vizinho esse par nao tem
- * restricao, e esta certo: corpos sem massa nao se puxam. O que a guarda impede e
- * chegar perto de quem tem massa.
+ * Usa a GM do vizinho, nunca a soma das duas: "Asteroide" e "Cometa" tem massa
+ * zero, e `gm_i + gm_j` daria `d_min = 0` para um par deles. Com a GM do vizinho
+ * esse par fica sem restricao, o que esta certo, porque corpos sem massa nao se
+ * puxam. A guarda impede chegar perto de quem tem massa.
  *
  * Sem ela, um corpo criado em cima de Jupiter gera `1/r^3 = Infinity` no primeiro
- * passo, e o NaN contamina os nove corpos validados num quadro so, sem como
- * desfazer.
+ * passo, e o NaN contamina os nove corpos validados num quadro so.
  */
 export function separacaoMinima(gmDoVizinho: number, dtDias = PASSO_PADRAO_DIAS): number {
   if (!(gmDoVizinho > 0)) return 0;
@@ -144,10 +136,9 @@ export type VereditoDeVizinhanca =
     };
 
 /**
- * Diz se ha espaco para um corpo novo nesta posicao. Percorre todos os corpos com
- * massa e devolve o pior caso, o proporcionalmente mais perto do proprio minimo;
- * devolver o primeiro que reprova daria uma mensagem que muda com a ordem do
- * catalogo.
+ * Diz se ha espaco para um corpo novo nesta posicao. Devolve o pior caso, o
+ * proporcionalmente mais perto do proprio minimo, e nao o primeiro que reprova,
+ * cuja mensagem mudaria com a ordem do catalogo.
  */
 export function avaliarVizinhanca(
   estado: { pos: Float64Array; gm: Float64Array; n: number },
@@ -178,8 +169,8 @@ export function avaliarVizinhanca(
  *
  * O custo por quadro cresce com n² em tres lugares (o laco de forcas, esta guarda e
  * as distancias da cena). Sem teto, algumas centenas de cliques derrubam a taxa de
- * quadros e a calibragem corta a escada de velocidade, sem nada na tela ligar uma
- * coisa a outra. Com 40 o pior caso e 1.176 pares, menos de um decimo do orcamento
- * de um quadro na maquina mais modesta medida.
+ * quadros e a calibragem corta a escada de velocidade sem nada na tela explicar.
+ * Com 40 o pior caso e 1.176 pares, menos de um decimo do orcamento de um quadro
+ * na maquina mais modesta medida.
  */
 export const MAXIMO_DE_CORPOS_CRIADOS = 40;

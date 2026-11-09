@@ -1,25 +1,16 @@
 /**
  * Interpolacao entre dois passos integrados, para o desenho ficar liso.
  *
- * A fisica anda em passos fixos de meio dia; a tela desenha a 60 ou 120 Hz. Sem
- * interpolacao, num zoom proximo os planetas andam aos trancos.
+ * A fisica anda em passos fixos de meio dia; a tela desenha a 60 ou 120 Hz.
+ * Sem interpolacao, num zoom proximo os planetas andam aos trancos.
  *
- * Hermite cubico com lookahead de um passo, e nao Taylor de 2a ordem.
- * A diferenca importa. Taylor extrapola a partir do estado atual usando
- * posicao, velocidade e aceleracao; medido a partir da propria efemeride da
- * epoca, o termo de 3a ordem em meio passo vale 213 km em Mercurio, 48 km em
- * Venus e 17 km na Terra. Mercurio tem 4.879 km de diametro: sao 4,4% do
- * disco. E como a extrapolacao nao encontra o proximo estado integrado, isso
- * vira um SALTO na fronteira de cada passo — dois por segundo a 1 dia/s.
+ * Usa Hermite cubico com um passo de antecedencia, e nao Taylor de 2a ordem:
+ * a extrapolacao de Taylor erra 213 km em Mercurio (4,4% do disco) e nao
+ * encontra o proximo estado integrado, o que da um salto a cada passo. O
+ * Hermite usa posicao e velocidade nas duas pontas e e continuo na fronteira.
  *
- * O Hermite usa posicao E velocidade nas DUAS pontas, entao e continuo em
- * posicao e em velocidade na fronteira: nao ha tranco nenhum.
- *
- * Lookahead nao e atraso. O simulador mantem o estado integrado atual e o
- * proximo; o desenho mostra um ponto entre eles. `tDias` do estado continua
- * exato, e a data ESCRITA na tela passa a ser `tDias + alfa*dt`, que e
- * exatamente o instante desenhado. A data corresponde ao desenho — que e a
- * garantia que o projeto faz desde a primeira versao.
+ * O desenho mostra um ponto entre o estado atual e o proximo, entao a data
+ * escrita na tela e `tDias + alfa*dt`, o instante exato do que se ve.
  */
 import type { EstadoSistema } from './tipos.ts';
 
@@ -38,9 +29,8 @@ export function interpolarHermite(
 ): void {
   const t = alfa < 0 ? 0 : alfa > 1 ? 1 : alfa;
 
-  // Base de Hermite. h00 + h01 = 1 sempre, entao alfa = 0 devolve `a` e
-  // alfa = 1 devolve `b`, ambos EXATOS — pausado, o que se ve e o estado
-  // integrado, sem interpolacao no meio.
+  // Base de Hermite. h00 + h01 = 1, entao alfa = 0 devolve `a` e alfa = 1
+  // devolve `b` sem erro: pausado, o que se ve e o estado integrado.
   const t2 = t * t;
   const t3 = t2 * t;
   const h00 = 2 * t3 - 3 * t2 + 1;

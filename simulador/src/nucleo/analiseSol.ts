@@ -1,10 +1,9 @@
 /**
  * Grandezas do Sol relativas ao centro de massa dos corpos simulados.
  *
- * O Sol nao tem elementos keplerianos heliocentricos — ele E o centro da
- * referencia heliocentrica. O movimento dele neste modelo vem inteiro da soma
- * das atracoes dos oito sistemas planetarios, e a tela mostra essa soma
- * parcela por parcela, ordenada. Jupiter domina.
+ * O Sol nao tem elementos keplerianos heliocentricos, porque e o centro dessa
+ * referencia. O movimento dele vem da soma das atracoes dos oito sistemas
+ * planetarios, e a tela mostra essa soma parcela por parcela. Jupiter domina.
  */
 import { centroDeMassa, gmTotal, momentoLinear } from './estado.ts';
 import type { EstadoSistema } from './tipos.ts';

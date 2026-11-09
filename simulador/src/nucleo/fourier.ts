@@ -6,29 +6,25 @@
  * cadeia de epiciclos. Cada termo e um circulo de raio |c_n| girando a n vezes a
  * frequencia da volta, e acrescentar um harmonico e acrescentar um epiciclo.
  *
- * Complexa, nao real. A versao em Python decompunha x e y separadamente, em
- * cossenos e senos reais. Isso reconstroi a curva mas nao produz epiciclo:
- * `ax_n·cos + bx_n·sen` em x com outro par em y e uma elipse alinhada aos eixos,
- * nao um circulo. Para a cadeia historica e preciso a serie complexa de
- * `z(t) = x(t) + i·y(t)`, com n tambem negativo; so assim cada termo
- * `c_n·e^(i·2πnt)` e um ponteiro de comprimento fixo girando a velocidade
+ * A serie e complexa, de `z(t) = x(t) + i·y(t)` com n tambem negativo. Decompor
+ * x e y separadamente em cossenos e senos reais reconstroi a curva, mas cada par
+ * vira uma elipse alinhada aos eixos e nao um circulo. Na serie complexa, cada
+ * termo `c_n·e^(i·2πnt)` e um ponteiro de comprimento fixo girando a velocidade
  * constante, como Ptolomeu desenhava.
  *
- * Amostragem. A curva entra igualmente espacada no tempo, nao em angulo: sao
- * funcoes diferentes, com coeficientes diferentes. Em tempo a segunda lei de
- * Kepler aparece no espacamento dos pontos, e so ali "girar a velocidade
- * constante" descreve o que o epiciclo faz.
+ * Amostragem: a curva entra igualmente espacada no tempo, e nao em angulo, porque
+ * sao funcoes diferentes com coeficientes diferentes. So no tempo "girar a
+ * velocidade constante" descreve o epiciclo, e a segunda lei de Kepler aparece no
+ * espacamento dos pontos.
  *
- * Aliasing. Com `A` amostras, so |n| < A/2 e recuperavel; acima disso um harmonico
- * alto aparece disfarcado de baixo. O construtor recusa a combinacao em vez de
- * devolver numero errado. A folga de Nyquist protege o indice, mas o que protege de
- * fato e o espectro da elipse morrer antes de A/2, e ele morre mais devagar quanto
+ * Aliasing: com `A` amostras, so |n| < A/2 e recuperavel; acima disso um harmonico
+ * alto aparece disfarcado de baixo, e o construtor recusa a combinacao. O que
+ * protege de fato e o espectro da elipse morrer antes de A/2, mais devagar quanto
  * mais alongada a orbita. Com 720 amostras e 24 harmonicos, o erro de coeficiente
  * contra a solucao fechada e 3e-16 UA em e = 0,6, 1,4e-14 em e = 0,9 e 2,2e-8 em
- * e = 0,95. Para os oito planetas (e maximo 0,21, em Mercurio) a folga e de varias
- * ordens de grandeza. Para um cometa do sandbox com e acima de 0,9 nao e: a serie
- * descreve a orbita com erro visivel, e o laboratorio escreve o desvio medido, nao
- * um limite prometido.
+ * e = 0,95. Para os oito planetas (e maximo 0,21, em Mercurio) a folga e grande;
+ * para um cometa do sandbox com e acima de 0,9 nao, e o laboratorio escreve o
+ * desvio medido, nao um limite prometido.
  */
 
 /** Ate onde a serie e calculada. Alem disso a orbita ja esta no ruido do float64. */
@@ -81,9 +77,8 @@ export function decompor(curva: Float64Array, termosMax = TERMOS_MAX): SerieFour
     throw new RangeError('a curva precisa de pelo menos 4 pontos, com 2 numeros cada');
   }
   if (2 * termosMax >= amostras) {
-    // Recusa em vez de truncar em silencio: um coeficiente sobre a frequencia de
-    // Nyquist e um harmonico alto lido como baixo, e apareceria no desenho como um
-    // epiciclo que nao existe.
+    // Um coeficiente sobre a frequencia de Nyquist e um harmonico alto lido como
+    // baixo, que apareceria no desenho como um epiciclo inexistente.
     throw new RangeError(
       `${amostras} amostras nao bastam para ${termosMax} harmonicos: seriam precisas mais de ${2 * termosMax}`,
     );
@@ -144,14 +139,13 @@ export interface Cadeia {
   /**
    * Deslocamento fixo de onde a cadeia parte.
    *
-   * E o termo `n = 0`, que nao e um epiciclo: a frequencia e zero, entao ele nao
-   * gira. Desenha-lo como mais um circulo mostraria um movimento que nao existe.
+   * E o termo `n = 0`, que nao gira; desenha-lo como circulo mostraria um
+   * movimento inexistente.
    *
    * O valor e a posicao media no tempo do corpo. Numa elipse kepleriana ela fica a
-   * `1,5·a·e` do foco, do lado do apoastro, e nao a `a·e`, onde esta o centro
-   * geometrico: o corpo passa mais tempo longe e a media no tempo puxa para la.
-   * Ptolomeu deslocava a Terra do centro do deferente; e o mesmo deslocamento,
-   * medido como a serie o produz.
+   * `1,5·a·e` do foco, do lado do apoastro, e nao a `a·e` do centro geometrico,
+   * porque o corpo passa mais tempo longe. E o deslocamento que Ptolomeu aplicava
+   * entre a Terra e o centro do deferente.
    */
   excentrico: [number, number];
   /** Os elos que giram, do maior para o menor. O primeiro e o deferente. */
@@ -163,14 +157,12 @@ export interface Cadeia {
 /**
  * Cadeia de epiciclos no instante `t`.
  *
- * Ordenada por raio decrescente, que e a ordem de leitura da construcao historica:
- * o deferente primeiro, cada epiciclo montado na ponta do anterior. Numa orbita
- * kepleriana o maior elo e sempre `n = 1`; ate e = 0,9 ele vale 0,55 contra 0,19 do
- * segundo.
+ * Ordenada por raio decrescente, como na construcao historica: o deferente
+ * primeiro, cada epiciclo montado na ponta do anterior. Numa orbita kepleriana o
+ * maior elo e sempre `n = 1`; ate e = 0,9 ele vale 0,55 contra 0,19 do segundo.
  *
- * A ponta do ultimo elo e a posicao reconstruida: a cadeia desenha a soma elo por
- * elo, nao e uma ilustracao ao lado dela. `fourier.test.ts` exige que as duas
- * coincidam dentro de 1e-14.
+ * A ponta do ultimo elo e a posicao reconstruida, nao uma ilustracao ao lado dela:
+ * `fourier.test.ts` exige que as duas coincidam dentro de 1e-14.
  */
 export function cadeiaDeEpiciclos(s: SerieFourier, t: number, termos: number): Cadeia {
   const T = Math.min(Math.max(0, Math.trunc(termos)), s.termosMax);

@@ -3,20 +3,17 @@
  *
  * Serve a duas coisas:
  *
- *   1. As luas. Elas nao entram no integrador: a Lua da uma volta em 27,3 dias
+ *   1. As luas. Elas ficam fora do integrador: a Lua da uma volta em 27,3 dias
  *      (55 passos de 0,5 dia por orbita) e Io em 1,77 dia (3,5 passos), regime em
- *      que Yoshida4 nao integra e precessa. Baixar o passo global para atender Io
- *      pioraria o desempenho de tudo e mudaria a camada validada contra o JPL. As
- *      luas sao propagadas aqui, com elementos medios e taxas seculares, e a
- *      deriva e medida e publicada.
+ *      que Yoshida4 precessa. Baixar o passo global para Io pioraria o
+ *      desempenho de tudo e mudaria a camada validada contra o JPL. As luas
+ *      sao propagadas aqui, com elementos medios e taxas seculares, e a deriva
+ *      e medida e publicada.
  *   2. O laboratorio de Fourier, que precisa da orbita kepleriana pura para
  *      comparar com a serie.
  *
- * A visao geral NAO passa por aqui. As posicoes dos nove corpos dinamicos saem da
- * integracao numerica, que e o que a efemeride valida.
- *
- * Veio de `src/fisica/kepler.py` (versao 2D), que era 2D e partia de `E = M`, que
- * nao converge para excentricidade alta, e o sandbox cria cometas.
+ * As posicoes dos nove corpos dinamicos nao passam por aqui: saem da integracao
+ * numerica, que e o que a efemeride valida.
  */
 const DOIS_PI = 2 * Math.PI;
 
@@ -37,7 +34,7 @@ export interface ElementosClassicos {
   nodoRad: number;
   /** Argumento do periastro, rad. */
   periastroRad: number;
-  /** Anomalia media NA EPOCA, rad. */
+  /** Anomalia media na epoca, rad. */
   anomaliaMediaRad: number;
   /** Movimento medio, rad/dia. Vem da tabela, e nao de sqrt(mu/a^3). */
   movimentoMedioRadDia: number;
@@ -50,20 +47,17 @@ export interface ElementosClassicos {
 /**
  * Resolve E − e·sen(E) = M.
  *
- * O chute inicial nao e `E = M`, que serve para os planetas (e < 0,21) mas acima de
- * uns 0,8 oscila entre dois valores e nunca converge; um cometa criado no sandbox
- * chega perto de 1. O chute de Danby custa um seno a mais e converge em toda a
- * faixa.
+ * O chute inicial `E = M` serve para os planetas (e < 0,21), mas acima de uns 0,8
+ * oscila entre dois valores e nao converge, e um cometa do sandbox chega perto
+ * de 1. O chute de Danby custa um seno a mais e converge em toda a faixa.
  *
- * Newton pode divergir, e um laco que sai por `max_iter` devolvendo lixo poe uma
- * lua no lugar errado sem aviso. Se Newton nao fechar, a bissecao fecha: e lenta,
- * mas `E − e·sen(E) − M` e monotona em E, entao nao falha.
- */
-/*
- * Devolve E com `E − e·sen(E) = M`, com M reduzido a [0, 2π). O proprio E pode cair
- * um ULP fora desse intervalo nos extremos (em M = 0 sai −1e−17), o que e
- * inofensivo porque so `sen(E)` e `cos(E)` saem daqui, mas importa ao comparar
- * angulos.
+ * Se Newton nao fechar, a bissecao fecha: e lenta, mas `E − e·sen(E) − M` e
+ * monotona em E, entao nao falha. Um laco que sai por limite de iteracoes
+ * devolveria lixo e poria uma lua no lugar errado sem aviso.
+ *
+ * M e reduzido a [0, 2π). O proprio E pode cair um ULP fora desse intervalo nos
+ * extremos (em M = 0 sai −1e−17), o que nao afeta `sen(E)` e `cos(E)`, mas
+ * importa ao comparar angulos.
  */
 export function resolverKepler(anomaliaMedia: number, e: number, tolerancia = 1e-13): number {
   const M = normalizarAngulo(anomaliaMedia);
@@ -75,9 +69,8 @@ export function resolverKepler(anomaliaMedia: number, e: number, tolerancia = 1e
   for (let k = 0; k < 30; k++) {
     const f = E - e * Math.sin(E) - M;
     const df = 1 - e * Math.cos(E);
-    // `df` vai a zero no periastro de uma orbita quase parabolica. Sem a guarda o passo
-    // explode e o resultado sai NaN, que se propaga sem aviso pela posicao, pela
-    // matriz e pelo buffer da GPU.
+    // `df` vai a zero no periastro de uma orbita quase parabolica; sem a guarda o
+    // passo explode e o NaN se propaga pela posicao, pela matriz e pela GPU.
     if (Math.abs(df) < 1e-14) break;
     const passo = f / df;
     E -= passo;
@@ -117,9 +110,8 @@ export interface EstadoRelativo {
  * plausivel e errado.
  *
  * O plano de referencia sai como entrou: elementos no equador do planeta dao saida
- * no equador do planeta. Converter para a ecliptica da cena cabe a quem sabe qual
- * plano cada tabela usa, porque fazer aqui obrigaria este modulo a conhecer os
- * corpos.
+ * no equador do planeta. Quem sabe qual plano cada tabela usa converte para a
+ * ecliptica da cena, para este modulo nao precisar conhecer os corpos.
  */
 export function estadoDeElementos(
   el: ElementosClassicos,
@@ -152,8 +144,8 @@ export function estadoDeElementos(
   const cw = Math.cos(periastro);
   const sw = Math.sin(periastro);
 
-  // Colunas da matriz Rz(nodo)·Rx(i)·Rz(periastro), escritas abertas: o produto 3x3
-  // custaria 27 multiplicacoes por corpo por quadro para chegar ao mesmo lugar.
+  // Colunas da matriz Rz(nodo)·Rx(i)·Rz(periastro), abertas para evitar 27
+  // multiplicacoes por corpo por quadro.
   const p0 = cO * cw - sO * sw * ci;
   const p1 = sO * cw + cO * sw * ci;
   const p2 = sw * si;
@@ -168,12 +160,12 @@ export function estadoDeElementos(
 }
 
 /**
- * Uma volta inteira em `n` pontos igualmente espacados no TEMPO.
+ * Uma volta inteira em `n` pontos igualmente espacados no tempo.
  *
- * O espacamento temporal e o que faz a segunda lei de Kepler aparecer no desenho:
- * os pontos ficam espalhados perto do foco, onde o corpo corre, e juntos longe
- * dele, onde se arrasta. Amostrar em angulo daria os coeficientes de outra funcao,
- * e e no tempo que o laboratorio de Fourier precisa.
+ * O espacamento temporal faz a segunda lei de Kepler aparecer no desenho: os
+ * pontos ficam espalhados perto do foco, onde o corpo corre, e juntos longe dele.
+ * Amostrar em angulo daria os coeficientes de outra funcao, e o laboratorio de
+ * Fourier precisa do tempo.
  */
 export function amostrarNoTempo(el: ElementosClassicos, mu: number, n: number): Float64Array {
   const saida = new Float64Array(3 * n);

@@ -1,23 +1,16 @@
 /**
  * Mede a velocidade desta maquina para definir um teto honesto.
  *
- * Nao ha numero magico que sirva para todo computador. Em vez de chutar, o
- * programa roda a integracao por uma fracao de segundo e usa o resultado para
- * decidir quanto tempo simulado consegue entregar por segundo sem engasgar.
+ * Nenhum teto fixo serve para todo computador. O programa integra por uma
+ * fracao de segundo e usa o resultado para decidir quanto tempo simulado
+ * consegue entregar por segundo sem engasgar.
  *
- * Tres cuidados, cada um corrigindo um jeito conhecido de medir errado:
- *
- * 1. Aquecer antes de cronometrar. As primeiras centenas de passos medem o
- *    compilador de JavaScript se aquecendo, nao a maquina. Sem isso, um
- *    computador rapido se declara lento e corta a escada de velocidade em
- *    silencio.
- * 2. Medir por TRABALHO fixo, nao por TEMPO fixo. Um laco "rode ate passar
- *    0,12 s" da resultados diferentes conforme o sistema operacional resolve
- *    interromper; um laco "rode N passos e veja quanto demorou" nao tem essa
- *    variacao.
- * 3. Nao presumir 60 Hz. A tela do usuario pode ser 120 Hz, e o orcamento
- *    por quadro cai pela metade. A taxa de atualizacao e medida pelo laco de
- *    quadro (fase F2) e entra aqui como parametro.
+ * 1. Aquece antes de cronometrar: os primeiros passos medem o compilador de
+ *    JavaScript, e um computador rapido pareceria lento.
+ * 2. Mede por trabalho fixo (N passos), nao por tempo fixo, porque o laco por
+ *    tempo varia com as interrupcoes do sistema operacional.
+ * 3. Nao presume 60 Hz: numa tela de 120 Hz o orcamento por quadro cai pela
+ *    metade, entao a taxa medida entra como parametro.
  *
  * O cronometro e injetado, como no simulador: o nucleo nao le o relogio.
  */
@@ -53,8 +46,7 @@ export function medirPassosPorSegundo(
   const rascunho = criarRascunho(copia.capacidade);
   const dt = PASSO_PADRAO_DIAS;
 
-  // Aquecimento descartado. Tambem serve para o kernel de forcas entrar em
-  // cache antes de o cronometro comecar.
+  // Aquecimento descartado; tambem leva o kernel de forcas para o cache.
   aceleracao(copia, rascunho);
   for (let k = 0; k < PASSOS_DE_AQUECIMENTO; k++) integrador.passo(copia, dt, rascunho);
 
@@ -62,8 +54,8 @@ export function medirPassosPorSegundo(
   for (let k = 0; k < passosMedidos; k++) integrador.passo(copia, dt, rascunho);
   const decorrido = cronometro() - t0;
 
-  // Um cronometro de resolucao grosseira pode devolver zero. Declarar
-  // "infinitos passos por segundo" seria pior que declarar um piso.
+  // Cronometro de resolucao grosseira pode devolver zero; um piso e melhor
+  // que declarar passos por segundo infinitos.
   const ms = decorrido > 0 ? decorrido : Number.EPSILON;
   return {
     passosPorSegundo: (passosMedidos / ms) * 1000,

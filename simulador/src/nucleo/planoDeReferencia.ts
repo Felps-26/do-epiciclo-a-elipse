@@ -9,9 +9,8 @@
  *     equatorial   o equador do planeta. As luas de Urano; a tabela deixa as
  *                  colunas de polo em branco.
  *
- * Misturar os planos poe uma lua no lugar errado sem nada na tela acusar: para
- * Jupiter, cujo polo esta a 2 graus da ecliptica, o resultado fica plausivel e
- * errado.
+ * Misturar os planos poe uma lua no lugar errado sem aviso: para Jupiter, cujo
+ * polo esta a 2 graus da ecliptica, o resultado fica plausivel e errado.
  */
 import type { BaseDoPlano } from '../contratos/lua.ts';
 
@@ -36,13 +35,12 @@ function paraEclipticaDoEquador(v: readonly [number, number, number]): [number, 
  * Base do plano de referencia, ja em coordenadas eclipticas.
  *
  * `z` e o polo. `x` e o no ascendente do plano sobre o equador da ICRF, e nao o
- * equinocio, porque e dali que a tabela mede a longitude do no ("longitude of the
- * ascending node measured from the node of the reference plane on the ICRF
- * equator"). Tomar o equinocio gira a orbita inteira em torno do polo por um angulo
- * que nao se enxerga.
+ * equinocio, porque a tabela mede a longitude do no a partir dele. Tomar o
+ * equinocio gira a orbita inteira em torno do polo por um angulo que nao se
+ * enxerga.
  *
  * Os tres vetores sao construidos no frame equatorial e convertidos para a
- * ecliptica no fim, para a conta da base ser a que a fonte descreve.
+ * ecliptica no fim, como a fonte descreve.
  */
 export function baseDoPlano(poloRaGraus: number, poloDecGraus: number): BaseDoPlano {
   const ra = poloRaGraus * GRAU;
@@ -74,11 +72,10 @@ export const BASE_DA_ECLIPTICA: BaseDoPlano = {
  * Do plano de referencia para a ecliptica: a combinacao linear
  * `v.x·X + v.y·Y + v.z·Z`, ou seja, a matriz cujas colunas sao os vetores da base.
  *
- * Cuidado com a transposta: "projetar na base" costuma significar o produto escalar
- * com cada vetor, que e a operacao inversa desta. Escrever a transposta poe a lua
- * num plano errado. Em Urano, cujo polo fica a quase 98 graus do da ecliptica, o
- * erro e obvio; em Jupiter sao poucos graus, o bastante para passar e estragar o
- * que vem depois.
+ * Cuidado com a transposta: "projetar na base" costuma significar o produto
+ * escalar com cada vetor, que e a operacao inversa desta. Em Urano, cujo polo
+ * fica a quase 98 graus do da ecliptica, o erro e obvio; em Jupiter sao poucos
+ * graus, o bastante para passar despercebido.
  */
 export function doPlanoParaEcliptica(
   b: BaseDoPlano,
@@ -101,18 +98,16 @@ function paraEquadorDaEcliptica(v: readonly [number, number, number]): [number, 
 /**
  * Eixo de rotacao de uma lua travada por mare, como `(ra, dec)` da IAU.
  *
- * E a normal da orbita, nao o polo do planeta. A diferenca e a inclinacao da orbita
- * sobre o plano de referencia: 5,16° na nossa Lua, 4,4° em Miranda e 157,3° em
- * Tritao, onde a normal aponta quase ao contrario do polo de Netuno. Usar o polo do
- * planeta acerta onze casos por pouco e erra o decimo segundo por inteiro, a
- * assinatura de um fator que passa despercebido enquanto se olham os outros (como o
- * `cos i` da anomalia media, neste mesmo arquivo).
+ * E a normal da orbita, e nao o polo do planeta. A diferenca e a inclinacao da
+ * orbita sobre o plano de referencia: 5,16° na nossa Lua, 4,4° em Miranda e
+ * 157,3° em Tritao, onde a normal aponta quase ao contrario do polo de Netuno.
+ * Usar o polo do planeta acerta onze casos por pouco e erra o decimo segundo
+ * por inteiro.
  *
- * Assim a rotacao e positiva por construcao, porque a normal e destra com o
- * movimento. Tritao sai apontando para o sul da ICRF, e girar no sentido positivo
- * em torno dele e a rotacao retrograda que a IAU publica, sem ramo com sinal. Um
- * ramo com sinal seria a mesma fisica escrita duas vezes, e as duas acabariam
- * divergindo.
+ * A rotacao e positiva por construcao, porque a normal e destra com o
+ * movimento. Tritao sai apontando para o sul da ICRF, e girar no sentido
+ * positivo em torno dele e a rotacao retrograda que a IAU publica, sem ramo com
+ * sinal que escreveria a mesma fisica duas vezes.
  */
 export function eixoDeRotacaoSincrona(
   base: BaseDoPlano,
@@ -121,7 +116,7 @@ export function eixoDeRotacaoSincrona(
 ): { ra: number; dec: number } {
   const no = noGraus * GRAU;
   const i = inclinacaoGraus * GRAU;
-  // Normal da orbita no frame do PROPRIO plano de referencia.
+  // Normal da orbita no frame do proprio plano de referencia.
   const noPlano: [number, number, number] = [
     Math.sin(no) * Math.sin(i),
     -Math.cos(no) * Math.sin(i),
@@ -140,8 +135,7 @@ export function eixoDeRotacaoSincrona(
  *
  * E a definicao da IAU para satelite sincrono: o ponto sub-planetario fica na
  * longitude zero. Com `w0 = 0` o meridiano zero ficaria num lugar arbitrario,
- * invisivel enquanto a lua e uma bola de cor chapada e visivel quando ela ganha um
- * mapa, com os vulcoes de Io virados para o lado errado.
+ * e o mapa sairia virado para o lado errado.
  *
  * A orientacao da IAU e `M = Rx(−eps)·Rz(a0+90)·Rx(90−d0)·Rz(W)`, e o meridiano
  * zero e `M` aplicada a `x`. Como `Rz(W)` e a ultima,
@@ -166,17 +160,17 @@ export function meridianoQueEncaraOPai(
  * Coluna `k` de `A = Rx(−eps)·Rz(a0+90)·Rx(90−d0)`, em coordenadas eclipticas.
  *
  * As mesmas tres rotacoes que `cena/corpos/orientacao.ts` monta com matrizes do
- * three. Sao duas escritas da mesma coisa, e `rotacaoDasLuas.test.ts` as amarra: se
- * divergirem, o teste reprova em vez de a textura sair girada.
+ * three. `rotacaoDasLuas.test.ts` amarra as duas escritas: se divergirem, o teste
+ * reprova em vez de a textura sair girada.
  */
 function colunaDaOrientacao(raGraus: number, decGraus: number, k: 0 | 1): [number, number, number] {
   const a = (raGraus + 90) * GRAU;
   const b = (90 - decGraus) * GRAU;
 
-  // A matriz mais a direita age primeiro: `A = Rx(-eps)·Rz(a)·Rx(b)` aplicada a `e` e
-  // `Rx(-eps)·(Rz(a)·(Rx(b)·e))`. A primeira versao girava Rz antes de Rx e deixava o
-  // meridiano torto em 69° em Miranda e 142° em Tritao, mas quase certo em Io, onde a
-  // inclinacao e zero e as duas ordens quase coincidem.
+  // A matriz mais a direita age primeiro: `A = Rx(-eps)·Rz(a)·Rx(b)` aplicada a
+  // `e` e `Rx(-eps)·(Rz(a)·(Rx(b)·e))`. Girar Rz antes de Rx entorta o meridiano
+  // em 69° em Miranda e 142° em Tritao, mas quase nao em Io, onde a inclinacao e
+  // zero.
   const cb = Math.cos(b);
   const sb = Math.sin(b);
   const e0: [number, number, number] = k === 0 ? [1, 0, 0] : [0, 1, 0];

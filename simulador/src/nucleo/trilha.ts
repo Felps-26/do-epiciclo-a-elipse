@@ -1,13 +1,13 @@
 /**
  * Rastro de cada corpo: por onde ele passou de verdade.
  *
- * Difere da elipse osculadora, que e o caminho que ele seguiria se so o Sol existisse;
- * a trilha e o que ele percorreu nesta simulacao. Em escala humana as duas coincidem,
- * o que serve de conferencia visual.
+ * Difere da elipse osculadora, que e o caminho que ele seguiria se so o Sol
+ * existisse: a trilha e o que ele percorreu nesta simulacao. Em escala humana as
+ * duas coincidem, o que serve de conferencia visual.
  *
- * Amostrada por tempo simulado e nao por quadro: por quadro, a aparencia mudaria so
- * com a velocidade do tempo ou a taxa de quadros, e a trilha passaria a dizer algo
- * sobre o computador e nao sobre a orbita.
+ * E amostrada por tempo simulado e nao por quadro, senao a aparencia dependeria
+ * da velocidade do tempo e da taxa de quadros, e a trilha diria algo sobre o
+ * computador e nao sobre a orbita.
  */
 
 /** Buffer circular de posicoes passadas de um corpo. */
@@ -16,7 +16,7 @@ export class Trilha {
   readonly intervaloDias: number;
 
   private readonly buf: Float64Array;
-  /** Onde `pontos()` monta a vista quando o anel ja deu a volta. Ver la. */
+  /** Onde `pontos()` monta a vista quando o anel ja deu a volta. */
   private readonly saida: Float64Array;
   private quantos = 0;
   private proximo = 0;
@@ -56,13 +56,13 @@ export class Trilha {
   }
 
   /**
-   * Pontos do mais antigo para o mais recente, achatados em 3 numeros cada. A vista
-   * devolvida e reutilizada a cada chamada e nao serve para guardar. A funcao roda uma
-   * vez por corpo por quadro (nove corpos a 60 Hz) e cada chamada alocava um
-   * `Float64Array` de 420 pontos, 10 KB: cerca de 540 arrays por segundo, 5,4 MB/s de
-   * lixo para ser copiado no buffer da fita e descartado. Quem precisar de um pedaco
-   * que sobreviva ao proximo quadro copia; o unico consumidor, `linhas/fitas.ts`, ja le
-   * e copia no mesmo instante.
+   * Pontos do mais antigo para o mais recente, achatados em 3 numeros cada.
+   *
+   * A vista devolvida e reutilizada a cada chamada e nao serve para guardar. A
+   * funcao roda uma vez por corpo por quadro (nove corpos a 60 Hz), e alocar um
+   * `Float64Array` de 10 KB a cada chamada geraria 5,4 MB/s de lixo. Quem precisar
+   * de um pedaco que sobreviva ao proximo quadro copia; o unico consumidor,
+   * `linhas/fitas.ts`, ja copia no mesmo instante.
    */
   pontos(): Float64Array {
     const n = 3 * this.quantos;
@@ -75,10 +75,9 @@ export class Trilha {
 }
 
 /**
- * Uma trilha por corpo, com intervalo de amostragem ajustado a orbita. Netuno leva
- * 165 anos por volta e Mercurio 88 dias; um intervalo unico deixaria a trilha de
- * Mercurio um borrao e a de Netuno um tracinho. O intervalo e uma fracao do periodo
- * de cada corpo.
+ * Uma trilha por corpo, com intervalo de amostragem proporcional ao periodo.
+ * Netuno leva 165 anos por volta e Mercurio 88 dias; um intervalo unico deixaria
+ * a trilha de Mercurio um borrao e a de Netuno um tracinho.
  */
 export class ConjuntoTrilhas {
   readonly trilhas: Trilha[];
@@ -93,9 +92,9 @@ export class ConjuntoTrilhas {
   }
 
   /**
-   * Poe a trilha de cada corpo na casa dele. Apagar um corpo desloca os seguintes uma
-   * casa para tras, e a trilha tem de seguir o corpo, e nao a casa. Quem nao tinha
-   * trilha recebe uma limpa; a de quem saiu e limpa e volta para as reservas.
+   * Poe a trilha de cada corpo na casa dele. Apagar um corpo desloca os seguintes
+   * uma casa para tras, e a trilha tem de seguir o corpo, e nao a casa. Quem nao
+   * tinha trilha recebe uma limpa; a de quem saiu volta limpa para as reservas.
    */
   acompanhar(chaves: readonly string[]): void {
     let mudou = false;
@@ -127,7 +126,7 @@ export class ConjuntoTrilhas {
   }
 
   /**
-   * So os `n` corpos em uso. As casas de reserva tem `pos` zerado, e gravar nelas
+   * So os `n` corpos em uso: as casas de reserva tem `pos` zerado, e gravar nelas
    * daria ao proximo corpo criado um rastro que comeca na origem.
    */
   registrar(pos: Float64Array, tDias: number, n = this.trilhas.length): void {

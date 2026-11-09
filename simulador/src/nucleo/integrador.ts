@@ -1,19 +1,18 @@
 /**
  * Integradores simpleticos. O erro de energia oscila em torno de zero em vez de
- * crescer, que e o que se quer numa simulacao que pode rodar por seculos
- * simulados. Runge-Kutta 4 erra menos num passo isolado, mas a orbita encolhe
- * aos poucos.
+ * crescer, o que importa numa simulacao que pode rodar por seculos simulados.
+ * Runge-Kutta 4 erra menos num passo isolado, mas a orbita encolhe aos poucos.
  *
- * Yoshida de 4a ordem com passo fixo de 0,5 dia. Erro de posicao de Mercurio
- * contra o JPL Horizons em 10 anos, medido na versao 2D (avaliacoes de forca
- * contadas com a aceleracao reaproveitada entre passos):
+ * O padrao e Yoshida de 4a ordem com passo fixo de 0,5 dia. Erro de posicao de
+ * Mercurio contra o JPL Horizons em 10 anos (avaliacoes de forca contadas com a
+ * aceleracao reaproveitada entre passos):
  *
  *     leapfrog dt=0,25 d      14 610 avaliacoes    erro 1,0e6 km
  *     leapfrog dt=0,021 d    175 320 avaliacoes    erro 5,4e3 km
  *     Yoshida4 dt=0,5 d       21 915 avaliacoes    erro 1,4e4 km
  *
- * Para chegar ao erro do Yoshida o leapfrog precisa de mais de 116 mil
- * avaliacoes, mais de cinco vezes o custo.
+ * Para chegar ao erro do Yoshida o leapfrog precisa de mais de cinco vezes o
+ * custo.
  *
  * O passo e fixo porque o variavel quebra a propriedade simpletica, e o fixo
  * faz a data exibida ser sempre `t0 + n * 0,5 dia`.
@@ -65,10 +64,10 @@ export const leapfrog: Integrador = {
  * meio com sinal negativo. Os termos de erro de 2a ordem se cancelam e sobra
  * erro de 4a ordem.
  *
- * Escritos como literais de 17 digitos, e nao calculados, para que o valor nao
- * dependa de `Math.cbrt` concordar com `2 ** (1/3)` no ultimo bit em todo
- * motor de JavaScript. `pesosYoshida.test.ts` confere os literais contra a
- * formula dentro de 1 ulp.
+ * Sao literais de 17 digitos, e nao calculados, para o valor nao depender de
+ * `Math.cbrt` concordar com `2 ** (1/3)` no ultimo bit em todo motor de
+ * JavaScript. `pesosYoshida.test.ts` confere os literais contra a formula
+ * dentro de 1 ulp.
  */
 const W1 = 1.3512071919596578; // 1 / (2 - 2^(1/3))
 const W0 = -1.7024143839193155; // 1 - 2*W1
@@ -97,12 +96,12 @@ export const yoshida4: Integrador = {
  * exatamente simpletico. Em Mercurio o termo vale cerca de 3e-8 da gravidade
  * do Sol.
  *
- * Por que o termo e avaliado no meio do kick. Com a velocidade do comeco do
- * kick, o passo fica assimetrico no tempo e o erro cai so com dt: contra a
- * DE440s, Mercurio errava milhoes de km por seculo, mais do que sem o termo.
- * Estimando a velocidade no meio do kick, o metodo volta a ser de 4a ordem
- * (`relatividade.test.ts` confere). A correcao custa um termo a mais por kick,
- * mas nenhuma avaliacao N^2 a mais.
+ * O termo e avaliado no meio do kick. Com a velocidade do comeco do kick, o
+ * passo fica assimetrico no tempo e o erro cai so com dt: contra a DE440s,
+ * Mercurio errava milhoes de km por seculo, mais do que sem o termo. Com a
+ * velocidade estimada no meio, o metodo volta a ser de 4a ordem
+ * (`relatividade.test.ts` confere), e a correcao custa um termo a mais por
+ * kick, sem avaliacao N^2 extra.
  */
 export const yoshida4Relativistico: Integrador = {
   nome: 'yoshida4Relativistico',

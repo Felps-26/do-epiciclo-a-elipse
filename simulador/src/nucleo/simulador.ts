@@ -1,26 +1,24 @@
 /**
  * Liga o relogio de parede ao relogio da simulacao, com honestidade.
  *
- * O problema: alguem pede "365 dias por segundo". A 60 quadros por segundo sao
- * 6 dias por quadro, ou 12 passos de meio dia. Tudo bem. Mas se pedir 100 mil
- * dias por segundo, nenhuma maquina da conta.
+ * "365 dias por segundo" a 60 quadros por segundo sao 6 dias por quadro, ou 12
+ * passos de meio dia, e cabe. "100 mil dias por segundo" nenhuma maquina
+ * entrega.
  *
- * Ha tres jeitos errados de lidar com isso, e nenhum e usado aqui:
+ * Tres jeitos de lidar com isso estariam errados:
  *
- *   1. Aumentar o passo de integracao para cobrir mais tempo. Degrada a fisica
- *      em silencio — a orbita continua bonita e fica errada.
- *   2. Acumular a divida e pagar depois. A simulacao trava tentando alcancar.
- *   3. Pular passos. A data na tela deixaria de corresponder ao estado fisico.
+ *   1. Aumentar o passo de integracao para cobrir mais tempo degrada a fisica
+ *      em silencio: a orbita continua bonita e fica errada.
+ *   2. Acumular a divida e pagar depois trava a simulacao tentando alcancar.
+ *   3. Pular passos faz a data na tela deixar de corresponder ao estado fisico.
  *
- * O que este modulo faz: entrega quantos passos couberem no orcamento,
- * DESCARTA o excedente e avisa (`atrasado`). A data mostrada e sempre
- * `t0 + n*dt` exatos, e a interface diz que a velocidade real esta abaixo da
- * pedida. Nada de errado acontece calado.
+ * Este modulo entrega os passos que couberem no orcamento, descarta o excedente
+ * e avisa (`atrasado`). A data mostrada e sempre `t0 + n*dt` exatos, e a
+ * interface diz que a velocidade real esta abaixo da pedida.
  *
- * O relogio e injetado. O simulador nao chama `performance.now()`: ele
- * recebe uma funcao. Sem isso, um teste nao conseguiria simular um quadro
- * lento, e o lint que proibe `performance` dentro do nucleo nao teria como
- * valer.
+ * O relogio e injetado em vez de chamar `performance.now()`: assim um teste
+ * consegue simular um quadro lento, e o lint que proibe `performance` dentro do
+ * nucleo continua valendo.
  */
 import { PADRAO, PASSO_PADRAO_DIAS, type Integrador } from './integrador.ts';
 import { ajustarRascunho, criarRascunho, type EstadoSistema, type Rascunho } from './tipos.ts';
@@ -101,8 +99,8 @@ export class Simulador {
     if (pedidos <= 0) return { ...PARADO };
 
     // O residuo guarda a fracao de passo nao usada, para que velocidades
-    // baixas — menos de um passo por quadro — ainda avancem suavemente em vez
-    // de ficarem congeladas ate juntar um passo inteiro.
+    // abaixo de um passo por quadro avancem suavemente em vez de ficarem
+    // paradas ate juntar um passo inteiro.
     this.residuo += pedidos;
     const querido = Math.trunc(this.residuo / this.dtDias);
     const passos = Math.min(querido, this.passosMaxPorQuadro);
@@ -116,7 +114,7 @@ export class Simulador {
     const msGastos = this.cronometro() - t0;
 
     if (atrasado) {
-      this.residuo = 0; // descarta o excedente; nao acumula divida
+      this.residuo = 0; // descarta o excedente, sem acumular divida
     } else {
       this.residuo -= passos * this.dtDias;
     }

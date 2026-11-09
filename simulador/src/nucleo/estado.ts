@@ -4,9 +4,8 @@
  *
  * Num sistema isolado integrado por um metodo simpletico, energia e momento
  * angular oscilam em torno de um valor fixo em vez de derivar. O HUD tecnico
- * mostra os dois ao vivo, e os testes os usam como criterio — e por isso que
- * um erro de sinal ou de unidade aparece em segundos, e nao em cem anos
- * simulados.
+ * mostra os dois ao vivo e os testes os usam como criterio, entao um erro de
+ * sinal ou de unidade aparece em segundos, e nao em cem anos simulados.
  */
 import type { EstadoSistema } from './tipos.ts';
 
@@ -85,13 +84,12 @@ function crescer(e: EstadoSistema, capacidadeMinima: number): void {
 }
 
 /**
- * Acrescenta um corpo NO FIM e devolve o indice dele.
+ * Acrescenta um corpo no fim e devolve o indice dele.
  *
- * Inserir no fim nao e detalhe de implementacao: o laco de forcas soma os
- * pares na ordem dos indices, entao acrescentar ao fim preserva a ordem de
- * somatorio dos pares que ja existiam. E o que faz
- * `insercaoNaoPerturba.test.ts` poder exigir trajetorias identicas BIT A BIT
- * para os corpos antigos quando se insere um corpo de massa zero.
+ * O laco de forcas soma os pares na ordem dos indices, entao inserir no fim
+ * preserva a ordem de somatorio dos pares existentes. Por isso os corpos antigos
+ * seguem identicos bit a bit quando se insere um corpo de massa zero
+ * (`insercaoNaoPerturba.test.ts`).
  */
 export function inserirCorpo(
   e: EstadoSistema,
@@ -115,9 +113,9 @@ export function inserirCorpo(
 /**
  * Remove o corpo `i` deslocando os seguintes para tras.
  *
- * Nao se troca pelo ultimo ("swap-remove"), apesar de ser mais barato: isso
- * embaralharia a ordem dos corpos, e a ordem e visivel — ela e a lista lateral,
- * a ordem de somatorio das forcas e os indices que a cena guarda.
+ * Trocar pelo ultimo seria mais barato, mas embaralharia a ordem dos corpos, e
+ * essa ordem aparece na lista lateral, no somatorio das forcas e nos indices
+ * que a cena guarda.
  */
 export function removerCorpo(e: EstadoSistema, i: number): void {
   if (i < 0 || i >= e.n) throw new RangeError(`corpo ${i} nao existe (n = ${e.n})`);
@@ -222,8 +220,8 @@ export function gmTotal(e: EstadoSistema): number {
 /**
  * Centro de massa dos corpos simulados (3,), em UA.
  *
- * Nao e exatamente a origem, e isso nao e defeito: a origem e o baricentro do
- * Sistema Solar inteiro, que inclui corpos que este modelo nao carrega.
+ * Nao coincide com a origem: a origem e o baricentro do Sistema Solar inteiro,
+ * que inclui corpos que este modelo nao carrega.
  */
 export function centroDeMassa(e: EstadoSistema): [number, number, number] {
   const { pos, gm, n } = e;

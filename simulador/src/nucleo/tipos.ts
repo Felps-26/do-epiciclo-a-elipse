@@ -1,8 +1,8 @@
 /**
  * Estado físico do sistema: quem está onde, com que velocidade, em que instante.
  *
- * - Sempre 3D. Mesmo quando a tela mostrava o plano da eclíptica, o estado
- *   guardado era (x,y,z); trocar o renderizador não mexe aqui.
+ * - Sempre 3D. Mesmo quando a tela mostra o plano da eclíptica, o estado
+ *   guarda (x,y,z); trocar o renderizador não mexe aqui.
  * - Um array por grandeza, não um objeto por corpo. `pos` é um Float64Array com
  *   3N números, o laço de forças percorre memória contígua e nada é alocado por
  *   passo.

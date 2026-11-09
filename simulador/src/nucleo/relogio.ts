@@ -5,7 +5,7 @@
  * Fliegel e Van Flandern) e nao o `Date` do JavaScript, por tres motivos: `Date`
  * carrega fuso horario e aqui a escala e TDB; `Date` so vai ate ±273.790 anos e o
  * programa permite andar alem; e o nucleo tem de ser deterministico e sem
- * plataforma, o que o lint ja cobra proibindo `Date.now` aqui dentro.
+ * plataforma, o que o lint cobra ao proibir `Date.now` aqui dentro.
  */
 import { ANO_DIAS } from './unidades.ts';
 
@@ -15,9 +15,9 @@ export const MESES = [
 ] as const;
 
 /**
- * A escada de velocidade. Cada degrau e uma escolha de leitura, nao uma
- * progressao geometrica: 1 dia/s para ver a Lua, 30 para ver os internos, 365
- * para ver a Terra fechar uma volta por segundo, 7300 para ver Netuno andar.
+ * A escada de velocidade. Cada degrau e uma escolha de leitura, e nao uma
+ * progressao geometrica: 1 dia/s para ver a Lua, 30 para os planetas internos,
+ * 365 para a Terra fechar uma volta por segundo, 7300 para ver Netuno andar.
  */
 export const ESCADA_DIAS_POR_SEGUNDO = [1, 5, 30, 100, 365, 1825, 3650, 7300] as const;
 
@@ -69,10 +69,10 @@ export function dataCurta(data: DataCivil): string {
 }
 
 /**
- * "30 dias por segundo", "3 meses por segundo", "10 anos por segundo". Porte literal
- * de `rotulo_velocidade` do original, com o degrau de meses entre 45 e 300 dias: sem
- * ele, 100 dias/s viraria "0,3 ano por segundo". Arredonda para inteiro porque "9,9
- * anos por segundo" tem uma precisao que a leitura nao usa.
+ * "30 dias por segundo", "3 meses por segundo", "10 anos por segundo". O degrau
+ * de meses, entre 45 e 300 dias, evita que 100 dias/s vire "0,3 ano por segundo".
+ * Arredonda para inteiro porque "9,9 anos por segundo" tem uma precisao que a
+ * leitura nao usa.
  */
 export function velocidadePorExtenso(diasPorSegundo: number): string {
   const d = diasPorSegundo;
@@ -90,9 +90,9 @@ export function velocidadePorExtenso(diasPorSegundo: number): string {
 /**
  * Degrau seguinte ou anterior da escada, limitado pelo teto da maquina. Quando a
  * velocidade atual nao esta na escada, parte-se do degrau mais proximo e nao do
- * primeiro. A diferenca aparece quando a calibragem corta a escada entre duas
- * aberturas ou um arquivo de preferencias guarda um valor que deixou de existir:
- * partir do primeiro jogaria alguem de 3650 dias/s para 5 num toque.
+ * primeiro. Isso acontece quando a calibragem corta a escada entre duas aberturas
+ * ou as preferencias guardam um valor que deixou de existir; partir do primeiro
+ * jogaria alguem de 3650 dias/s para 5 num toque.
  */
 export function mudarVelocidade(atual: number, passo: -1 | 1, tetoDiasPorSegundo: number): number {
   const possiveis = ESCADA_DIAS_POR_SEGUNDO.filter((v) => v <= tetoDiasPorSegundo);

@@ -2,16 +2,15 @@
  * Grandezas lidas do estado atual: distancia, velocidade e a elipse que o corpo
  * percorre neste instante.
  *
- * Elementos osculadores: a orbita de um planeta nao e uma elipse fixa, porque os
- * outros planetas a deformam devagar. Aqui se calcula a elipse que o corpo seguiria
- * se, a partir deste instante, so o Sol existisse. E uma foto instantanea, nao uma
+ * Elementos osculadores: a orbita de um planeta nao e uma elipse fixa, porque
+ * os outros planetas a deformam devagar. Calcula-se a elipse que o corpo
+ * seguiria se, a partir deste instante, so o Sol existisse: uma foto, nao uma
  * previsao.
  *
- * Elementos heliocentricos exigem posicao e velocidade relativas ao Sol. A versao
- * anterior (versoes-anteriores/v1-fourier/utils/lib.py) usava vetores baricentricos com a
- * gravidade solar, misturando dois referenciais. O Sol se move cerca de 0,005 UA em
- * torno do baricentro, puxado sobretudo por Jupiter, e para Venus isso inflava a
- * excentricidade calculada em 2,5 vezes.
+ * Os elementos heliocentricos exigem posicao e velocidade relativas ao Sol.
+ * Misturar vetores baricentricos com a gravidade solar mistura dois
+ * referenciais: o Sol se afasta cerca de 0,005 UA do baricentro, e para Venus
+ * isso infla a excentricidade em 2,5 vezes.
  */
 import { GRAUS_POR_RAD } from './unidades.ts';
 import type { EstadoSistema } from './tipos.ts';
@@ -73,28 +72,16 @@ export function velocidadeOrbital(e: EstadoSistema, i: number, iSol = 0): number
   return norma(relativoAoSol(e, i, iSol).v);
 }
 
-/**
- * Angulo do corpo no plano da ecliptica, em radianos. Base da comparacao entre dois
- * planetas: quanto cada um girou no mesmo intervalo.
- */
+/** Angulo do corpo no plano da ecliptica, em radianos. Base da comparacao entre planetas. */
 export function anguloHeliocentrico(e: EstadoSistema, i: number, iSol = 0): number {
   const { r } = relativoAoSol(e, i, iSol);
   return Math.atan2(r[1], r[0]);
 }
 
 /**
- * Elipse instantanea do corpo i em torno do Sol.
- *
- * `mu = GM(Sol) + GM(corpo)`: o problema de dois corpos depende da massa total. Para
- * Jupiter a diferenca no semieixo e 0,1%, maior que a tolerancia com que o teste
- * compara contra os elementos medios.
- */
-/**
- * Erro de programacao: alguem pediu a orbita do proprio referencial. O Python
- * levantava `ZeroDivisionError`; o JavaScript devolveria em silencio `a = 0`,
- * `periodo = 0` e `ligada = true`, e a ficha diria "uma volta leva cerca de 0 dias".
- * Devolver NAO_LIGADA tambem seria errado, porque significa orbita aberta. O Sol nao
- * tem orbita heliocentrica, e por isso `analiseSol.ts` existe.
+ * Pedir a orbita do proprio referencial e erro de programacao. Sem a guarda,
+ * sairia `a = 0` e `ligada = true`; devolver NAO_LIGADA tambem enganaria, porque
+ * significaria orbita aberta. Para o Sol existe `analiseSol.ts`.
  */
 function exigirQueNaoSejaOReferencial(i: number, iSol: number): void {
   if (i === iSol) {
@@ -104,6 +91,13 @@ function exigirQueNaoSejaOReferencial(i: number, iSol: number): void {
   }
 }
 
+/**
+ * Elipse instantanea do corpo i em torno do Sol.
+ *
+ * `mu = GM(Sol) + GM(corpo)`: o problema de dois corpos depende da massa total.
+ * Para Jupiter a diferenca no semieixo e 0,1%, maior que a tolerancia do teste
+ * contra os elementos medios.
+ */
 export function elementosOsculadores(e: EstadoSistema, i: number, iSol = 0): ElementosOsculadores {
   exigirQueNaoSejaOReferencial(i, iSol);
   const { r, v } = relativoAoSol(e, i, iSol);
@@ -113,9 +107,8 @@ export function elementosOsculadores(e: EstadoSistema, i: number, iSol = 0): Ele
 /**
  * Os mesmos elementos, a partir de vetores soltos.
  *
- * O sandbox precisa avaliar um corpo antes de inseri-lo: recusar depois seria
- * inserir e desfazer, passando o estado por uma configuracao que o proprio programa
- * considera invalida.
+ * O sandbox avalia um corpo antes de inseri-lo; recusar depois obrigaria a
+ * inserir e desfazer, passando o estado por uma configuracao invalida.
  */
 export function elementosDeVetores(
   rVec: readonly [number, number, number],
@@ -155,13 +148,12 @@ export function elementosDeVetores(
 /**
  * Pontos (n,3) da elipse instantanea, em UA, no referencial da cena.
  *
- * Desenhada em torno da posicao atual do Sol, entao acompanha o Sol quando ele se
- * desloca. Devolve um Float64Array achatado com 3 numeros por ponto, vazio quando a
- * orbita nao esta ligada.
+ * Desenhada em torno da posicao atual do Sol, para acompanha-lo. Devolve um
+ * Float64Array achatado (3 numeros por ponto), vazio quando a orbita nao esta
+ * ligada.
  *
- * A base perifocal e ortonormal: `p` aponta para o perielio, `w` e a normal do plano
- * orbital e `q` fecha os dois. Assim a elipse sai no plano orbital real em 3D, sem
- * rotacao depois.
+ * Na base perifocal, `p` aponta para o perielio, `w` e a normal do plano e `q`
+ * fecha a base; a elipse ja sai no plano orbital real, sem rotacao depois.
  */
 export function elipseOsculadora(
   e: EstadoSistema,
@@ -199,9 +191,8 @@ export function elipseOsculadora(
 
   const saida = new Float64Array(3 * nPontos);
   for (let k = 0; k < nPontos; k++) {
-    // Parametrizada pela anomalia excentrica: distribui os pontos pela geometria da
-    // elipse, nao pelo tempo, que e o que um caminho desenhado quer. O laboratorio de
-    // Fourier e quem precisa de espacamento por tempo.
+    // Anomalia excentrica espalha os pontos pela geometria da elipse, que e o que
+    // um caminho desenhado quer. Espacamento por tempo e coisa do laboratorio.
     const anomalia = (2 * Math.PI * k) / (nPontos - 1);
     const x = a * (Math.cos(anomalia) - exc);
     const y = b * Math.sin(anomalia);
@@ -215,14 +206,12 @@ export function elipseOsculadora(
 /**
  * A elipse que um corpo seguiria se fosse largado aqui, com esta velocidade.
  *
- * Fechada, nao integrada. A trajetoria prevista do sandbox e a mesma elipse
- * osculadora de dois corpos que o programa ja desenha para os oito planetas.
- * Integrar custaria um worker, milhares de passos por gesto e uma segunda fisica
- * com direito de discordar da primeira, para chegar no primeiro instante a esta
- * mesma elipse.
+ * Fechada, nao integrada: integrar custaria um worker e uma segunda fisica que
+ * poderia discordar da primeira, para chegar no primeiro instante a esta mesma
+ * elipse osculadora de dois corpos.
  *
- * Devolve vazio quando a orbita nao e fechada: nao ha volta para desenhar, e a
- * ausencia da linha diz que o corpo vai embora.
+ * Devolve vazio quando a orbita nao e fechada; a ausencia da linha diz que o
+ * corpo vai embora.
  */
 export function previsaoDeOrbita(
   posUa: readonly [number, number, number],
@@ -280,23 +269,14 @@ export interface CurvaDoLaboratorio {
 /**
  * A orbita osculadora amostrada igualmente espacada no tempo, no proprio plano.
  *
- * Fica ao lado de `elipseOsculadora` porque as duas respondem a perguntas
- * diferentes:
+ * Difere de `elipseOsculadora`, que espalha os pontos pela geometria: aqui eles
+ * ficam juntos perto do apoastro e espalhados perto do periastro, onde o corpo
+ * corre. Sao funcoes distintas, com coeficientes de Fourier distintos, e a
+ * serie de epiciclos so descreve o movimento com parametrizacao pelo tempo,
+ * porque o epiciclo gira a velocidade constante.
  *
- *   `elipseOsculadora`  parametriza pela anomalia excentrica, com densidade
- *                       uniforme ao longo da curva, que e o que um caminho
- *                       desenhado quer.
- *   esta                parametriza pelo tempo: os pontos ficam juntos perto do
- *                       apoastro e espalhados perto do periastro, onde o corpo
- *                       corre.
- *
- * Para o laboratorio de Fourier a diferenca e de conteudo: sao funcoes distintas,
- * com coeficientes distintos. A serie de epiciclos so descreve o movimento se a
- * parametrizacao for o tempo, porque o epiciclo gira a velocidade constante, o que
- * e uma afirmacao sobre o tempo. Esse foi um dos erros de `versoes-anteriores/v1-fourier/`.
- *
- * Sai em 2D no plano orbital: o laboratorio e um grafico, e a terceira dimensao so
- * acrescentaria oclusao, escondendo o desvio que se quer medir.
+ * Sai em 2D no plano orbital: a terceira dimensao so acrescentaria oclusao e
+ * esconderia o desvio que se quer medir.
  */
 export function curvaDoLaboratorio(
   e: EstadoSistema,

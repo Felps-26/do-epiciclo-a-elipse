@@ -1,20 +1,19 @@
 /**
  * Onde cada lua esta, por Kepler e nao pelo integrador.
  *
- * Ficam fora da integracao porque a Lua da uma volta em 27,3 dias (55 passos de meio
- * dia por orbita, e Yoshida4 ali ja precessa visivelmente) e Io em 1,77 dia (tres
- * passos e meio), regime em que o integrador inventa em vez de integrar. Baixar o
- * passo global para Io custaria o desempenho de tudo e mudaria a camada validada
- * contra o JPL em cem anos para frente e para tras.
+ * Ficam fora da integracao porque a Lua da uma volta em 27,3 dias (55 passos de
+ * meio dia por orbita, onde Yoshida4 ja precessa visivelmente) e Io em 1,77 dia
+ * (tres passos e meio). Baixar o passo global para Io custaria o desempenho de
+ * tudo e mudaria a camada validada contra o JPL em cem anos.
  *
- * O preco: a posicao vem de elementos medios com taxas seculares, e erra. O erro foi
- * medido em 2020–2040, janela que o gerador dos dados nunca viu, e vai publicado
- * corpo a corpo, de 456 km em Deimos a 52.636 km em Tritao. Nao cresce: e um desvio
- * limitado, feito dos termos periodicos que um modelo de duas massas nao tem.
+ * O preco e que a posicao vem de elementos medios com taxas seculares, e erra. O
+ * erro foi medido em 2020–2040, janela que o gerador dos dados nunca viu, e e
+ * publicado corpo a corpo, de 456 km em Deimos a 52.636 km em Tritao. Nao cresce:
+ * sao os termos periodicos que um modelo de duas massas nao tem.
  *
- * As luas nao puxam nada. Sao cinematicas: leem o tempo e devolvem uma posicao, nao
- * entram em `forcas.ts` nem alteram o estado, e por isso inserir a decima quarta nao
- * muda um bit da trajetoria dos nove primeiros.
+ * As luas sao cinematicas: leem o tempo e devolvem uma posicao, sem entrar em
+ * `forcas.ts` nem alterar o estado. Inserir a decima quarta nao muda um bit da
+ * trajetoria dos nove primeiros.
  */
 import type { BaseDoPlano, ElementosDeLua } from '../contratos/lua.ts';
 import { resolverKepler } from './kepler.ts';
@@ -25,10 +24,8 @@ const GRAU = Math.PI / 180;
 
 /**
  * Posicao da lua em UA, relativa ao centro do planeta, na ecliptica J2000. `dias`
- * conta a partir da epoca dos elementos (J2000,0) e nao da epoca do programa, que
- * sao efemerides diferentes; converter aqui, num lugar so, e mais barato que lembrar
- * da conversao em cada chamada. Escreve em `saida` em vez de alocar, porque roda
- * treze vezes por quadro.
+ * conta a partir da epoca dos elementos (J2000,0), e nao da epoca do programa.
+ * Escreve em `saida` em vez de alocar, porque roda treze vezes por quadro.
  */
 export function posicaoDaLua(
   el: ElementosDeLua,
@@ -54,8 +51,7 @@ export function posicaoDaLua(
   const cw = Math.cos(w);
   const sw = Math.sin(w);
 
-  // Rz(no)·Rx(i)·Rz(periastro), escrita aberta — so as duas colunas que o
-  // plano orbital usa.
+  // Rz(no)·Rx(i)·Rz(periastro), aberta: so as duas colunas que o plano orbital usa.
   const noPlano: [number, number, number] = [
     (cO * cw - sO * sw * ci) * xP + (-cO * sw - sO * cw * ci) * yP,
     (sO * cw + cO * sw * ci) * xP + (-sO * sw + cO * cw * ci) * yP,
@@ -74,10 +70,10 @@ export function posicaoDaLua(
  *     r_Terra = −r_TerraLua / (1 + EMRAT)
  *
  * O corpo `terra` que o integrador move e o baricentro do par, que e o que a
- * efemeride do JPL mede e o que mantem a validacao de cem anos. O planeta desenhado
- * fica a uns 4.671 km dele, do lado oposto ao da Lua, e esse deslocamento faz a Terra
- * bambolear no ritmo do mes. Sem ele a Lua orbitaria um ponto que nao e o centro do
- * planeta, e a sombra dela cairia no lugar errado.
+ * efemeride do JPL mede. O planeta desenhado fica a uns 4.671 km dele, do lado
+ * oposto ao da Lua, e a Terra bamboleia no ritmo do mes. Sem o deslocamento a Lua
+ * orbitaria um ponto que nao e o centro do planeta, e a sombra cairia no lugar
+ * errado.
  */
 export function deslocamentoDoCentroDaTerra(
   posicaoDaLuaUa: readonly [number, number, number],
