@@ -262,7 +262,7 @@ O integrador simplético mais simples é o \emph{leapfrog}, ou Verlet de velocid
   \vr_{k+1}   &= \vr_k + \Delta t\,\vv_{k+1/2}, \label{eq:leapfrog}\\
   \vv_{k+1}   &= \vv_{k+1/2} + \tfrac12\Delta t\,\va(\vr_{k+1}). \nonumber
 \end{align}
-É de segunda ordem, simétrico no tempo (dar um passo com $-\Delta t$ desfaz exatamente o passo com $+\Delta t$, a menos do arredondamento) e custa uma avaliação de força por passo, porque $\va(\vr_{k+1})$ é reaproveitada no passo seguinte. Denote por $S_2(\Delta t)$ esse passo.
+É de segunda ordem, simétrico no tempo (dar um passo com $-\Delta t$ desfaz exatamente o passo com $+\Delta t$, a menos do arredondamento) e custa uma avaliação de força por passo, porque $\va(\vr_{k+1})$ pode ser reaproveitada no passo seguinte. O simulador não faz esse reaproveitamento e gasta duas avaliações; nas comparações de custo da \autoref{sec:res-integradores} contamos uma, que é o custo do método. Denote por $S_2(\Delta t)$ esse passo.
 
 \subsubsection{A composição de Yoshida}
 

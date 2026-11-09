@@ -63,6 +63,8 @@ def passo_rk4(p, v, gm, dt):
     return p, v
 
 
+# custo do metodo, nao desta implementacao: o leapfrog pode reaproveitar a aceleracao do fim
+# do passo no comeco do seguinte (aqui e no integrador.ts ela e recalculada)
 AVALIACOES = {'leapfrog': 1, 'yoshida4': 3, 'rk4': 4}
 PASSOS = {'leapfrog': passo_leapfrog, 'yoshida4': passo_yoshida, 'rk4': passo_rk4}
 
