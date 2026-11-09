@@ -1,5 +1,5 @@
 \section{Contexto histórico: dos epiciclos à gravitação}\label{cap:historia}
-% orçamento: 900 palavras
+% orçamento: 1.100 palavras
 
 O resumo histórico a seguir é breve e segue as fontes usadas por \citeonline{farias2016}. Um tratamento mais extenso está em \cite{kuhn2002,martins2003,damasio2011,linton2004}.
 
@@ -14,12 +14,10 @@ O próprio simulador reproduz o fenômeno. A \autoref{fig:marte-retrogrado} most
   \caption{Movimento retrógrado de Marte em 2027, calculado pelo simulador}
   \label{fig:marte-retrogrado}
   \includegraphics[width=\textwidth]{marte_retrogrado.pdf}
-  \legend{(a) Longitude eclíptica geocêntrica de Marte ao longo de dois anos; a faixa sombreada marca o intervalo em que ela decresce. (b) O mesmo intervalo no plano longitude--latitude, com o eixo de longitude invertido como no céu: o círculo e o quadrado marcam o início e o fim da retrogradação. Fonte: elaborada pelos autores com o integrador descrito no \autoref{cap:matematica}.}
+  \legend{(a) Longitude eclíptica geocêntrica de Marte ao longo de dois anos; a faixa sombreada marca o intervalo em que ela decresce. (b) O mesmo intervalo no plano longitude--latitude, com o eixo de longitude invertido como no céu: o círculo e o quadrado marcam o início e o fim da retrogradação. Fonte: elaborada pelos autores com o integrador descrito na \autoref{sec:integradores}.}
 \end{figure}
 
-\begin{paracomecar}
-O recuo é uma ilusão de perspectiva. A Terra anda mais depressa que Marte na órbita. Quando ela o ultrapassa, por algumas semanas Marte parece andar para trás, do mesmo jeito que um carro mais lento parece ir para trás quando o ultrapassamos na estrada.
-\end{paracomecar}
+Hoje sabemos que o recuo é efeito de perspectiva: a Terra anda mais depressa que Marte e, quando o ultrapassa, por algumas semanas Marte parece andar para trás.
 
 \subsection{Ptolomeu: deferente, epiciclo, excêntrico e equante}
 
@@ -60,7 +58,7 @@ Dois refinamentos completam o modelo (\autoref{fig:ptolomeu}). O centro do defer
 
 Nicolau Copérnico (1473--1543) apresentou o heliocentrismo primeiro num manuscrito curto, o \emph{Commentariolus}, que circulou por volta de 1514, e depois no \emph{De revolutionibus orbium coelestium}, publicado em 1543 \cite{martins2003,kuhn2002}. Com o Sol no centro, o movimento retrógrado deixa de exigir um epiciclo próprio para cada planeta: ele aparece naturalmente quando a Terra ultrapassa um planeta externo, ou é ultrapassada por um interno.
 
-Copérnico, porém, não abandonou os círculos. Para reproduzir as variações de velocidade que Ptolomeu explicava com o equante, ele usou epiciclos menores. No \emph{Commentariolus}, cada planeta tem um deferente centrado no centro da órbita da Terra, que fica deslocado do Sol, e dois epiciclos. Os raios são dados em \emph{partes}, com o raio da órbita da Terra dividido em 25 partes \cite{martins2003,farias2016}. A \autoref{tab:copernico-raios} reproduz esses valores.
+Copérnico, porém, não abandonou os círculos. Para reproduzir as variações de velocidade que Ptolomeu explicava com o equante, ele usou epiciclos menores. No \emph{Commentariolus}, cada planeta tem um deferente e dois epiciclos, e o centro do deferente não é o Sol: é o centro da órbita da Terra, o chamado Sol médio, que fica um pouco deslocado do Sol verdadeiro. Os raios são dados em \emph{partes}, com o raio da órbita da Terra dividido em 25 partes \cite{martins2003,farias2016}. A \autoref{tab:copernico-raios} reproduz esses valores.
 
 \begin{table}[htb]
   \centering
@@ -80,7 +78,7 @@ Copérnico, porém, não abandonou os círculos. Para reproduzir as variações 
   \legend{Valores em partes, com o raio da órbita terrestre igual a 25 partes; o símbolo $'$ indica sessenta avos de parte. O deferente de Marte segue a correção de Rosen adotada por \citeonline{farias2016}. Fonte: \citeonline{farias2016}, a partir de \citeonline{martins2003}.}
 \end{table}
 
-A tabela mostra dois fatos, explicados no \autoref{cap:resultados}. Primeiro, dividindo os deferentes por 25, obtêm-se as distâncias médias ao Sol em unidades astronômicas com erro de poucos por cento: Marte, $38/25 = 1{,}52$; Júpiter, $5{,}22$; Saturno, $9{,}21$. Segundo, em todos os planetas o primeiro epiciclo é \emph{exatamente três vezes} o segundo.
+A tabela mostra dois fatos, explicados na \autoref{sec:copernico-revisitado}. Primeiro, dividindo os deferentes por 25, obtêm-se as distâncias médias ao Sol em unidades astronômicas com erro de poucos por cento: Marte, $38/25 = 1{,}52$; Júpiter, $5{,}22$; Saturno, $9{,}21$. Segundo, em todos os planetas o primeiro epiciclo é \emph{exatamente três vezes} o segundo.
 
 \subsection{Kepler e Newton}
 
@@ -92,10 +90,10 @@ Johannes Kepler (1571--1630), trabalhando com as observações de Tycho Brahe, a
   \item o quadrado do período é proporcional ao cubo do semieixo maior.
 \end{enumerate}
 
-As duas primeiras foram publicadas na \emph{Astronomia nova}, em 1609, e a terceira na \emph{Harmonices mundi}, em 1619. Isaac Newton mostrou nos \emph{Principia}, em 1687, que as três decorrem de uma única lei de força, a gravitação universal, somada às leis do movimento. O \autoref{cap:fisica} refaz essa demonstração.
+As duas primeiras foram publicadas na \emph{Astronomia nova}, em 1609, e a terceira na \emph{Harmonices mundi}, em 1619. Isaac Newton mostrou nos \emph{Principia}, em 1687, que as três decorrem de uma única lei de força, a gravitação universal, somada às leis do movimento (\autoref{cap:fisica}).
 
 \subsection{Fourier e a pergunta do TCC}
 
 Em 1807 Joseph Fourier apresentou o estudo da propagação do calor em que funções periódicas aparecem escritas como somas de senos e cossenos, publicado em 1822 na \emph{Théorie analytique de la chaleur} \cite{pifer2015}. Essa ideia dá uma resposta moderna para a eficácia dos epiciclos. Uma órbita fechada é uma curva periódica no plano. Se cada termo de uma série de Fourier for um círculo girando com velocidade constante, a série inteira é uma cadeia de epiciclos.
 
-Essa é a pergunta de \citeonline{farias2016}: os epiciclos de Copérnico são uma aproximação da série de Fourier das órbitas reais? Para responder, a série precisa estar na forma complexa (\autoref{cap:matematica}). Escrita assim, ela reproduz a construção de Copérnico termo a termo, até primeira ordem na excentricidade (\autoref{sec:copernico-revisitado}).
+Essa é a pergunta de \citeonline{farias2016}: os epiciclos de Copérnico são uma aproximação da série de Fourier das órbitas reais? Para responder, a série precisa estar na forma complexa (\autoref{cap:matematica}). Escrita assim, até primeira ordem na excentricidade, ela tem a mesma estrutura da construção de Copérnico (\autoref{sec:copernico-revisitado}).

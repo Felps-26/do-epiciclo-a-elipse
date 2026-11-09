@@ -239,6 +239,89 @@ Ficam fora da integração:
 
 Por isso os resultados se afastam devagar da efeméride do JPL, e o programa avisa o usuário. A versão 3D acrescenta treze luas, mas por outro método, sem integração (\autoref{sec:luas}).
 
+% movido da seção 3 na Tarefa 6; a Tarefa 8 corta
+\subsection{Integração numérica}\label{sec:integradores}
+
+\begin{paracomecar}
+O computador não resolve a equação do movimento de uma vez. Ele dá passos: sabendo onde cada planeta está e com que velocidade, calcula onde estará meio dia depois, e repete. O problema é que os pequenos erros de cada passo se somam e, com o tempo, deformam a órbita.
+\end{paracomecar}
+
+\subsubsection{O problema de um método ingênuo}
+
+O método mais simples, o de Euler, atualiza posição e velocidade usando os valores do início do passo: $\vr_{k+1} = \vr_k + \Delta t\,\vv_k$, $\vv_{k+1} = \vv_k + \Delta t\,\va(\vr_k)$. Para uma órbita circular, cada passo leva o corpo pela tangente, ligeiramente para fora do círculo, e a energia cresce a cada volta. Depois de algumas centenas de órbitas, o planeta escapa. Métodos de ordem mais alta, como o Runge--Kutta clássico de quarta ordem (RK4), erram muito menos em cada passo, mas o erro de energia continua tendo sinal sistemático e cresce sem limite, só que mais devagar.
+
+\subsubsection{Integradores simpléticos}
+
+As equações de Newton para a gravitação têm estrutura hamiltoniana: o estado é um ponto no espaço de fase $(\vr,\vv)$ e a evolução exata preserva volumes nesse espaço (teorema de Liouville). Um integrador \emph{simplético} é um método cujo passo também preserva essa estrutura \cite{hairer2006}. A consequência prática, demonstrada pela análise de erro regressiva, é que a solução numérica de um integrador simplético é a solução \emph{exata} de um hamiltoniano ligeiramente modificado, $\tilde H = H + O(\Delta t^p)$. Como $\tilde H$ se conserva exatamente, a energia verdadeira $H$ apenas oscila em torno do valor inicial, com amplitude $O(\Delta t^p)$, sem crescimento secular, por tempos exponencialmente longos.
+
+\subsubsection{Leapfrog (Verlet)}
+
+O integrador simplético mais simples é o \emph{leapfrog}, ou Verlet de velocidade \cite{verlet1967}. Ele alterna meio impulso, um deslocamento inteiro e outro meio impulso:
+\begin{align}
+  \vv_{k+1/2} &= \vv_k + \tfrac12\Delta t\,\va(\vr_k), \nonumber\\
+  \vr_{k+1}   &= \vr_k + \Delta t\,\vv_{k+1/2}, \label{eq:leapfrog}\\
+  \vv_{k+1}   &= \vv_{k+1/2} + \tfrac12\Delta t\,\va(\vr_{k+1}). \nonumber
+\end{align}
+É de segunda ordem, simétrico no tempo (dar um passo com $-\Delta t$ desfaz exatamente o passo com $+\Delta t$, a menos do arredondamento) e custa uma avaliação de força por passo, porque $\va(\vr_{k+1})$ é reaproveitada no passo seguinte. Denote por $S_2(\Delta t)$ esse passo.
+
+\subsubsection{A composição de Yoshida}
+
+\citeonline{yoshida1990} mostrou como construir métodos simpléticos de ordem mais alta compondo passos de um método simétrico de ordem 2. A versão de quarta ordem é
+\begin{equation}
+  S_4(\Delta t) = S_2(w_1\Delta t)\;S_2(w_0\Delta t)\;S_2(w_1\Delta t).
+  \label{eq:yoshida}
+\end{equation}
+Os pesos saem de duas condições. A soma dos subpassos precisa dar o passo inteiro, $2w_1 + w_0 = 1$. E o termo de erro de terceira ordem, que em cada $S_2(h)$ é proporcional a $h^3$, precisa se cancelar: $2w_1^3 + w_0^3 = 0$. Resolvendo,
+\begin{equation}
+  w_1 = \frac{1}{2 - 2^{1/3}} \approx 1{,}35120719,\qquad
+  w_0 = -\frac{2^{1/3}}{2 - 2^{1/3}} \approx -1{,}70241438.
+  \label{eq:pesos-yoshida}
+\end{equation}
+O peso central é \emph{negativo}: o subpasso do meio anda para trás no tempo. O método resultante é simplético, simétrico, de quarta ordem e custa três avaliações de força por passo.
+
+\begin{paraaprofundar}[: por que os pesos são escritos como números e não calculados]
+O programa grava $w_1$ e $w_0$ como literais de 17 algarismos em vez de calcular $1/(2-\sqrt[3]{2})$ em tempo de execução. A razão é a reprodutibilidade: assim o valor não depende de a função de raiz cúbica de cada motor de JavaScript concordar com as demais no último bit. Um teste automatizado confere os literais contra a fórmula com tolerância de uma unidade na última casa.
+\end{paraaprofundar}
+
+\subsubsection{Passo fixo}
+
+O simulador usa $S_4$ com passo \emph{fixo} de $\Delta t = 0{,}5$ dia, por duas razões independentes. Passo variável destrói a propriedade simplética, a menos de técnicas especiais. E com passo fixo a data exibida na tela é sempre exatamente $t_0 + k\cdot 0{,}5$ dia, sem arredondamento acumulado. O valor de meio dia foi escolhido por medição (\autoref{sec:res-integradores}).
+
+\subsubsection{Interpolação para o desenho}
+
+A física anda de meio em meio dia, mas a tela é redesenhada 60 ou 120 vezes por segundo. A 1 dia por segundo, isso daria dois saltos visíveis por segundo. O programa desenha uma posição intermediária entre dois estados integrados consecutivos usando a \emph{interpolação cúbica de Hermite}, que usa posição e velocidade nas duas pontas:
+\begin{equation}
+  \vr(\alpha) = h_{00}(\alpha)\,\vr_k + h_{10}(\alpha)\,\Delta t\,\vv_k + h_{01}(\alpha)\,\vr_{k+1} + h_{11}(\alpha)\,\Delta t\,\vv_{k+1},
+  \qquad 0\le\alpha\le1,
+  \label{eq:hermite}
+\end{equation}
+com $h_{00} = 2\alpha^3 - 3\alpha^2 + 1$, $h_{10} = \alpha^3 - 2\alpha^2 + \alpha$, $h_{01} = -2\alpha^3 + 3\alpha^2$ e $h_{11} = \alpha^3 - \alpha^2$. A curva resultante é contínua em posição e em velocidade nas fronteiras dos passos. Uma alternativa mais barata, extrapolar por Taylor a partir do estado atual, foi descartada por medição: em meio passo o termo de terceira ordem vale 213\,km em Mercúrio, 4\,\% do diâmetro do planeta, e isso aparecia como um tranco na fronteira de cada passo. A data escrita na tela é a do instante interpolado, $t_k + \alpha\Delta t$, de modo que o número na tela sempre corresponde ao desenho.
+
+\subsection{Aritmética de ponto flutuante}\label{sec:float}
+
+Computadores representam números reais com um número finito de algarismos binários, no padrão IEEE 754 \cite{ieee754,goldberg1991}. Em precisão dupla (\emph{float64}) há cerca de 16 algarismos decimais significativos; em precisão simples (\emph{float32}), cerca de 7. Toda a física do simulador roda em float64, e nessa precisão a posição de Netuno, a 30\,UA, fica quantizada em cerca de $10^{-15}\times 30\UA \approx 1\,\mathrm{mm}$.
+
+As placas gráficas, porém, trabalham em float32, que em 30\,UA quantiza a centenas de quilômetros. O problema não é o valor em si, que seria invisível na tela, mas a \emph{subtração de dois números grandes e próximos}. A câmera a 30\,UA da origem olhando um planeta também a 30\,UA precisa calcular a diferença entre as duas posições, e em float32 essa diferença perde quase todos os algarismos significativos. A cena treme. A solução, descrita na \autoref{sec:origem-flutuante}, é fazer essa subtração em float64, na CPU, antes de enviar qualquer coisa para a placa.
+
+\subsection{Escala de desenho}\label{sec:compressao}
+
+Netuno está 77 vezes mais longe do Sol que Mercúrio. Numa tela que mostra o sistema inteiro em escala real, os quatro planetas internos ocupam uma área do tamanho de um dedo. O programa oferece, como opção desligada por padrão, o \emph{modo maquete}, que comprime as distâncias desenhadas por
+\begin{equation}
+  r_\text{desenho} = R\,\sqrt{r/R},\qquad R = 1\UA,
+  \label{eq:compressao}
+\end{equation}
+preservando direções e mantendo a órbita da Terra inalterada (\autoref{fig:compressao}). A raiz foi preferida ao logaritmo porque é monótona, suave e vale zero em zero, enquanto o logaritmo leva o centro a $-\infty$ e exige um piso arbitrário. A razão entre o planeta mais distante e o mais próximo cai de 77:1 para 8,8:1.
+
+\begin{figure}[htb]
+  \centering
+  \caption{A compressão de distâncias do modo maquete}
+  \label{fig:compressao}
+  \includegraphics[width=0.62\textwidth]{compressao.pdf}
+  \legend{Os pontos marcam os semieixos dos oito planetas. Fonte: elaborada pelos autores.}
+\end{figure}
+
+A compressão altera só a coordenada de desenho, nunca o estado físico. A iluminação continua usando a distância real, para que Netuno, desenhado a 5,5\,UA do Sol, não receba trinta vezes mais luz do que recebe. Com a compressão ligada, a tela avisa por escrito.
+
 \subsection{Implementação: três gerações de um mesmo programa}\label{cap:implementacao}
 
 O projeto passou por três versões, cada uma nascida das limitações da anterior (\autoref{fig:linha-do-tempo}). Este capítulo descreve o que cada uma fez, como a física e a matemática dos capítulos anteriores viraram código e por que algumas decisões foram tomadas. Os algoritmos aparecem em pseudocódigo; o código real está no repositório indicado no \autoref{ap:reproducao}.
