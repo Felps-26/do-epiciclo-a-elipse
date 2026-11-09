@@ -57,7 +57,33 @@ Partindo de 1º de janeiro de 2026, o sistema de nove corpos foi integrado para 
   \legend{Ângulo entre a direção Terra--planeta do modelo e a da DE440s, em escala logarítmica. Linha fina: valor a cada 10 dias; linha grossa e curvas de (d): máximo em janelas de 810 dias. Fonte: elaborada pelos autores.}
 \end{figure}
 
-Todos os corpos passam com folga. O pior caso é Mercúrio: nas cinco datas, 0,004\,\% da distância ao Sol em um ano, 0,03\,\% em dez e 0,45\,\% em cem. Na varredura o máximo é 0,46\,\% (324\,000\,km), em janeiro de 1926, com Mercúrio perto do afélio. Em ângulo, o erro de Mercúrio chega a 956$''$ (16$'$) na longitude heliocêntrica e a 774$''$ (13$'$) na direção vista da Terra, que é a grandeza comparável a uma observação; num intervalo de dez anos em torno de 2026 essa direção erra no máximo 74$''$, e em um ano, 4$''$. Vênus fica abaixo de 1$'$, Marte de 30$''$ e os planetas externos de 2$''$. Nos externos, o erro de direção vem quase todo do erro da Terra: a longitude heliocêntrica de Júpiter erra no máximo 0,09$''$. O erro cresce nos dois sentidos a partir de 2026 e oscila com o período sinódico, porque o mesmo deslocamento subtende um ângulo maior quando o planeta está perto da Terra (\autoref{fig:varredura}). Mercúrio é o caso difícil por duas razões. É o planeta mais rápido, com apenas 176 passos de integração por órbita, e por isso o erro de truncamento do passo pesa mais nele. É também o planeta mais afetado pela relatividade geral, que o modelo não inclui, mas no passo de 0,5 dia esse efeito é menor que o de truncamento (\autoref{sec:nao-inclui}). Em cem anos, a conservação ficou em $2\times10^{-9}$ para a energia relativa e $1{,}4\times10^{-14}$ para o momento angular.
+Todos os corpos passam com folga. O pior caso é Mercúrio: nas cinco datas, 0,004\,\% da distância ao Sol em um ano, 0,03\,\% em dez e 0,45\,\% em cem. Na varredura o máximo é 0,46\,\% (324\,000\,km), em janeiro de 1926, com Mercúrio perto do afélio. Em ângulo, o erro de Mercúrio chega a 956$''$ (16$'$) na longitude heliocêntrica e a 774$''$ (13$'$) na direção vista da Terra, que é a grandeza comparável a uma observação; num intervalo de dez anos em torno de 2026 essa direção erra no máximo 74$''$, e em um ano, 4$''$. Vênus fica abaixo de 1$'$, Marte de 30$''$ e os planetas externos de 2$''$. Nos externos, o erro de direção vem quase todo do erro da Terra: a longitude heliocêntrica de Júpiter erra no máximo 0,09$''$. O erro cresce nos dois sentidos a partir de 2026 e oscila com o período sinódico, porque o mesmo deslocamento subtende um ângulo maior quando o planeta está perto da Terra (\autoref{fig:varredura}). Mercúrio é o caso difícil por duas razões. É o planeta mais rápido, com apenas 176 passos de integração por órbita, e por isso o erro de truncamento do passo pesa mais nele. É também o planeta mais afetado pela relatividade geral, que o modelo padrão não inclui, mas no passo de 0,5 dia esse efeito é menor que o de truncamento (\autoref{sec:res-relatividade}). Em cem anos, a conservação ficou em $2\times10^{-9}$ para a energia relativa e $1{,}4\times10^{-14}$ para o momento angular.
+
+\subsection{Efeito da relatividade}\label{sec:res-relatividade}
+
+Antes de comparar com o JPL, conferimos o termo da \autoref{eq:pn} num problema de dois corpos, com Mercúrio partindo do periélio ($a = 0{,}387098$\,UA, $e = 0{,}205630$) e passo de 0,05 dia. Em um século, o periélio avançou 42,8$''$ com o termo, contra os 42,98$''$ esperados, e $-0{,}12''$ sem ele, nas duas implementações.
+
+Depois integramos o sistema de nove corpos de 2026 até $+100$ e $-100$ anos, com e sem o termo, e comparamos a posição de Mercúrio com a DE440s, que inclui a relatividade \cite{park2021}. A \autoref{tab:relatividade} mostra o resultado. No passo de 0,5 dia, o do programa, o termo não ajuda: o truncamento domina, e o erro com o termo fica um pouco maior. No passo de 0,05 dia, o erro em dez anos sem o termo é de 1\,833\,km, o patamar da \autoref{fig:trabalho-precisao}; com o termo, cai para 3\,km. Em cem anos, cai de 6\,188 para 146\,km. O patamar era a relatividade.
+
+\begin{table}[htb]
+  \centering
+  \caption{Erro de posição de Mercúrio contra a DE440s, em quilômetros, com e sem o termo pós-newtoniano}
+  \label{tab:relatividade}
+  \small
+  \begin{tabular}{llrrr}
+    \toprule
+    Passo & Termo & $+10$ anos & $+100$ anos & $-100$ anos \\
+    \midrule
+    0,5 dia & sem & 14\,206 & 302\,436 & 247\,115 \\
+    0,5 dia & com & 16\,018 & 307\,974 & 256\,362 \\
+    0,05 dia & sem & 1\,833 & 6\,188 & 10\,772 \\
+    0,05 dia & com & 3 & 146 & 129 \\
+    \bottomrule
+  \end{tabular}
+  \legend{Integrador de Yoshida de quarta ordem, sistema de nove corpos a partir de 1º de janeiro de 2026. Fonte: elaborada pelos autores.}
+\end{table}
+
+Como a força da \autoref{eq:pn} depende da velocidade, o \emph{kick} do integrador deixa de ser exato. Na primeira versão, o termo era avaliado com a velocidade do começo de cada \emph{kick}. Isso torna o passo assimétrico no tempo e cria um erro proporcional ao passo, que se acumula órbita após órbita: Mercúrio errou 8,4 milhões de quilômetros em cem anos no passo de 0,5 dia e 815\,000\,km no de 0,05 dia, muito pior do que sem o termo. Avaliando o termo com uma estimativa da velocidade no meio do \emph{kick}, o erro volta a cair com a quarta potência do passo, mas o método continua não sendo exatamente simplético.
 
 \subsection{Escolha do integrador}\label{sec:res-integradores}
 
@@ -78,7 +104,7 @@ Do gráfico saem três leituras:
 \begin{enumerate}
   \item As inclinações das curvas confirmam as ordens teóricas: reduzir o passo à metade divide o erro do leapfrog por cerca de 4 ($\Delta t^2$) e o do Yoshida por cerca de 16 ($\Delta t^4$), enquanto o passo é grande o bastante para que o truncamento domine.
   \item No passo escolhido, 0,5 dia, o Yoshida gasta 21\,912 avaliações e erra $1{,}4\times10^4$\,km. O leapfrog precisa de mais de 116\,000 avaliações, mais de cinco vezes o custo, para chegar ao mesmo erro.
-  \item Abaixo de cerca de $10^3$\,km o erro deixa de cair, por menor que seja o passo. Atribuímos esse patamar ao que o modelo não inclui: sua ordem de grandeza é a do efeito relativístico sobre Mercúrio em dez anos estimado na \autoref{sec:nao-inclui}, mas essa hipótese não foi testada aqui. Diminuir o passo além desse ponto só gasta tempo.
+  \item Abaixo de cerca de $10^3$\,km o erro deixa de cair, por menor que seja o passo. O patamar é a relatividade, que o modelo padrão não inclui: com o termo pós-newtoniano, no passo de 0,05 dia, o erro de Mercúrio em dez anos cai de 1\,833 para 3\,km (\autoref{sec:res-relatividade}). Sem o termo, diminuir o passo além desse ponto só gasta tempo.
 \end{enumerate}
 
 \subsubsection{Conservação de energia a longo prazo}

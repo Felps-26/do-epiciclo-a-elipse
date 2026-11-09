@@ -53,6 +53,41 @@ def passo_yoshida(p, v, gm, dt):
     return p, v
 
 
+# velocidade da luz em UA/dia, a mesma conta de unidades.ts
+C_UA_POR_DIA = 299792.458 * 86400.0 / UA_KM
+
+
+def acel_pn(p, v, gm):
+    """Termo pos-newtoniano de primeira ordem do Sol (corpo 0) em cada planeta, so ele:
+    a = mu/(c^2 r^3) [(4 mu/r - v^2) r + 4 (r.v) v], com r e v em torno do Sol.
+    Igual ao somarCorrecaoRelativistica de forcas.ts."""
+    mu = gm[0]
+    r = p - p[0]
+    u = v - v[0]
+    r1 = np.sqrt((r ** 2).sum(-1))
+    r1[0] = 1.0                                     # o Sol nao recebe o termo
+    v2 = (u ** 2).sum(-1)
+    rv = (r * u).sum(-1)
+    k = mu / (C_UA_POR_DIA ** 2 * r1 ** 3)
+    a = k[:, None] * ((4 * mu / r1 - v2)[:, None] * r + 4 * rv[:, None] * u)
+    a[0] = 0.0
+    return a
+
+
+def passo_yoshida_pn(p, v, gm, dt):
+    # A forca depende de v, entao o kick deixa de ser exato e o metodo deixa de ser
+    # exatamente simpletico. Avaliar o termo com a v do comeco do kick da um erro de ordem dt
+    # que nao e reversivel e se acumula (Mercurio errava 8e6 km num seculo a 0,5 dia). Com
+    # a v do meio do kick o metodo volta a ter erro de quarta ordem.
+    for w in (W1, W0, W1):
+        p = p + 0.5 * w * dt * v
+        a = acel(p, gm)
+        meio = v + 0.5 * w * dt * (a + acel_pn(p, v, gm))
+        v = v + w * dt * (a + acel_pn(p, meio, gm))
+        p = p + 0.5 * w * dt * v
+    return p, v
+
+
 def passo_rk4(p, v, gm, dt):
     k1p, k1v = v, acel(p, gm)
     k2p, k2v = v + 0.5 * dt * k1v, acel(p + 0.5 * dt * k1p, gm)
@@ -65,8 +100,9 @@ def passo_rk4(p, v, gm, dt):
 
 # custo do metodo, nao desta implementacao: o leapfrog pode reaproveitar a aceleracao do fim
 # do passo no comeco do seguinte (aqui e no integrador.ts ela e recalculada)
-AVALIACOES = {'leapfrog': 1, 'yoshida4': 3, 'rk4': 4}
-PASSOS = {'leapfrog': passo_leapfrog, 'yoshida4': passo_yoshida, 'rk4': passo_rk4}
+AVALIACOES = {'leapfrog': 1, 'yoshida4': 3, 'rk4': 4, 'yoshida4_pn': 3}
+PASSOS = {'leapfrog': passo_leapfrog, 'yoshida4': passo_yoshida, 'rk4': passo_rk4,
+          'yoshida4_pn': passo_yoshida_pn}
 
 
 def energia(p, v, gm):
