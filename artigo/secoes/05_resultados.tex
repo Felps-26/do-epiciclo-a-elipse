@@ -1,7 +1,7 @@
 \section{Resultados}\label{cap:resultados}
-% orçamento: 2.200 palavras
+% orçamento: 2.900 palavras
 
-Este capítulo reúne os resultados quantitativos. Os números das \autoref{sec:res-validacao} e \ref{sec:res-integradores} foram obtidos por uma segunda implementação do núcleo físico, em Python e NumPy, escrita para este relatório a partir do mesmo arquivo de condições iniciais. Ela reproduz, até a última casa decimal publicada, a tabela de validação da documentação do programa. Como usa o mesmo algoritmo e o mesmo passo, confirma o porte para TypeScript, não a física; a física é validada pela comparação com o JPL. Os roteiros estão no \autoref{ap:experimentos}.
+Os números das \autoref{sec:res-validacao} e \ref{sec:res-integradores} foram obtidos por uma segunda implementação do núcleo físico, em Python e NumPy, escrita a partir do mesmo arquivo de condições iniciais. Ela reproduz, até a última casa decimal publicada, a tabela de validação da documentação do programa. Como usa o mesmo algoritmo e o mesmo passo, confirma o porte para TypeScript, e não a física; a física é validada pela comparação com o JPL. Os roteiros estão no \autoref{ap:experimentos}.
 
 \subsection{Validação contra a efeméride do JPL}\label{sec:res-validacao}
 
@@ -35,7 +35,7 @@ Partindo de 1º de janeiro de 2026, o sistema de nove corpos foi integrado para 
   \legend{Escala logarítmica. A linha tracejada é o critério de 1\,\%. Fonte: elaborada pelos autores.}
 \end{figure}
 
-Todos os corpos passam com folga. O pior caso é Mercúrio: 0,004\,\% da distância ao Sol em um ano, 0,03\,\% em dez e 0,45\,\% em cem. Mercúrio é o caso difícil por duas razões. É o planeta mais rápido, com apenas 176 passos de integração por órbita, e por isso o erro de truncamento do passo pesa mais nele. E é o mais afetado pela relatividade geral, que o modelo não inclui (\autoref{sec:nao-inclui}). Em cem anos, a conservação ficou em $2\times10^{-9}$ para a energia relativa e $1{,}4\times10^{-14}$ para o momento angular.
+Todos os corpos passam com folga. O pior caso é Mercúrio: 0,004\,\% da distância ao Sol em um ano, 0,03\,\% em dez e 0,45\,\% em cem. Mercúrio é o caso difícil por duas razões. É o planeta mais rápido, com apenas 176 passos de integração por órbita, e por isso o erro de truncamento do passo pesa mais nele. É também o planeta mais afetado pela relatividade geral, que o modelo não inclui, mas no passo de 0,5 dia esse efeito é menor que o de truncamento (\autoref{sec:nao-inclui}). Em cem anos, a conservação ficou em $2\times10^{-9}$ para a energia relativa e $1{,}4\times10^{-14}$ para o momento angular.
 
 \subsection{Escolha do integrador}\label{sec:res-integradores}
 
@@ -56,7 +56,7 @@ Do gráfico saem três leituras:
 \begin{enumerate}
   \item As inclinações das curvas confirmam as ordens teóricas: reduzir o passo à metade divide o erro do leapfrog por cerca de 4 ($\Delta t^2$) e o do Yoshida por cerca de 16 ($\Delta t^4$), enquanto o passo é grande o bastante para que o truncamento domine.
   \item No passo escolhido, 0,5 dia, o Yoshida gasta 21\,912 avaliações e erra $1{,}4\times10^4$\,km. O leapfrog precisa de mais de 116\,000 avaliações, mais de cinco vezes o custo, para chegar ao mesmo erro.
-  \item Abaixo de cerca de $10^3$\,km o erro deixa de cair. Esse patamar não vem do integrador, mas do \emph{modelo}: do que a integração não inclui. Sua ordem de grandeza coincide com a estimativa do efeito relativístico sobre Mercúrio em dez anos feita na \autoref{sec:nao-inclui}. Diminuir o passo além desse ponto só gasta tempo.
+  \item Abaixo de cerca de $10^3$\,km o erro deixa de cair, por menor que seja o passo. Atribuímos esse patamar ao que o modelo não inclui: sua ordem de grandeza é a do efeito relativístico sobre Mercúrio em dez anos estimado na \autoref{sec:nao-inclui}, mas essa hipótese não foi testada aqui. Diminuir o passo além desse ponto só gasta tempo.
 \end{enumerate}
 
 \subsubsection{Conservação de energia a longo prazo}
@@ -71,9 +71,7 @@ A \autoref{fig:energia} integra o sistema por mil anos com passo deliberadamente
   \legend{(a) Valor absoluto do erro, em escala logarítmica: o RK4 cresce, os simpléticos não. (b) O erro do Yoshida em escala linear: uma oscilação rápida dentro de uma faixa fixa. Fonte: elaborada pelos autores.}
 \end{figure}
 
-\begin{noprograma}
-Em ``Mostrar dados técnicos'', o programa exibe ao vivo o desvio de energia e de momento angular desde o início da simulação. Deixando o tempo correr por séculos, vê-se o número oscilar sem crescer, o que mostra na prática o significado da palavra simplético.
-\end{noprograma}
+No programa, a opção ``Mostrar dados técnicos'' exibe ao vivo o desvio de energia desde o início da simulação; deixando o tempo correr por séculos, vê-se o número oscilar sem crescer.
 
 \subsection{Séries de Fourier das órbitas}\label{sec:res-fourier}
 
@@ -119,9 +117,9 @@ Os coeficientes calculados numericamente pela \autoref{eq:dft} foram comparados 
 
 \subsection{Copérnico revisitado}\label{sec:copernico-revisitado}
 
-O \autoref{sec:pequeno-e} mostrou que, até primeira ordem na excentricidade, a série de Fourier no tempo de uma órbita kepleriana tem três termos: um deslocamento fixo $c_0 = -\frac32 ae$, um deferente $c_1\approx a$ e um epiciclo $c_2\approx\frac12 ae$ que gira com o dobro da frequência (\autoref{eq:copernico-fourier}).
+A \autoref{sec:pequeno-e} mostrou que, até primeira ordem na excentricidade, a série de Fourier no tempo de uma órbita kepleriana tem três termos: um deslocamento fixo $c_0 = -\frac32 ae$, um deferente $c_1\approx a$ e um epiciclo $c_2\approx\frac12 ae$ que gira com o dobro da frequência (\autoref{eq:copernico-fourier}).
 
-Considere agora o modelo do \emph{Commentariolus} (\autoref{tab:copernico-raios}). Na descrição usual do mecanismo \cite{gallavotti1999,sugon2008}, o centro do primeiro epiciclo percorre o deferente, centrado no centro da órbita da Terra (o Sol médio, deslocado do Sol), enquanto o raio do epiciclo gira em sentido contrário com o mesmo período, de modo que, \emph{visto de fora}, ele mantém orientação fixa. O segundo epiciclo, montado na ponta do primeiro, gira duas vezes por período. Escrevendo cada movimento como número complexo, com a anomalia média $M$ medida a partir do periélio,
+Considere agora o modelo do \emph{Commentariolus} (\autoref{tab:copernico-raios}). Na descrição usual do mecanismo \cite{gallavotti1999,sugon2008}, o centro do primeiro epiciclo percorre o deferente, cujo centro é o Sol médio, enquanto o raio do epiciclo gira em sentido contrário com o mesmo período, de modo que, \emph{visto de fora}, ele mantém orientação fixa. O segundo epiciclo, montado na ponta do primeiro, gira duas vezes por período. Escrevendo cada movimento como número complexo, com a anomalia média $M$ medida a partir do periélio,
 \begin{equation}
   z_\text{Copérnico}(M) = -r_1 + R\,e^{\ii M} + r_2\,e^{2\ii M}.
   \label{eq:copernico-modelo} % PENDENTE-E5: efeito do Sol médio em c0 (Tarefa 10)
@@ -162,9 +160,7 @@ Para Marte, Júpiter e Saturno a concordância é boa. Os deferentes reproduzem 
 
 Para Mercúrio e Vênus a concordância é pior, e por razões diferentes. Em Mercúrio a excentricidade é grande o bastante para que os termos de segunda ordem, desprezados na \autoref{eq:copernico-fourier}, cheguem a 10--15\,\% dos de primeira; além disso, o modelo de Mercúrio é historicamente o mais complicado da astronomia pré-kepleriana. Em Vênus a órbita é quase circular, e a excentricidade implícita (0,028) é quatro vezes a real; uma hipótese plausível, que não investigamos, é que os dados de Copérnico para Vênus carreguem a marca da excentricidade da própria órbita da Terra (0,017), da qual um planeta interior é sempre observado.
 
-\begin{paraaprofundar}[: a relação com o TCC]
-\citeonline{farias2016} comparou os raios de Copérnico com os raios da série de Fourier das órbitas reais e concluiu que eles têm a mesma ordem de grandeza, especialmente o primeiro epiciclo. Nas simulações daquele trabalho, o primeiro epiciclo foi modelado girando com frequência $-\omega$ e o segundo com $2\omega$, e uma modificação para as frequências $\omega$, $2\omega$ e $3\omega$ melhorou o ajuste. A leitura adotada aqui atribui ao primeiro epiciclo frequência \emph{zero} no referencial fixo, o que transforma o primeiro epiciclo no excêntrico $c_0$. Com essa atribuição, a comparação passa a ser termo a termo e a concordância passa de ordem de grandeza para poucos por cento. Com a mesma métrica, o modelo com frequências $(1, -1, 2)$ erra a posição de Marte em até 0,44\,UA, contra 0,017\,UA da leitura com frequência zero. O resultado não seria possível sem a organização dos dados históricos feita naquele trabalho. A conclusão de \citeonline{farias2016} de que um modelo ``heliostático'', com o Sol fora do centro do deferente, seria mais preciso é, nessa leitura, exatamente o que Copérnico fez: o excêntrico $r_1$ é o deslocamento entre o Sol e o centro efetivo do movimento.
-\end{paraaprofundar}
+\citeonline{farias2016} comparou os raios de Copérnico com os da série de Fourier das órbitas reais e concluiu que eles têm a mesma ordem de grandeza. Nas simulações daquele trabalho, o primeiro epiciclo gira com frequência $-\omega$ e o segundo com $2\omega$. A leitura adotada aqui atribui ao primeiro epiciclo frequência zero no referencial fixo, o que o transforma no excêntrico $c_0$, e com ela a concordância passa de ordem de grandeza para poucos por cento: com a mesma métrica, o modelo com frequências $(1, -1, 2)$ erra a posição de Marte em até 0,44\,UA, contra 0,017\,UA da leitura com frequência zero. Essa atribuição segue a descrição do mecanismo em \citeonline{gallavotti1999} e \citeonline{sugon2008}; não a conferimos no texto do \emph{Commentariolus}. A comparação só foi possível pela organização dos dados históricos feita no TCC.
 
 Em primeira ordem na excentricidade, portanto, os raios do modelo de Copérnico para Marte, Júpiter e Saturno reproduzem os coeficientes da série de Fourier da órbita kepleriana, e a razão entre os dois epiciclos é a da série. Não comparamos esse resultado com outros modelos da mesma ordem, como o de Ptolomeu com equante. Sem essa comparação, os números mostram que os raios de Copérnico estavam bem estimados, mas não que o modelo dele seja o único a reproduzir a série.
 

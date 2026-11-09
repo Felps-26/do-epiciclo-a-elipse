@@ -1,97 +1,26 @@
-\section{Discussão, limitações e uso em sala de aula}\label{sec:discussao}
-% orçamento: 700 palavras
+\section{Discussão e limitações}\label{sec:discussao}
+% orçamento: 800 palavras
 
-\subsection{O simulador como ferramenta de ensino}\label{cap:ensino}
+\subsection{Limitações}\label{cap:limitacoes}
 
-O programa não tem um roteiro de aula embutido, e isso é intencional. Ele oferece camadas: a cena, as fichas, os dados técnicos, o laboratório de Fourier, o modo de criação. Quem conduz decide quais abrir. Este capítulo sugere usos por nível de formação, sempre a partir de recursos que já existem na tela. As sugestões não foram avaliadas em sala de aula, e essa avaliação é um dos trabalhos futuros (\autoref{cap:limitacoes}).
+\paragraph{Modelo físico.} A relatividade geral não está incluída. No passo de 0,5 dia, o erro de Mercúrio em dez anos, cerca de 14\,000\,km (\autoref{tab:validacao}), vem sobretudo do truncamento do integrador, e o efeito relativístico estimado, da ordem de mil quilômetros, só apareceria com passo menor; como o termo não foi implementado, essa estimativa não foi testada. Plutão e os asteroides não entram, e a Lua entra somada à Terra, no baricentro do par. As treze luas são propagadas por Kepler com precessão secular e não interagem com nada; o erro medido chega a 15\,\% do semieixo em Tritão (\autoref{tab:luas}). Achatamento, marés e pressão de radiação estão fora do modelo.
 
-\subsubsection{Recursos didáticos já presentes no programa}
+\paragraph{Validação.} A comparação com o JPL foi feita em cinco datas, e não numa varredura contínua, e o erro foi medido como fração da distância ao Sol. Mercúrio perto do periélio está cerca de 20\,\% mais perto do Sol que na média, e o mesmo erro absoluto daria ali uma fração maior; o valor de 0,45\,\% em cem anos é um ponto, e não um máximo. Uma métrica angular, em segundos de arco, seria a mais natural para comparar com observações.
 
-\begin{itemize}
-  \item \textbf{Tutorial de primeira abertura}, em quatro passos, que pode ser dispensado.
-  \item \textbf{Seis dicas} em forma de pergunta e resposta: por que Mercúrio parece mais rápido, por que os planetas são desenhados maiores, por que os quatro primeiros ficam amontoados, se a órbita muda de forma, se o Sol se mexe e de onde vem a data.
-  \item \textbf{Quatro atividades guiadas}, cada uma com a resposta escrita junto: quem dá a volta primeiro, Terra e Marte, o Sol fica parado?, e por que Netuno demora tanto.
-  \item \textbf{Fichas} de cada corpo, com dados físicos externos (NASA) separados das medidas calculadas no instante atual (distância, velocidade, elementos osculadores) e com as fontes.
-  \item \textbf{Os três blocos da Ajuda}: o que o programa calcula, o que a tela simplifica e o que o modelo não inclui.
-  \item \textbf{Dados técnicos}: integrador, passo, desvio de energia e de momento angular, passos por segundo.
-  \item \textbf{Laboratório de Fourier} e \textbf{modo de criação}.
-\end{itemize}
+\paragraph{Representação.} Na visão geral os planetas são desenhados maiores que o real, com o fator de ampliação na tela. O lado noturno recebe 14\,\% da luz do dia, e a coroa solar e o halo atmosférico são acréscimos visuais, avisados na Ajuda. A cadeia de epiciclos do laboratório é uma construção sobre a órbita osculadora, e não a física do modelo, e a tela diz isso.
 
-\subsubsection{Ensino médio}
+\paragraph{Verificação do programa.} Os testes de ponta a ponta rodam num navegador sem janela, e o programa não foi aberto em outros navegadores além do Chromium. As imagens de referência dos testes visuais foram gravadas num computador com aceleração gráfica Metal; num computador que desenha por software, como o usado na última rodada, elas diferem em até 0,3\,\% dos pixels, e as cenas de perto da Terra e de Marte precisam ser regravadas depois das correções de novembro de 2026. Dos 40 defeitos visuais levantados, 25 continuam em aberto, e 21 deles só foram vistos na leitura do código (\autoref{cap:processo}).
 
-No ensino médio o programa funciona como um planetário em que o tempo pode ser acelerado. Sugestões:
+\subsection{Uso possível em sala de aula}\label{cap:ensino}
 
-\begin{description}
-  \item[Escalas do Sistema Solar.] Abrir na visão geral e perguntar por que os planetas internos ficam amontoados. Ligar ``Corpos no tamanho real'' e ver os planetas sumirem. Discutir por que todo livro didático desenha o Sistema Solar fora de escala, e o que se perde com isso.
-  \item[Segunda e terceira leis de Kepler, sem fórmula.] A atividade ``Quem dá a volta primeiro?'' mostra que planetas mais distantes são mais lentos. Acompanhando Marte com os rastros ligados, a velocidade na ficha muda ao longo da órbita: é maior perto do Sol.
-  \item[Movimento retrógrado.] Avançar até o fim de 2026, ligar as estrelas e acompanhar, entre janeiro e abril de 2027, a direção da Terra para Marte contra o fundo de estrelas (\autoref{fig:marte-retrogrado}). Ligar com a história do \autoref{cap:historia}: o que Ptolomeu precisou inventar para explicar isso, e por que Copérnico não precisou.
-  \item[Ciência como modelo.] Ler em grupo o bloco ``o que o modelo não inclui'' e discutir o que cada omissão muda nos resultados.
-\end{description}
+O programa não foi avaliado com estudantes, e o que segue é uma proposta. No ensino médio, ele funciona como um planetário em que o tempo pode ser acelerado: a visão geral em tamanho real mostra por que os livros desenham o Sistema Solar fora de escala, e acompanhar a direção da Terra para Marte entre janeiro e abril de 2027 mostra o movimento retrógrado (\autoref{fig:marte-retrogrado}), que pode ser ligado à história da \autoref{cap:historia}. Na graduação, o modo de criação permite verificar a relação vis-viva (\autoref{eq:visviva}), já que a velocidade que separa a órbita fechada do escape é $\sqrt2$ vezes a circular; o laboratório de Fourier permite ver o desvio cair com o número de harmônicos e conferir $c_0 = -\frac32 ae$ (\autoref{eq:c0}); e os roteiros do \autoref{ap:experimentos} permitem refazer a \autoref{fig:trabalho-precisao} com outros integradores, inclusive o de Euler.
 
-\subsubsection{Graduação}
-
-Em cursos de física, matemática, engenharia e computação, o programa permite ligar a teoria aos números:
-
-\begin{description}
-  \item[Mecânica clássica.] Verificar as leis de conservação com os dados técnicos. Comparar elementos osculadores em datas diferentes e discutir por que mudam (perturbações). Usar o modo de criação para lançar um corpo com velocidades diferentes no mesmo ponto e verificar a relação \emph{vis-viva} (\autoref{eq:visviva}): a velocidade que separa ``órbita redonda'' de ``escapa'' é $\sqrt{2}$ vezes a circular.
-  \item[Cálculo e séries.] No laboratório de Fourier, variar o número de harmônicos e ver o desvio cair; comparar planetas de excentricidades diferentes. Pedir que os estudantes demonstrem $c_0 = -\frac32 ae$ (\autoref{eq:c0}) e confiram na tela.
-  \item[Métodos numéricos.] Reproduzir a \autoref{fig:trabalho-precisao} com os roteiros do \autoref{ap:experimentos}, trocar o integrador, implementar o método de Euler e ver a órbita espiralar.
-  \item[Computação gráfica.] Discutir a origem flutuante e as fatias de profundidade como soluções para limites concretos do hardware.
-  \item[Engenharia de software.] Ler o contrato de funcionalidades e as lições de projeto. Escolher uma licença declarada e localizar o teste que a amarra ao código.
-\end{description}
-
-\subsubsection{Pós-graduação}
-
-No nível de pós-graduação, o programa é ponto de partida para extensões:
-
-\begin{itemize}
-  \item acrescentar a correção pós-newtoniana de primeira ordem e medir se o patamar de erro de Mercúrio desce (\autoref{sec:res-integradores});
-  \item comparar o Yoshida com integradores especializados para o problema planetário, como os métodos de \emph{splitting} de Wisdom--Holman;
-  \item estudar a análise de erro regressiva dos integradores simpléticos medindo o hamiltoniano modificado;
-  \item estender a análise do \autoref{sec:copernico-revisitado} à segunda ordem em $e$, ou ao modelo de Ptolomeu com equante;
-  \item avaliar a ferramenta em sala de aula, com desenho experimental.
-\end{itemize}
-
-\subsubsection{O papel de quem conduz}
-
-Em todos os níveis o programa rende mais como fonte de perguntas do que de respostas: a tela mostra números suficientes para conferir quase toda afirmação ali mesmo, e a Ajuda diz o que ele simplifica. Um exercício possível é pedir que os estudantes procurem uma simplificação que a Ajuda \emph{não} menciona. Se acharem uma, é um defeito do programa.
-
-\subsection{Limitações e trabalhos futuros}\label{cap:limitacoes}
-
-\subsubsection{Limitações do modelo físico}
-
-\begin{itemize}
-  \item Relatividade geral: não incluída. A estimativa do efeito sobre Mercúrio é da ordem de mil quilômetros em dez anos (\autoref{sec:nao-inclui}). No passo de 0,5 dia, o erro medido para Mercúrio em dez anos é de cerca de 14\,000\,km (\autoref{tab:validacao}) e vem sobretudo do truncamento do integrador, de modo que o efeito relativístico só apareceria com passo menor. Como o termo não foi implementado, essa estimativa não foi testada. A correção pós-newtoniana de primeira ordem pode entrar como termo extra na \autoref{eq:nbody}, se o professor supervisor julgar que ela serve ao uso didático.
-  \item Plutão, Ceres, Vesta e os demais asteroides não entram. A Lua entra somada à Terra, no baricentro do par.
-  \item As treze luas são propagadas por Kepler com precessão secular e não interagem com nada. O erro, medido e publicado, chega a 15\,\% do semieixo em Tritão.
-  \item Achatamento, marés e pressão de radiação estão fora do modelo.
-\end{itemize}
-
-\subsubsection{Limitações da representação}
-
-\begin{itemize}
-  \item Na visão geral, os planetas são desenhados maiores que o real. O fator de ampliação aparece na tela e cai para 1 quando a câmera chega perto.
-  \item O lado noturno dos planetas recebe 14\,\% da luz do dia, e a coroa solar e o halo atmosférico são acréscimos visuais. Os três estão avisados na Ajuda do programa.
-  \item A cadeia de epiciclos do laboratório é uma construção matemática sobre a órbita osculadora, não a física do modelo. A tela diz isso.
-  \item Cinco luas têm mapas de imageamento real. As outras oito são desenhadas com a cor média, porque não existe mosaico global delas.
-\end{itemize}
-
-\subsubsection{Limitações de verificação}
-
-\begin{itemize}
-  \item Os testes rodam num navegador sem janela. O programa construído ainda não foi aberto por duplo clique, a partir da pasta de entrega, em outros navegadores além do Chromium.
-  \item As cenas de referência visuais detectam regressões estruturais, como um corpo faltando ou a ordem de desenho errada, mas não regressões finas de cor.
-  \item As sugestões didáticas do \autoref{cap:ensino} não foram testadas com estudantes.
-  % CONFERIR: o tracker ACHADOS-VISUAIS.md marca só 7 dos 35 achados como consertados.
-  % Se for o caso, dizer aqui quantos continuam abertos.
-\end{itemize}
-
-\subsubsection{Trabalhos futuros}
+\subsection{Trabalhos futuros}
 
 \begin{enumerate}
-  \item Avaliar o uso do simulador em sala de aula, nos três níveis, com instrumento de avaliação de aprendizagem.
-  \item Acrescentar, como opção, a correção relativística e Plutão, e medir o efeito sobre a validação.
-  \item Levar a análise do \autoref{sec:copernico-revisitado} à segunda ordem na excentricidade e ao modelo de Ptolomeu com equante, e investigar a hipótese levantada para Vênus.
-  \item Comprimir as texturas no formato KTX2/Basis para reduzir o tamanho da entrega, hoje de cerca de 160\,MB por causa dos mapas de 8K.
-  \item Traduzir a interface para outros idiomas, a começar pelo inglês.
+  \item Comparar a análise da \autoref{sec:copernico-revisitado} com o modelo de Ptolomeu com equante e levá-la à segunda ordem na excentricidade, investigando também a hipótese levantada para Vênus.
+  \item Implementar a correção pós-newtoniana de primeira ordem e medir se o patamar de erro de Mercúrio desce.
+  \item Validar contra a efeméride em varredura contínua e em segundos de arco.
+  \item Avaliar o uso do simulador em sala de aula, com instrumento de avaliação de aprendizagem.
+  \item Comprimir as texturas no formato KTX2 para reduzir o tamanho da entrega.
 \end{enumerate}

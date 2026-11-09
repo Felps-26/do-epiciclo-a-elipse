@@ -1,28 +1,13 @@
 \section{Como reproduzir}\label{ap:reproducao}
 % orçamento: curto
 
-\subsection{Como instalar e executar}\label{ap:execucao}
+O código, os dados e os roteiros deste artigo estão no repositório do projeto, na versão marcada como \codigo{v1.0}. A pasta \arquivo{simulador/} contém o programa, \arquivo{artigo/} contém este texto e os roteiros dos experimentos, e \arquivo{versoes-anteriores/} guarda as duas primeiras versões.
 
-\subsection{Versão 3D (recomendada)}
+\subsection{O simulador}\label{ap:execucao}
 
-\subsubsection{Para usar}
+A pasta de entrega já traz o programa construído, as texturas e os dados; basta um servidor local. Com o Node.js 20.19 ou mais novo instalado, abra o lançador do sistema: \arquivo{run.bat} no Windows, \arquivo{run.command} no macOS ou \codigo{./run.sh} no Linux. O navegador abre no endereço local, e para encerrar basta fechar a aba. O programa funciona sem internet, e o servidor escuta apenas em \codigo{127.0.0.1}. Para forçar o desenho em WebGL2, acrescente \codigo{?render=webgl2} ao endereço. Abrir o \arquivo{index.html} direto não funciona, porque o navegador bloqueia a leitura dos dados a partir de \codigo{file://}.
 
-A pasta \arquivo{Sim3D\_2.0} já traz o programa construído (\arquivo{dist/}), as texturas, o catálogo de estrelas e os dados. Na máquina de quem recebe, nada é instalado nem construído: só um servidor local sobe.
-
-\begin{enumerate}
-  \item Instale o Node.js 20.19 ou mais novo (\url{https://nodejs.org}). Se a máquina não tiver Node.js, o lançador tenta usar o Python 3, com o servidor equivalente de \arquivo{ferramentas/servidor.py}.
-  \item Abra o lançador do seu sistema:
-  \begin{itemize}
-    \item \textbf{Windows}: duplo clique em \arquivo{run.bat}, ou \codigo{./run.ps1} no PowerShell;
-    \item \textbf{macOS}: duplo clique em \arquivo{run.command}. Se o sistema bloquear na primeira vez, clique com o botão direito e escolha \emph{Abrir};
-    \item \textbf{Linux}: \codigo{./run.sh} no terminal.
-  \end{itemize}
-  \item O navegador abre sozinho no endereço local. Para encerrar, basta fechar a aba.
-\end{enumerate}
-
-O programa funciona sem internet. O servidor escuta apenas em \codigo{127.0.0.1}, de modo que nem outra máquina da mesma rede o enxerga. Por padrão o desenho usa WebGPU; para forçar WebGL2, acrescente \codigo{?render=webgl2} ao endereço.
-
-\subsubsection{Para desenvolver}
+Para desenvolver, dentro de \arquivo{simulador/}:
 
 \begin{lstlisting}[language=bash,numbers=none]
 npm install
@@ -31,116 +16,9 @@ npm test         # tipos, lint, arquitetura, unidade e ponta a ponta
 npm run build    # gera dist/
 \end{lstlisting}
 
-\subsubsection{Problemas comuns}
+\subsection{Os experimentos}\label{ap:experimentos}
 
-\begin{description}
-  \item[Abrir o \arquivo{index.html} direto não funciona.] O navegador bloqueia a leitura dos dados a partir de \codigo{file://}. Use sempre o lançador.
-  \item[No macOS, aberto pelo Finder, ``nada acontece''.] O Finder não lê a configuração do terminal, e um Node.js instalado por nvm ou volta pode não ser encontrado. O \arquivo{run.sh} procura nos lugares usuais; se ainda falhar, rode \codigo{./run.sh} pelo Terminal para ver a mensagem.
-  \item[A tela fica preta.] Atualize o navegador ou force o backend WebGL2 com \codigo{?render=webgl2}.
-\end{description}
-
-\subsection{Versão 2D}
-
-Requer Python 3.9 ou mais novo. Os lançadores \arquivo{run.bat}, \arquivo{run.command} e \arquivo{run.sh}, na pasta \arquivo{Sim\_NewVer\_1.0}, criam um ambiente virtual, instalam NumPy e Pygame na primeira execução e abrem a janela. Os testes rodam com \codigo{./testes.sh}. Para regenerar as condições iniciais em outra época (requer internet):
-
-\begin{lstlisting}[language=bash,numbers=none]
-.venv/bin/python ferramentas/gerar_efemeride.py --epoca 2030-01-01 --validacao
-\end{lstlisting}
-
-\subsection{Versão original}
-
-\begin{lstlisting}[language=bash,numbers=none]
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python main.py
-\end{lstlisting}
-
-O programa pergunta o planeta e o número de termos e abre o gráfico. Há também um caderno Jupyter em \arquivo{ipynb/simulacao\_orbitas.ipynb}.
-
-\subsection{Compilar este relatório}
-
-No Overleaf, envie a pasta \arquivo{artigo/} compactada, escolha o compilador \emph{pdfLaTeX} e o arquivo principal \arquivo{main.tex}. Localmente: \codigo{pdflatex main}, \codigo{bibtex main} e mais duas vezes \codigo{pdflatex main}. É preciso ter instalados os pacotes \emph{abntex2} e \emph{babel-portuges}, presentes nas distribuições TeX Live e MiKTeX completas.
-
-\subsection{Condições iniciais e constantes}\label{ap:dados}
-
-As tabelas abaixo reproduzem o arquivo \arquivo{efemeride\_2026-01-01.json}, idêntico nas versões 2D e 3D. Os vetores de estado vêm do JPL Horizons (efeméride DE441), no instante 2026-01-01 0h TDB (JD 2461041,5), relativos ao baricentro do Sistema Solar, no referencial da eclíptica e equinócio de J2000. Os parâmetros gravitacionais vêm do cabeçalho da efeméride DE440 \cite{park2021}. Os planetas são os baricentros dos seus sistemas, e a ``Terra'' é o baricentro Terra--Lua.
-
-\begin{table}[htb]
-  \centering
-  \caption{Parâmetros gravitacionais e raios}
-  \label{tab:gm}
-  \small
-  \begin{tabular}{lcr}
-    \toprule
-    Corpo & $GM$ ($\mathrm{UA^3/dia^2}$) & Raio médio (km) \\
-    \midrule
-    Sol & $2{,}959122083\times10^{-4}$ & 695700,0 \\
-Mercúrio & $4{,}912500195\times10^{-11}$ & 2439,4 \\
-Vênus & $7{,}243452333\times10^{-10}$ & 6051,8 \\
-Terra & $8{,}997011393\times10^{-10}$ & 6371,0 \\
-Marte & $9{,}549548830\times10^{-11}$ & 3389,9 \\
-Júpiter & $2{,}825345825\times10^{-7}$ & 69911,0 \\
-Saturno & $8{,}459705993\times10^{-8}$ & 58232,0 \\
-Urano & $1{,}292026565\times10^{-8}$ & 25362,0 \\
-Netuno & $1{,}524357348\times10^{-8}$ & 24624,0 \\
-    \bottomrule
-  \end{tabular}
-  \legend{O raio é o do corpo central (ex.: o da Terra, não o do baricentro Terra--Lua) e só é usado para o desenho. Fonte: JPL, via \arquivo{ferramentas/gerar\_efemeride.py}.}
-\end{table}
-
-\begin{table}[htb]
-  \centering
-  \caption{Posições iniciais (UA)}
-  \label{tab:pos}
-  \small
-  \begin{tabular}{lrrr}
-    \toprule
-    Corpo & $x$ & $y$ & $z$ \\
-    \midrule
-    Sol & $-0{,}0030673162$ & $-0{,}0055333291$ & $+0{,}0001316842$ \\
-Mercúrio & $-0{,}2182686205$ & $-0{,}4147409448$ & $-0{,}0135715854$ \\
-Vênus & $+0{,}0858099334$ & $-0{,}7272957114$ & $-0{,}0149123724$ \\
-Terra & $-0{,}1773370747$ & $+0{,}9622523453$ & $+0{,}0000748181$ \\
-Marte & $+0{,}3375123607$ & $-1{,}3925353450$ & $-0{,}0372855426$ \\
-Júpiter & $-1{,}6970703464$ & $+4{,}9233493856$ & $+0{,}0175579241$ \\
-Saturno & $+9{,}5042760491$ & $+0{,}2522051287$ & $-0{,}3828038443$ \\
-Urano & $+9{,}8772506590$ & $+16{,}7944820807$ & $-0{,}0655881149$ \\
-Netuno & $+29{,}8690527247$ & $+0{,}5134061342$ & $-0{,}6989354910$ \\
-    \bottomrule
-  \end{tabular}
-  \legend{Fonte: JPL Horizons.}
-\end{table}
-
-\begin{table}[htb]
-  \centering
-  \caption{Velocidades iniciais (UA/dia)}
-  \label{tab:vel}
-  \small
-  \begin{tabular}{lrrr}
-    \toprule
-    Corpo & $v_x$ & $v_y$ & $v_z$ \\
-    \midrule
-    Sol & $7{,}17607143\times10^{-6}$ & $1{,}77813412\times10^{-7}$ & $-1{,}35885762\times10^{-7}$ \\
-Mercúrio & $1{,}92390284\times10^{-2}$ & $-1{,}17374485\times10^{-2}$ & $-2{,}72329181\times10^{-3}$ \\
-Vênus & $1{,}99457363\times10^{-2}$ & $2{,}40054371\times10^{-3}$ & $-1{,}11760768\times10^{-3}$ \\
-Terra & $-1{,}72044191\times10^{-2}$ & $-3{,}11347577\times10^{-3}$ & $1{,}40487014\times10^{-7}$ \\
-Marte & $1{,}41265880\times10^{-2}$ & $4{,}54038100\times10^{-3}$ & $-2{,}51221253\times10^{-4}$ \\
-Júpiter & $-7{,}22343983\times10^{-3}$ & $-2{,}10136205\times10^{-3}$ & $1{,}70365041\times10^{-4}$ \\
-Saturno & $-4{,}55908478\times10^{-4}$ & $5{,}56484997\times10^{-3}$ & $-7{,}86251448\times10^{-5}$ \\
-Urano & $-3{,}41922498\times10^{-3}$ & $1{,}81055543\times10^{-3}$ & $5{,}10181776\times10^{-5}$ \\
-Netuno & $-7{,}46211577\times10^{-5}$ & $3{,}15728516\times10^{-3}$ & $-6{,}32992143\times10^{-5}$ \\
-    \bottomrule
-  \end{tabular}
-  \legend{Fonte: JPL Horizons.}
-\end{table}
-
-As demais constantes usadas são a unidade astronômica, $1\UA = 149\,597\,870{,}7\km$ (definição da IAU, 2012), e a obliquidade da eclíptica em J2000, $\varepsilon_0 = 23{,}4392911^\circ$.
-
-\subsection{Reprodução dos experimentos}\label{ap:experimentos}
-
-Todas as tabelas e figuras do \autoref{cap:resultados} que não são capturas de tela foram geradas pelos roteiros em Python da pasta \arquivo{artigo/experimentos/}. Eles reimplementam, em menos de duzentas linhas, o núcleo físico do simulador: a força da \autoref{eq:nbody}, os integradores leapfrog, Yoshida e RK4, os elementos osculadores, a equação de Kepler e a série de Fourier. Leem as mesmas condições iniciais do programa.
-
-A \autoref{tab:validacao} gerada por esses roteiros coincide, até a última casa publicada, com a tabela de validação que a documentação da versão 2D atribui ao próprio programa. Como o algoritmo e o passo são os mesmos, isso confirma o porte para outra linguagem; a validação da física é a comparação com o JPL.
+Todas as tabelas e figuras da \autoref{cap:resultados} que não são capturas de tela foram geradas pelos roteiros em Python de \arquivo{artigo/experimentos/} (\autoref{tab:roteiros}). Eles reimplementam, em menos de duzentas linhas, o núcleo físico do simulador: a força da \autoref{eq:nbody}, os integradores leapfrog, Yoshida e RK4, os elementos osculadores, a equação de Kepler e a série de Fourier, e leem o mesmo arquivo de condições iniciais, obtido do JPL Horizons para 1º de janeiro de 2026, 0h TDB. Requerem Python 3 com NumPy, SciPy e Matplotlib, e devem ser rodados de dentro da pasta, na ordem da tabela; os arquivos JSON que geram são lidos pelos roteiros de figuras.
 
 \begin{table}[htb]
   \centering
@@ -151,20 +29,17 @@ A \autoref{tab:validacao} gerada por esses roteiros coincide, até a última cas
     \toprule
     Arquivo & O que produz \\
     \midrule
-    \arquivo{nbody.py} & força, integradores, energia e momento angular \\
-    \arquivo{fourier\_lib.py} & elementos osculadores, equação de Kepler, DFT e forma fechada de Bessel \\
     \arquivo{e1\_validacao.py} & \autoref{tab:validacao} e \autoref{fig:validacao} \\
     \arquivo{e2\_integradores.py} & dados das \autoref{fig:trabalho-precisao} e \ref{fig:energia} \\
     \arquivo{e4\_copernico.py} & \autoref{tab:copernico-fourier} \\
-    \arquivo{figuras.py} & figuras dos \autoref{cap:matematica} e \ref{cap:resultados} \\
+    \arquivo{figuras.py} & figuras das \autoref{cap:matematica} e \ref{cap:resultados} \\
     \arquivo{figuras2.py} & \autoref{fig:angulo-tempo} \\
     \arquivo{figuras3.py} & \autoref{fig:marte-retrogrado} e \autoref{fig:sol-baricentro} \\
-    \arquivo{fig\_elementos.py} & \autoref{fig:elementos} \\
     \bottomrule
   \end{tabularx}
-  \legend{Requer Python 3 com NumPy, SciPy e Matplotlib. Instruções em \arquivo{experimentos/LEIAME.md}. Fonte: elaborada pelos autores.}
+  \legend{\arquivo{nbody.py} e \arquivo{fourier\_lib.py} são as bibliotecas usadas pelos demais. Instruções em \arquivo{experimentos/LEIAME.md}. Fonte: elaborada pelos autores.}
 \end{table}
 
-\lstinputlisting[language=Python,firstline=1,lastline=60,
-  caption={Núcleo da reimplementação de referência (\arquivo{experimentos/nbody.py})},label=cod:nbody-py]{experimentos/nbody.py}
+\subsection{Este artigo}
 
+No Overleaf, envie a pasta \arquivo{artigo/} compactada, escolha o compilador \emph{pdfLaTeX} e o arquivo principal \arquivo{main.tex}. Localmente: \codigo{pdflatex main}, \codigo{bibtex main} e mais duas vezes \codigo{pdflatex main}, com os pacotes \emph{abntex2} e \emph{babel-portuges}.
