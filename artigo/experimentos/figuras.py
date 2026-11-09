@@ -35,15 +35,6 @@ axs[1].ticklabel_format(axis='y',style='sci',scilimits=(0,0))
 fig.legend(*axs[0].get_legend_handles_labels(),loc='lower center',ncol=3,fontsize=7.5,bbox_to_anchor=(.5,-.08))
 fig.tight_layout(rect=(0,.06,1,1)); fig.savefig(OUT+'energia.pdf'); plt.close(fig)
 
-# --- validacao
-v=json.load(open('e1.json'))
-fig,ax=plt.subplots(figsize=(W,2.9)); chaves=['1','10','100']; x=np.arange(1,9)
-for k,ch in enumerate(chaves):
-    ax.bar(x+(k-1)*.27,np.array(v[ch]['frac'][1:])*100,.27,color=OI[k],label=f'+{ch} ano'+('s' if ch!='1' else ''))
-ax.set_yscale('log'); ax.set_xticks(x,NOMES[1:],fontsize=8); ax.set_ylabel('erro / distância ao Sol [%]')
-ax.axhline(1,color='k',ls='--',lw=.8); ax.text(8.45,1.4,'critério: 1%',fontsize=7.5,ha='right')
-ax.set_ylim(1e-9,20); ax.legend(fontsize=8,ncol=3,loc='lower center',bbox_to_anchor=(.5,1.0)); fig.savefig(OUT+'validacao.pdf'); plt.close(fig)
-
 # --- segunda lei: amostragem no tempo
 fig,axs=plt.subplots(1,2,figsize=(W,2.6))
 e=0.5; z=orbita_tempo(1,e,36); zz=orbita_tempo(1,e,720)
