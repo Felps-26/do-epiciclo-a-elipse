@@ -1,5 +1,28 @@
 # Sistema Solar: simulação gravitacional com vistas 2D e 3D
 
+Segunda versão do projeto, de setembro a outubro de 2026, feita em Python com pygame. Foi substituída pelo [simulador em TypeScript](../../simulador/), que é o que o artigo descreve; esta pasta fica como histórico.
+
+## Como rodar no Windows
+
+Precisa de Python 3.9 ou mais novo. No PowerShell, dentro desta pasta:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe main.py
+```
+
+Ou abra `run.bat`, que faz a mesma coisa. As dependências são `numpy` e `pygame-ce`, mais `scipy` (opcional). Os testes não abrem janela:
+
+```powershell
+$env:SDL_VIDEODRIVER = 'dummy'
+.venv\Scripts\python.exe -m tests.test_fisica_nbody
+```
+
+`testes.sh` roda os 12 módulos de uma vez, mas é um script bash; no Windows rode cada `python -m tests.<nome>` (a lista está no próprio `testes.sh`).
+
+**Resultado dos testes:** em 9 de novembro de 2026, com Python 3.13.14 no Windows 11, numpy 2.5.4, pygame-ce 2.5.8 e scipy 1.18.1 instalados em um ambiente virtual novo, os 12 módulos de `tests/` passaram. O pygame-ce instalou sem problemas nessa versão do Python.
+
 O Sol e os oito planetas se atraem pela gravidade, todos no mesmo relógio. As posições de partida são do JPL/NASA para 1º de janeiro de 2026; daí em diante o programa calcula o resto. Mercúrio dá uma volta em 88 dias e Netuno em 165 anos, e os dois aparecem na tela no mesmo relógio.
 
 ## Como abrir
