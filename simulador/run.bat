@@ -7,17 +7,21 @@ cd /d "%~dp0"
 where node >nul 2>nul
 if %errorlevel%==0 goto :temnode
 
-if exist "dist\" (
-  where python >nul 2>nul
-  if %errorlevel%==0 (
-    echo Node nao encontrado. Usando o servidor de reserva em Python.
-    python ferramentas\servidor.py %*
-    goto :fim
-  )
-)
+REM Sem Node, o dist\ pronto ainda abre com o servidor de reserva em Python.
+REM O teste do Python fica fora de um bloco entre parenteses de proposito: dentro dele o
+REM %errorlevel% seria lido uma vez so, antes de o `where` rodar.
+if not exist "dist\" goto :semnada
+where python >nul 2>nul
+if errorlevel 1 goto :semnada
+echo Node nao encontrado. Usando o servidor de reserva em Python.
+python ferramentas\servidor.py %*
+goto :fim
+
+:semnada
 echo.
 echo Nao foi possivel abrir o programa.
 echo Falta o Node: https://nodejs.org
+echo Instale a versao LTS e abra este arquivo de novo.
 echo.
 pause
 exit /b 1
