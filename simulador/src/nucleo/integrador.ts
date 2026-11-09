@@ -94,19 +94,32 @@ export const yoshida4: Integrador = {
  * dia o truncamento esconde o efeito.
  *
  * A forca passa a depender da velocidade, entao o metodo deixa de ser
- * exatamente simpletico, nem exatamente reversivel. Em Mercurio o termo vale
- * cerca de 3e-8 da gravidade do Sol.
+ * exatamente simpletico. Em Mercurio o termo vale cerca de 3e-8 da gravidade
+ * do Sol.
+ *
+ * Por que o termo e avaliado no meio do kick. Com a velocidade do comeco do
+ * kick, o passo fica assimetrico no tempo e o erro cai so com dt: contra a
+ * DE440s, Mercurio errava milhoes de km por seculo, mais do que sem o termo.
+ * Estimando a velocidade no meio do kick, o metodo volta a ser de 4a ordem
+ * (`relatividade.test.ts` confere). A correcao custa um termo a mais por kick,
+ * mas nenhuma avaliacao N^2 a mais.
  */
 export const yoshida4Relativistico: Integrador = {
   nome: 'yoshida4Relativistico',
   avaliacoesPorPasso: 3,
   passo(estado, dt, rascunho) {
     const m = 3 * estado.n;
+    const { acel, acelNewton, velMeio } = rascunho;
     for (const w of PESOS) {
       somarEscalado(estado.pos, estado.vel, 0.5 * w * dt, m);
       aceleracao(estado, rascunho);
+      acelNewton.set(acel.subarray(0, m));
       somarCorrecaoRelativistica(estado, rascunho);
-      somarEscalado(estado.vel, rascunho.acel, w * dt, m);
+      velMeio.set(estado.vel.subarray(0, m));
+      somarEscalado(velMeio, acel, 0.5 * w * dt, m);
+      acel.set(acelNewton.subarray(0, m));
+      somarCorrecaoRelativistica(estado, rascunho, velMeio);
+      somarEscalado(estado.vel, acel, w * dt, m);
       somarEscalado(estado.pos, estado.vel, 0.5 * w * dt, m);
     }
   },

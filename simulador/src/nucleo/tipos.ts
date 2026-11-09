@@ -38,11 +38,19 @@ export interface EstadoSistema {
  */
 export interface Rascunho {
   acel: Float64Array;
+  /** Usados só pelo `yoshida4Relativistico`: a aceleração newtoniana guardada e a velocidade no meio do kick. */
+  acelNewton: Float64Array;
+  velMeio: Float64Array;
   capacidade: number;
 }
 
 export function criarRascunho(capacidade: number): Rascunho {
-  return { acel: new Float64Array(3 * capacidade), capacidade };
+  return {
+    acel: new Float64Array(3 * capacidade),
+    acelNewton: new Float64Array(3 * capacidade),
+    velMeio: new Float64Array(3 * capacidade),
+    capacidade,
+  };
 }
 
 /** Garante que o rascunho comporta `capacidade` corpos, crescendo se preciso. */

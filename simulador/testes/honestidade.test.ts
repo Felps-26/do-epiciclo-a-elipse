@@ -291,9 +291,11 @@ const AMARRAS: Amarra[] = [
     afirma: /A relatividade geral também não/,
     exige: [
       {
-        arquivo: 'src/nucleo/forcas.ts',
-        contem: /^(?!.*relativ).*$/s,
-        porque: 'so vale dizer que nao inclui enquanto de fato nao incluir',
+        // O corpo do yoshida4, ate o `};` que o fecha, nao pode chamar a correcao.
+        arquivo: 'src/nucleo/integrador.ts',
+        contem:
+          /export const yoshida4: Integrador = \{(?:(?!somarCorrecaoRelativistica)(?!\r?\n\};)[\s\S])*\r?\n\};/,
+        porque: 'so vale dizer que nao inclui enquanto o integrador padrao de fato nao incluir',
       },
       {
         // A correcao existe como opcao (yoshida4Relativistico). A frase da

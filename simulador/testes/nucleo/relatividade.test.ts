@@ -37,8 +37,8 @@ function anguloDoPerielio(pos: Float64Array, vel: Float64Array, mu: number): num
   return Math.atan2(ey, ex);
 }
 
-/** Avanco do perielio em um seculo, em segundos de arco. */
-function avancoEmUmSeculo(integrador: Integrador): number {
+/** Sol e Mercurio, com Mercurio no perielio. */
+function mercurioNoPerielio() {
   const gmSol = gmDe('Sol');
   const gmMerc = gmDe('Mercúrio');
   const mu = gmSol + gmMerc;
@@ -52,7 +52,32 @@ function avancoEmUmSeculo(integrador: Integrador): number {
     vel: [0, 0, 0, 0, vp, 0],
     tDias: 0,
   });
-  const rascunho = criarRascunho(estado.capacidade);
+  return { estado, mu, rascunho: criarRascunho(estado.capacidade) };
+}
+
+/** Posicao de Mercurio depois de dez anos com passo dt. */
+function mercurioEmDezAnos(integrador: Integrador, dt: number): [number, number, number] {
+  const { estado, rascunho } = mercurioNoPerielio();
+  avancar(estado, integrador, dt, Math.round(3652.5 / dt), rascunho);
+  return [estado.pos[3]!, estado.pos[4]!, estado.pos[5]!];
+}
+
+/**
+ * Quanto o erro cai quando o passo cai a metade, comparando 0,5 e 0,25 dia com
+ * 0,125. Num metodo de 4a ordem a razao fica perto de 17.
+ */
+function razaoDeConvergencia(integrador: Integrador): number {
+  type Ponto = [number, number, number];
+  const x1 = mercurioEmDezAnos(integrador, 0.5);
+  const x2 = mercurioEmDezAnos(integrador, 0.25);
+  const x3 = mercurioEmDezAnos(integrador, 0.125);
+  const dist = (p: Ponto, q: Ponto) => Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+  return dist(x1, x3) / dist(x2, x3);
+}
+
+/** Avanco do perielio em um seculo, em segundos de arco. */
+function avancoEmUmSeculo(integrador: Integrador): number {
+  const { estado, mu, rascunho } = mercurioNoPerielio();
 
   const antes = anguloDoPerielio(estado.pos, estado.vel, mu);
   avancar(estado, integrador, DT, Math.round(DIAS / DT), rascunho);
@@ -72,6 +97,15 @@ describe('correcao pos-newtoniana do Sol', () => {
   it('sem a correção, o mesmo problema precessa menos de 0,5″ por século', () => {
     const avanco = avancoEmUmSeculo(yoshida4);
     expect(Math.abs(avanco), `avanco medido: ${avanco.toFixed(4)}"`).toBeLessThan(0.5);
+  });
+
+  // A forca depende de v. Avaliada com a v do comeco do kick, o passo fica
+  // assimetrico e o erro cai so com dt (razao perto de 5 aqui); em Mercurio isso
+  // virava milhoes de km por seculo contra a DE440s.
+  it('com a correção, o integrador continua de quarta ordem', () => {
+    const razao = razaoDeConvergencia(yoshida4Relativistico);
+    expect(razao, `razao medida: ${razao.toFixed(2)} (yoshida4: ${razaoDeConvergencia(yoshida4).toFixed(2)})`)
+      .toBeGreaterThan(10);
   });
 
   it('a correção não é o padrão', () => {

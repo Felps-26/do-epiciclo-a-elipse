@@ -87,10 +87,15 @@ const C2 = C_UA_POR_DIA * C_UA_POR_DIA;
  * vezes menor.
  *
  * Depende da velocidade, entao o Yoshida que o usa deixa de ser exatamente
- * simpletico. Chamar depois de `aceleracao`, que zera o buffer.
+ * simpletico. Chamar depois de `aceleracao`, que zera o buffer. `vel` permite
+ * avaliar o termo com outra velocidade que nao a do estado (o meio do kick).
  */
-export function somarCorrecaoRelativistica(estado: EstadoSistema, rascunho: Rascunho): void {
-  const { pos, vel, gm, n } = estado;
+export function somarCorrecaoRelativistica(
+  estado: EstadoSistema,
+  rascunho: Rascunho,
+  vel: Float64Array = estado.vel,
+): void {
+  const { pos, gm, n } = estado;
   const a = rascunho.acel;
   const mu = gm[0]!;
   const xs = pos[0]!;
