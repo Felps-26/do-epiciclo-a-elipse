@@ -8,7 +8,7 @@ from utils.lib import simulate_and_plot, PLANET_DATA
 def main():
     """Interface de linha de comando principal"""
     print("=" * 60)
-    print("🪐 Simulação de Órbitas Planetárias - Série de Fourier 🪐")
+    print("Simulação de Órbitas Planetárias - Série de Fourier")
     print("=" * 60)
     print()
     
@@ -34,7 +34,7 @@ def main():
         except ValueError:
             print("!! Erro: Por favor, digite um número válido.")
         except KeyboardInterrupt:
-            print("\n\n👋 Até logo!")
+            print("\n\nAté logo!")
             return
     
     print(f"\nVocê escolheu: {planet_name}")

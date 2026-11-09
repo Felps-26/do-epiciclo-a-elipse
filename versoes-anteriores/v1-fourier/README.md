@@ -1,62 +1,45 @@
-# Simulação de Órbitas Planetárias com Série de Fourier
+# Simulação de órbitas planetárias com série de Fourier (v1)
 
-Este projeto simula órbitas planetárias usando aproximações por Série de Fourier, baseado em um TCC da Maria Faria na Pasta Others.
+Primeira versão do projeto, anterior à simulação gravitacional da [v2](../v2-pygame/README.md) e ao [simulador atual](../../simulador/). Ela aproxima a elipse de Kepler de cada planeta somando senos e cossenos (série de Fourier), a partir de um TCC da Maria Farias que está em `others/`. Não integra a gravitação: serve de referência científica para os elementos orbitais. Foi escrita antes da v2, iniciada em setembro de 2026.
 
-## 🚀 Como usar
+O simulador que o artigo descreve está em [`simulador/`](../../simulador/).
 
-### 1. Instalar dependências
+## Como rodar no Windows
 
-```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
+Precisa de Python 3.9 ou mais novo. No PowerShell, dentro desta pasta:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe main.py
 ```
 
-> Esta é a **versão anterior** do projeto, mantida como referência científica.
-> A aplicação principal é a simulação gravitacional em `../v2-pygame`.
+O programa pergunta qual planeta simular (Mercúrio, Vênus, Terra, Marte, Júpiter, Saturno, Urano ou Netuno) e quantos termos de Fourier usar; de 3 a 10 termos é uma faixa razoável. Depois abre um gráfico com duas curvas:
 
-### 2. Executar o programa
-
-```bash
-.venv/bin/python main.py
-```
+- **Elipse de Kepler** (colorida): a elipse do problema de dois corpos, calculada a partir dos elementos orbitais da época J2000. Não é a trajetória exata do planeta, porque a órbita verdadeira muda devagar com a atração dos outros planetas.
+- **Aproximação de Fourier** (tracejada preta): a mesma elipse reconstruída somando ondas. Quanto mais termos, mais próxima.
 
 Para conferir os elementos orbitais contra valores tabelados:
 
-```bash
-.venv/bin/python -m tests.test_elementos_orbitais
+```powershell
+.venv\Scripts\python.exe -m tests.test_elementos_orbitais
 ```
 
-### 3. Escolher opções
+No macOS e no Linux, troque `.venv\Scripts\python.exe` por `.venv/bin/python`.
 
-O programa irá perguntar:
-- **Qual planeta simular**: Mercúrio, Vênus, Terra, Marte, Júpiter, Saturno, Urano ou Netuno
-- **Número de termos de Fourier**: Recomendado entre 3-10 termos
-
-### 4. Visualizar resultado
-
-Um gráfico será exibido mostrando:
-- **Elipse de Kepler** (colorida): a elipse do problema de dois corpos, calculada a partir dos elementos orbitais da época J2000. Não é a trajetória exata percorrida pelo planeta: a órbita verdadeira muda devagar por causa da atração dos outros planetas.
-- **Aproximação de Fourier** (linha tracejada preta): a mesma elipse reconstruída somando ondas (série de Fourier)
-
-Quanto mais termos de Fourier você usar, mais precisa será a aproximação!
-
-## 📂 Estrutura do projeto
+## Estrutura
 
 ```
-idp/
-├── utils/
-│   └── lib.py
-├── others/
-│   └── original.ipynb
-│   └── TCC - Maria Farias_Final.pdf
+v1-fourier/
+├── utils/lib.py
+├── others/            notebook original e o TCC de referência
+├── docs/              integração com o Astropy
 ├── tests/
-│   └── exemplo.py
 ├── main.py
-├── requirements.txt
-└── README.md
+└── requirements.txt
 ```
 
-## 🪐 Comparações
+## Comparações
 
 Os parâmetros orbitais são calculados dinamicamente via Astropy (`get_body_barycentric_posvel`) usando as efemérides embutidas no époco J2000, em vez de valores fixos no código.
 
@@ -72,7 +55,7 @@ Os parâmetros orbitais são calculados dinamicamente via Astropy (`get_body_bar
 
 As diferenças existem porque o TCC usa **elementos médios** (médias de longo prazo) enquanto o Astropy calcula **elementos osculadores instantâneos** no époco J2000 - ambos são fisicamente corretos e representam a mesma órbita em contextos diferentes.
 
-## 🎓 Conceitos
+## Conceitos
 
 - **Órbita elíptica**: Trajetória natural dos planetas ao redor do Sol
 - **Série de Fourier**: Método matemático para aproximar funções periódicas usando senos e cossenos
