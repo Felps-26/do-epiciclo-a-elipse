@@ -4,7 +4,9 @@ dist/
 test-results/
 playwright-report/
 .cache-texturas/
-simulador/publico/texturas/
+# so o nivel 2K vai no git (o build do Pages precisa dele); 4K e 8K ficam de fora
+simulador/publico/texturas/4k/
+simulador/publico/texturas/8k/
 *.zip
 _notas/
 __pycache__/
