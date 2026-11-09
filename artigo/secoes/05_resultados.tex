@@ -83,7 +83,7 @@ Depois integramos o sistema de nove corpos de 2026 até $+100$ e $-100$ anos, co
   \legend{Integrador de Yoshida de quarta ordem, sistema de nove corpos a partir de 1º de janeiro de 2026. Fonte: elaborada pelos autores.}
 \end{table}
 
-Como a força da \autoref{eq:pn} depende da velocidade, o \emph{kick} do integrador deixa de ser exato. Na primeira versão, o termo era avaliado com a velocidade do começo de cada \emph{kick}. Isso torna o passo assimétrico no tempo e cria um erro proporcional ao passo, que se acumula órbita após órbita: Mercúrio errou 8,4 milhões de quilômetros em cem anos no passo de 0,5 dia e 815\,000\,km no de 0,05 dia, muito pior do que sem o termo. Avaliando o termo com uma estimativa da velocidade no meio do \emph{kick}, o erro volta a cair com a quarta potência do passo, mas o método continua não sendo exatamente simplético.
+Como a força da \autoref{eq:pn} depende da velocidade, as duas implementações avaliam o termo com uma estimativa da velocidade no meio de cada \emph{kick}; com a velocidade do começo, o erro cairia só com a primeira potência do passo, e não com a quarta.
 
 \subsection{Escolha do integrador}\label{sec:res-integradores}
 

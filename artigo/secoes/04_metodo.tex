@@ -53,12 +53,12 @@ As posições estão no referencial da eclíptica e equinócio de J2000, alinhad
 
 \subsubsection{O que o modelo não inclui}\label{sec:nao-inclui}
 
-Ficam fora da integração padrão a relatividade geral, Plutão, os asteroides, as luas como corpos dinâmicos, o achatamento dos planetas, as marés e a pressão de radiação. O efeito relativístico mais conhecido é a precessão adicional do periélio de Mercúrio, de 43 segundos de arco por século \cite{will2018}. O programa tem, desligada por padrão, a correção pós-newtoniana de primeira ordem devida só ao Sol, somada à aceleração de cada planeta:
+Ficam fora da integração padrão a relatividade geral, Plutão, os asteroides, as luas como corpos dinâmicos, o achatamento dos planetas, as marés e a pressão de radiação. O efeito relativístico mais conhecido é a precessão adicional do periélio de Mercúrio, de 43 segundos de arco por século \cite{will2018}. Por essas omissões, os resultados se afastam devagar da efeméride do JPL, e o programa diz isso ao usuário. O programa tem, desligada por padrão, a correção pós-newtoniana de primeira ordem devida só ao Sol, somada à aceleração de cada planeta:
 \begin{equation}
   \va_\text{PN} = \frac{\mu}{c^2 r^3}\left[\left(\frac{4\mu}{r} - v^2\right)\vr + 4\,(\vr\cdot\vv)\,\vv\right],
   \label{eq:pn}
 \end{equation}
-com $\vr$ e $\vv$ medidos a partir do Sol e $\mu = GM_\odot$. Essa força depende da velocidade, e por isso o integrador de Yoshida deixa de ser exatamente simplético quando ela entra; o efeito dela é medido na \autoref{sec:res-relatividade}. Por essas omissões, os resultados se afastam devagar da efeméride do JPL, e o programa diz isso ao usuário.
+com $\vr$ e $\vv$ medidos a partir do Sol e $\mu = GM_\odot$. Essa força depende da velocidade, e por isso o integrador de Yoshida deixa de ser exatamente simplético quando ela entra; o efeito dela é medido na \autoref{sec:res-relatividade}.
 
 \subsection{Integração numérica}\label{sec:integradores}
 
