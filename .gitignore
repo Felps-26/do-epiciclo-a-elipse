@@ -23,3 +23,5 @@ artigo/experimentos/e4.json
 artigo/experimentos/e5.json
 *.lof
 *.lot
+*.bsp
+artigo/experimentos/e6.json
