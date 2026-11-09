@@ -1,0 +1,50 @@
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: simulador
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: simulador/.nvmrc
+          cache: npm
+          cache-dependency-path: simulador/package-lock.json
+      - run: npm ci
+      # So o nivel 2K das texturas esta no repositorio; o 4K e o 8K ficam de fora.
+      - run: npm run build
+      - name: Conferir o tamanho do que vai ao ar
+        run: |
+          grandes=$(find dist -type f -size +100M)
+          if [ -n "$grandes" ]; then echo "$grandes"; exit 1; fi
+          du -sh dist
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: simulador/dist
+
+  publicar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
