@@ -20,5 +20,6 @@ __pycache__/
 artigo/main.pdf
 artigo/experimentos/e1.json
 artigo/experimentos/e4.json
+artigo/experimentos/e5.json
 *.lof
 *.lot
