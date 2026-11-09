@@ -88,16 +88,19 @@ function avancoEmUmSeculo(integrador: Integrador): number {
   return d * SEG_POR_RAD;
 }
 
+// Cada caso integra 730 mil passos de dois corpos; com a suite em paralelo passa dos 5 s padrao.
+const LIMITE_MS = 120000;
+
 describe('correcao pos-newtoniana do Sol', () => {
   it('com a correção, o periélio de Mercúrio avança 42,98″ por século (±1%)', () => {
     const avanco = avancoEmUmSeculo(yoshida4Relativistico);
     expect(Math.abs(avanco - 42.98), `avanco medido: ${avanco.toFixed(3)}"`).toBeLessThan(0.43);
-  });
+  }, LIMITE_MS);
 
   it('sem a correção, o mesmo problema precessa menos de 0,5″ por século', () => {
     const avanco = avancoEmUmSeculo(yoshida4);
     expect(Math.abs(avanco), `avanco medido: ${avanco.toFixed(4)}"`).toBeLessThan(0.5);
-  });
+  }, LIMITE_MS);
 
   // A forca depende de v. Avaliada com a v do comeco do kick, o passo fica
   // assimetrico e o erro cai so com dt (razao perto de 5 aqui); em Mercurio isso
@@ -106,7 +109,7 @@ describe('correcao pos-newtoniana do Sol', () => {
     const razao = razaoDeConvergencia(yoshida4Relativistico);
     expect(razao, `razao medida: ${razao.toFixed(2)} (yoshida4: ${razaoDeConvergencia(yoshida4).toFixed(2)})`)
       .toBeGreaterThan(10);
-  });
+  }, LIMITE_MS);
 
   it('a correção não é o padrão', () => {
     expect(PADRAO).toBe(yoshida4);

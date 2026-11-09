@@ -62,8 +62,9 @@ describe('as regras de camada', () => {
         { cwd: RAIZ, stdio: 'pipe', encoding: 'utf8' },
       ),
     ).not.toThrow();
-    // Sobe um processo e cruza 170 módulos; com a suíte inteira em paralelo passa dos 5 s padrão.
-  }, 30000);
+    // Sobe um processo e cruza 170 módulos; com a suíte inteira em paralelo, numa máquina
+    // lenta ou no CI do Windows, já passou de 30 s.
+  }, 120000);
 });
 
 describe('o nucleo roda sem navegador', () => {
