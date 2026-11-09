@@ -30,7 +30,7 @@ ALMAGESTO = {
 
 # Commentariolus, centro da órbita da Terra: "1/25 of the radius of the circle" do Sol, na seção
 # sobre os movimentos aparentes do Sol. Fonte: transcrição da tradução inglesa em
-# https://dbanach.com/copernicus-commentarilous.htm (título da tradução de Rosen, 1939).
+# https://dbanach.com/copernicus-commentarilous.htm (a página não nomeia o tradutor).
 # O texto fixa a linha Sol-centro a cerca de 10° a oeste de Pólux; não convertemos essa direção
 # e usamos a do periélio moderno da Terra (o centro fica do lado do afélio).
 D_SOL_MEDIO = 1 / 25        # em unidades do raio da órbita da Terra, isto é, UA
@@ -66,6 +66,8 @@ for i, (R, r1, r2) in COP.items():
             'excentrico_2ae': par(excentrico(a, 2 * a * e, M), zk),
             'equante': par(equante(a, e, M), zk),
             'copernico': par(copernico(a, 1.5 * a * e, 0.5 * a * e, M), zk),
+            # mesmo modelo com o deferente igual a |c1| = a(1 - e²/2 + ...) em vez de a
+            'copernico_c1': par(copernico(abs(c[1]), 1.5 * a * e, 0.5 * a * e, M), zk),
             'fourier3': par(fourier3(c, M), zk),
         },
         'historico': {
