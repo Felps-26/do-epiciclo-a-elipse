@@ -88,6 +88,9 @@ for j, nome in enumerate(ORDEM[1:], start=1):
         maximos[nome][chave] = {'max': float(e[i, j]), 'dia': float(dias[i]), 'data': data(dias[i])}
     i = int(np.argmax(err_rel[:, j]))
     maximos[nome]['km_no_max_relativo'] = float(np.linalg.norm(mod[i, j] - jpl[i, j]) * UA_KM)
+    for anos_ in (1, 10):                                          # janelas menores
+        perto = np.abs(dias) <= anos_ * 365.25
+        maximos[nome][f'direcao_geo_seg_{anos_}anos'] = float(err_geo[perto, j].max())
 
 json.dump({'passo_dias': DT, 'registro_dias': CADA * DT, 'n_instantes': len(dias),
            'maximos': maximos, 'cruzada': cruzada}, open(os.path.join(AQUI, 'e6.json'), 'w'), indent=1)

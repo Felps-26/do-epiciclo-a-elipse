@@ -5,7 +5,7 @@ Os números das \autoref{sec:res-validacao} e \ref{sec:res-integradores} foram o
 
 \subsection{Validação contra a efeméride do JPL}\label{sec:res-validacao}
 
-Partindo de 1º de janeiro de 2026, o sistema de nove corpos foi integrado para a frente e para trás e comparado com as posições do JPL Horizons nas mesmas datas. O critério de aceitação, fixado \emph{antes} de olhar os resultados, foi erro inferior a 1\,\% da distância ao Sol para todos os corpos no intervalo de $-100$ a $+100$ anos. A comparação foi feita em cinco datas ($-100$, $-10$, $+1$, $+10$ e $+100$ anos), não em varredura contínua. A \autoref{tab:validacao} e a \autoref{fig:validacao} mostram o resultado.
+Partindo de 1º de janeiro de 2026, o sistema de nove corpos foi integrado para a frente e para trás e comparado com o JPL de duas formas. A primeira usa as posições do JPL Horizons em cinco datas ($-100$, $-10$, $+1$, $+10$ e $+100$ anos), gravadas no arquivo de dados do programa (\autoref{tab:validacao}). A segunda é uma varredura de $-100$ a $+100$ anos, com uma comparação a cada 10 dias, contra a efeméride DE440s \cite{park2021}, lida do arquivo do próprio JPL (\autoref{tab:varredura}). Antes da varredura conferimos que a DE440s reproduz os cinco pontos do Horizons com diferença menor que 1\,mm, e que nessas datas o erro do modelo contra as duas referências coincide até $10^{-6}$\,km. O critério de aceitação, fixado \emph{antes} de olhar os resultados, foi erro inferior a 1\,\% da distância ao Sol para todos os corpos no intervalo de $-100$ a $+100$ anos.
 
 \begin{table}[htb]
   \centering
@@ -27,15 +27,37 @@ Partindo de 1º de janeiro de 2026, o sistema de nove corpos foi integrado para 
   \legend{Integrador de Yoshida de quarta ordem, passo de 0,5 dia, posições relativas ao baricentro do Sistema Solar. Fonte: elaborada pelos autores.}
 \end{table}
 
+\begin{table}[htb]
+  \centering
+  \caption{Maior erro de cada planeta contra a DE440s, de $-100$ a $+100$ anos}
+  \label{tab:varredura}
+  \small
+  \begin{tabular}{lr@{\ }lr@{\ }lr@{\ }l}
+    \toprule
+    Planeta & \multicolumn{2}{c}{Longitude heliocêntrica} & \multicolumn{2}{c}{Direção vista da Terra} & \multicolumn{2}{c}{Erro/distância ao Sol} \\
+    \midrule
+    Mercúrio & 956$''$  & (1926) & 774$''$  & (1929) & 0,46\,\%  & (1926) \\
+    Vênus    & 11$''$   & (1926) & 54$''$   & (2125) & 0,005\,\% & (1926) \\
+    Terra    & 7,1$''$  & (2125) & 7,1$''$  & (2125) & 0,004\,\% & (1926) \\
+    Marte    & 4,2$''$  & (1926) & 30$''$   & (2114) & 0,002\,\% & (2125) \\
+    Júpiter  & 0,09$''$ & (1927) & 1,9$''$  & (1926) & $5\times10^{-5}$\,\% & (2119) \\
+    Saturno  & 0,01$''$ & (2122) & 0,8$''$  & (2125) & $1\times10^{-5}$\,\% & (2121) \\
+    Urano    & 0,03$''$ & (1926) & 0,4$''$  & (1926) & $8\times10^{-6}$\,\% & (1926) \\
+    Netuno   & 0,03$''$ & (2126) & 0,3$''$  & (2125) & $2\times10^{-5}$\,\% & (1926) \\
+    \bottomrule
+  \end{tabular}
+  \legend{Entre parênteses, o ano do máximo. Para a Terra, a direção é a do Sol. Mesmo integrador e passo da \autoref{tab:validacao}, comparação a cada 10 dias. Fonte: elaborada pelos autores.}
+\end{table}
+
 \begin{figure}[htb]
   \centering
-  \caption{Erro relativo à distância ao Sol}
-  \label{fig:validacao}
-  \includegraphics[width=0.95\textwidth]{validacao.pdf}
-  \legend{Escala logarítmica. A linha tracejada é o critério de 1\,\%. Fonte: elaborada pelos autores.}
+  \caption{Erro de direção vista da Terra, de 1926 a 2126}
+  \label{fig:varredura}
+  \includegraphics[width=0.9\textwidth]{varredura.pdf}
+  \legend{Ângulo entre a direção Terra--planeta do modelo e a da DE440s, em escala logarítmica. Linha fina: valor a cada 10 dias; linha grossa e curvas de (d): máximo em janelas de 810 dias. Fonte: elaborada pelos autores.}
 \end{figure}
 
-Todos os corpos passam com folga. O pior caso é Mercúrio: 0,004\,\% da distância ao Sol em um ano, 0,03\,\% em dez e 0,45\,\% em cem. Mercúrio é o caso difícil por duas razões. É o planeta mais rápido, com apenas 176 passos de integração por órbita, e por isso o erro de truncamento do passo pesa mais nele. É também o planeta mais afetado pela relatividade geral, que o modelo não inclui, mas no passo de 0,5 dia esse efeito é menor que o de truncamento (\autoref{sec:nao-inclui}). Em cem anos, a conservação ficou em $2\times10^{-9}$ para a energia relativa e $1{,}4\times10^{-14}$ para o momento angular.
+Todos os corpos passam com folga. O pior caso é Mercúrio: nas cinco datas, 0,004\,\% da distância ao Sol em um ano, 0,03\,\% em dez e 0,45\,\% em cem. Na varredura o máximo é 0,46\,\% (324\,000\,km), em janeiro de 1926, com Mercúrio perto do afélio. Em ângulo, o erro de Mercúrio chega a 956$''$ (16$'$) na longitude heliocêntrica e a 774$''$ (13$'$) na direção vista da Terra, que é a grandeza comparável a uma observação; num intervalo de dez anos em torno de 2026 essa direção erra no máximo 74$''$, e em um ano, 4$''$. Vênus fica abaixo de 1$'$, Marte de 30$''$ e os planetas externos de 2$''$. Nos externos, o erro de direção vem quase todo do erro da Terra: a longitude heliocêntrica de Júpiter erra no máximo 0,09$''$. O erro cresce nos dois sentidos a partir de 2026 e oscila com o período sinódico, porque o mesmo deslocamento subtende um ângulo maior quando o planeta está perto da Terra (\autoref{fig:varredura}). Mercúrio é o caso difícil por duas razões. É o planeta mais rápido, com apenas 176 passos de integração por órbita, e por isso o erro de truncamento do passo pesa mais nele. É também o planeta mais afetado pela relatividade geral, que o modelo não inclui, mas no passo de 0,5 dia esse efeito é menor que o de truncamento (\autoref{sec:nao-inclui}). Em cem anos, a conservação ficou em $2\times10^{-9}$ para a energia relativa e $1{,}4\times10^{-14}$ para o momento angular.
 
 \subsection{Escolha do integrador}\label{sec:res-integradores}
 

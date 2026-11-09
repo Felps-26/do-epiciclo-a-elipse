@@ -5,7 +5,7 @@
 
 \paragraph{Modelo físico.} A relatividade geral não está incluída. No passo de 0,5 dia, o erro de Mercúrio em dez anos, cerca de 14\,000\,km (\autoref{tab:validacao}), vem sobretudo do truncamento do integrador, e o efeito relativístico estimado, da ordem de mil quilômetros, só apareceria com passo menor; como o termo não foi implementado, essa estimativa não foi testada. Plutão e os asteroides não entram, e a Lua entra somada à Terra, no baricentro do par. As treze luas são propagadas por Kepler com precessão secular e não interagem com nada; o erro medido chega a 15\,\% do semieixo em Tritão (\autoref{tab:luas}). Achatamento, marés e pressão de radiação estão fora do modelo.
 
-\paragraph{Validação.} A comparação com o JPL foi feita em cinco datas, e não numa varredura contínua, e o erro foi medido como fração da distância ao Sol. Mercúrio perto do periélio está cerca de 20\,\% mais perto do Sol que na média, e o mesmo erro absoluto daria ali uma fração maior; o valor de 0,45\,\% em cem anos é um ponto, e não um máximo. Uma métrica angular, em segundos de arco, seria a mais natural para comparar com observações.
+\paragraph{Validação.} Esperávamos que a varredura contínua achasse um erro relativo de Mercúrio bem acima dos 0,45\,\% da data de $+100$ anos, perto do periélio, onde o planeta está mais perto do Sol. Não achou: o máximo em duzentos anos é 0,46\,\%, perto do afélio. A referência continua sendo uma efeméride, que é ela mesma um ajuste a observações; medimos o modelo contra a DE440s, e não contra o céu. Os 13$'$ de Mercúrio em cem anos estão acima da resolução do olho, de cerca de 1$'$, e por isso o programa não serve para prever a posição de Mercúrio no céu de 1926.
 
 \paragraph{Representação.} Na visão geral os planetas são desenhados maiores que o real, com o fator de ampliação na tela. O lado noturno recebe 14\,\% da luz do dia, e a coroa solar e o halo atmosférico são acréscimos visuais, avisados na Ajuda. A cadeia de epiciclos do laboratório é uma construção sobre a órbita osculadora, e não a física do modelo, e a tela diz isso.
 
@@ -20,7 +20,6 @@ O programa não foi avaliado com estudantes, e o que segue é uma proposta. No e
 \begin{enumerate}
   \item Levar a análise da \autoref{sec:copernico-revisitado} à segunda ordem na excentricidade e conferir nas fontes as direções dos apogeus de Copérnico, que decidem o efeito do Sol médio e a hipótese para Vênus.
   \item Implementar a correção pós-newtoniana de primeira ordem e medir se o patamar de erro de Mercúrio desce.
-  \item Validar contra a efeméride em varredura contínua e em segundos de arco.
   \item Avaliar o uso do simulador em sala de aula, com instrumento de avaliação de aprendizagem.
   \item Comprimir as texturas no formato KTX2 para reduzir o tamanho da entrega.
 \end{enumerate}
