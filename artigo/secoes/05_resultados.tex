@@ -157,7 +157,7 @@ A \autoref{tab:fourier} e a \autoref{fig:convergencia} mostram, para a elipse os
   \legend{(a) Os oito planetas; a linha pontilhada é o piso de $10^{-12}$\,UA. (b) Órbitas hipotéticas com $a = 1$\,UA: quanto mais alongada, mais devagar a série converge. Fonte: elaborada pelos autores.}
 \end{figure}
 
-Em termos absolutos os desvios com poucos termos são grandes: milhões de quilômetros para os planetas externos com $|n|\leq1$. Em termos relativos, porém, com $|n|\leq1$ o desvio de Júpiter já é de 2,4\,\% do semieixo, e com $|n|\leq2$ todos os planetas, exceto Mercúrio, ficam abaixo de 0,4\,\% (Júpiter, 0,09\,\%). É o que \citeonline{farias2016} observou nos gráficos: dois ou três termos já são uma excelente aproximação, com a exceção de Mercúrio.
+Em termos absolutos os desvios com poucos termos são grandes: milhões de quilômetros para os planetas externos com $|n|\leq1$. Em termos relativos, porém, com $|n|\leq1$ o desvio de Júpiter já é de 2,4\,\% do semieixo, e com $|n|\leq2$ todos os planetas, exceto Mercúrio, ficam abaixo de 0,4\,\% (Júpiter, 0,09\,\%). É o que \citeonline{farias2016} observou nos gráficos: dois ou três termos já reproduzem a órbita em menos de 0,4\,\% do semieixo, com a exceção de Mercúrio.
 
 \subsubsection{Conferência da forma fechada}
 
@@ -256,7 +256,7 @@ Em Vênus, a excentricidade implícita sobe de 0,028 para 0,063 (Vênus tem 0,00
 
 \subsection{Solução da equação de Kepler}
 
-A \autoref{fig:kepler-iteracoes} mede o número de iterações de Newton necessário para resolver a \autoref{eq:kepler} com tolerância de $10^{-13}$, no pior valor de $M$, para cada excentricidade. Com o chute $E_0 = M$, a convergência é rápida até $e\approx 0{,}98$, mas a partir daí há valores de $M$, perto do periélio, em que o método oscila e não converge. Com o chute de Danby, nunca são necessárias mais de 12 iterações, mesmo em $e = 0{,}999$. Os planetas, com $e < 0{,}21$, nunca precisam de mais de 5. O teste mostra também que o limite de 0,8 citado num comentário do código para a falha do chute $E_0=M$ é conservador; o limite medido é perto de 0,99.
+A \autoref{fig:kepler-iteracoes} mede o número de iterações de Newton necessário para resolver a \autoref{eq:kepler} com tolerância de $10^{-13}$, no pior valor de $M$, para cada excentricidade. Com o chute $E_0 = M$, a convergência é rápida até $e\approx 0{,}98$, mas a partir daí há valores de $M$, perto do periélio, em que o método oscila e não converge. Com o chute de Danby, nunca são necessárias mais de 12 iterações, mesmo em $e = 0{,}999$. Os planetas, com $e < 0{,}21$, nunca precisam de mais de 5.
 
 \begin{figure}[htb]
   \centering
