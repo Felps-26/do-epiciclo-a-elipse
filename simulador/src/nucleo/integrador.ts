@@ -18,7 +18,7 @@
  * O passo e fixo porque o variavel quebra a propriedade simpletica, e o fixo
  * faz a data exibida ser sempre `t0 + n * 0,5 dia`.
  */
-import { aceleracao } from './forcas.ts';
+import { aceleracao, somarCorrecaoRelativistica } from './forcas.ts';
 import type { EstadoSistema, Rascunho } from './tipos.ts';
 
 export const PASSO_PADRAO_DIAS = 0.5;
@@ -88,7 +88,31 @@ export const yoshida4: Integrador = {
   },
 };
 
-export const INTEGRADORES: Record<string, Integrador> = { yoshida4, leapfrog };
+/**
+ * O mesmo Yoshida, com a correcao pos-newtoniana do Sol somada em cada kick.
+ * Nao e o padrao: a validacao contra o JPL e feita sem ela, e no passo de 0,5
+ * dia o truncamento esconde o efeito.
+ *
+ * A forca passa a depender da velocidade, entao o metodo deixa de ser
+ * exatamente simpletico, nem exatamente reversivel. Em Mercurio o termo vale
+ * cerca de 3e-8 da gravidade do Sol.
+ */
+export const yoshida4Relativistico: Integrador = {
+  nome: 'yoshida4Relativistico',
+  avaliacoesPorPasso: 3,
+  passo(estado, dt, rascunho) {
+    const m = 3 * estado.n;
+    for (const w of PESOS) {
+      somarEscalado(estado.pos, estado.vel, 0.5 * w * dt, m);
+      aceleracao(estado, rascunho);
+      somarCorrecaoRelativistica(estado, rascunho);
+      somarEscalado(estado.vel, rascunho.acel, w * dt, m);
+      somarEscalado(estado.pos, estado.vel, 0.5 * w * dt, m);
+    }
+  },
+};
+
+export const INTEGRADORES: Record<string, Integrador> = { yoshida4, leapfrog, yoshida4Relativistico };
 export const PADRAO = yoshida4;
 
 /** Os pesos, expostos so para o teste que os confere contra a formula. */

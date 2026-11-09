@@ -47,6 +47,8 @@ Duas afirmações do projeto são sobre prosa, e nenhuma ferramenta comum as ver
 
 `testes/honestidade.test.ts` liga cada simplificação listada no bloco "o que a tela simplifica" a um fato do código, nos dois sentidos: listar o que não se faz reprova, e fazer o que não está listado também. Nasceu de um defeito: o "Modo maquete" tinha o alternador, o aviso falado e a etiqueta na tela, e não comprimia nada.
 
+A correção pós-newtoniana do Sol existe só como opção (`yoshida4Relativistico`, em `nucleo/integrador.ts`), para os experimentos do artigo. O programa roda com `PADRAO = yoshida4`, sem ela, e a mesma amarra exige isso para a Ajuda continuar dizendo que a relatividade não entra.
+
 `testes/contrato.test.ts` lê o `CONTRATO.md` e exige que toda prova citada exista no disco. Nasceu de uma auditoria que achou catorze arquivos de teste citados que nunca existiram, em dezessete dos quarenta e três itens.
 
 ## Execução

@@ -295,6 +295,13 @@ const AMARRAS: Amarra[] = [
         contem: /^(?!.*relativ).*$/s,
         porque: 'so vale dizer que nao inclui enquanto de fato nao incluir',
       },
+      {
+        // A correcao existe como opcao (yoshida4Relativistico). A frase da
+        // Ajuda continua verdadeira enquanto o programa rodar sem ela.
+        arquivo: 'src/nucleo/integrador.ts',
+        contem: /export const PADRAO = yoshida4;/,
+        porque: 'a correcao pos-newtoniana e opcional; o integrador do programa tem de ser o sem ela',
+      },
     ],
   },
 ];

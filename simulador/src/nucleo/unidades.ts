@@ -14,6 +14,12 @@ export const UA_KM = 149597870.7;
 
 export const DIA_S = 86400.0;
 
+/**
+ * Velocidade da luz em UA/dia, cerca de 173,14. Só a correção pós-newtoniana
+ * opcional usa (ver `forcas.ts`).
+ */
+export const C_UA_POR_DIA = (299792.458 * DIA_S) / UA_KM;
+
 /** Dias de um ano juliano, 365,25, usado no projeto inteiro. */
 export const ANO_DIAS = 365.25;
 
