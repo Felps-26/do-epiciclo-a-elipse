@@ -5,7 +5,11 @@
  * esta ferramenta e, junto com `gerar_efemeride.py`, a unica parte do projeto
  * que toca a internet, e nenhuma das duas roda em uso normal.
  *
- *     node ferramentas/baixar_texturas.mjs
+ *     node ferramentas/baixar_texturas.mjs         # 2K e 4K
+ *     node ferramentas/baixar_texturas.mjs --8k    # 2K, 4K e 8K
+ *
+ * Sem `--8k` a pasta de entrega fica em torno de 45 MB; com ele passa de 150 MB.
+ * O nivel 8K so melhora a aproximacao extrema, entao fica sob pedido.
  *
  * O que a fonte tem de verdade. O servidor devolve 200 com uma pagina HTML
  * de erro para arquivos que nao existem, entao o codigo de status nao serve
@@ -169,12 +173,13 @@ const MAPAS = [
  * a 15 MB, e vinte copias de arquivos que nao tem 8K de verdade custariam
  * duzentos megabytes de pasta de entrega para nao mostrar nada. Entao ele so
  * e gerado quando a fonte tem 8192 pixels ou mais, e o carregador ja sabe
- * ficar com o que tem quando o nivel nao existe.
+ * ficar com o que tem quando o nivel nao existe. Alem disso, so com `--8k`.
  */
+const COM_8K = process.argv.includes('--8k');
 const NIVEIS = [
   { nome: '2k', largura: 2048 },
   { nome: '4k', largura: 4096 },
-  { nome: '8k', largura: 8192, exigeFonteDoTamanho: true },
+  ...(COM_8K ? [{ nome: '8k', largura: 8192, exigeFonteDoTamanho: true }] : []),
 ];
 
 /** A largura em pixels de um arquivo, pelo `sips`. */
