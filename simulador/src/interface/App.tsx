@@ -33,6 +33,7 @@ export interface AppProps {
   jd: number;
   tDias: number;
   atrasado: boolean;
+  encontro: string | null;
   tetoDiasPorSegundo: number;
   /**
    * O passo da física, em dias. Normalmente 0,5; vira 0,125 com o passo curto. Chega à
@@ -138,6 +139,7 @@ export function App(props: AppProps): JSX.Element {
           larguraVisivelUa={props.larguraVisivelUa}
           distanciaAoAlvoUa={props.distanciaAoAlvoUa}
           atrasado={props.atrasado}
+          encontro={props.encontro}
           backend={props.backend}
           exposicao={props.exposicao}
           rotulos={props.rotulos}

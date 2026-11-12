@@ -57,6 +57,12 @@ export interface SistemaVivo {
     diaSimulado: number;
   }): Resultado;
   apagar(chave: string): boolean;
+  /**
+   * A fisica ja removeu o corpo `indice` numa colisao; aqui saem a lista e o
+   * registro de criados. Sem marco de desfazer: o estado anterior ao choque nao
+   * existe mais.
+   */
+  registrarColisao(indice: number): void;
   desfazer(): string | null;
   /** Volta ao preset da efemeride, descartando tudo. */
   restaurar(): void;
@@ -195,6 +201,14 @@ export function criarSistemaVivo(estado: EstadoSistema, corpos: Corpo[]): Sistem
       criados = criados.filter((c) => c.chave !== chave);
       avisar();
       return true;
+    },
+
+    registrarColisao(indice) {
+      const c = corpos[indice];
+      if (!c) return;
+      corpos.splice(indice, 1);
+      criados = criados.filter((k) => k.chave !== c.chave);
+      avisar();
     },
 
     desfazer() {

@@ -28,6 +28,8 @@ interface Props {
   larguraVisivelUa: number;
   distanciaAoAlvoUa: number;
   atrasado: boolean;
+  /** A frase da vigia de encontros, enquanto o passo esta encurtado por ela. */
+  encontro: string | null;
   backend: string;
   exposicao: number;
   rotulos: readonly RotuloColocado[];
@@ -41,6 +43,7 @@ export function Visor({
   larguraVisivelUa,
   distanciaAoAlvoUa,
   atrasado,
+  encontro,
   backend,
   exposicao,
   rotulos,
@@ -171,6 +174,12 @@ export function Visor({
         {passoDias !== PASSO_PADRAO_DIAS ? (
           <p class="visor__passo" role="status">
             {RODAPE.passoCurto}
+          </p>
+        ) : null}
+
+        {encontro ? (
+          <p class="visor__passo" role="status">
+            {encontro}
           </p>
         ) : null}
 

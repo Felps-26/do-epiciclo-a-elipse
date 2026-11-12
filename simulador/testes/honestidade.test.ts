@@ -275,14 +275,17 @@ const AMARRAS: Amarra[] = [
   },
   {
     bloco: 'naoInclui',
-    afirma: /Colisões não existem/,
+    afirma: /um corpo criado que bate num planeta ou no Sol sai da simulação/,
     exige: [
       {
-        arquivo: 'src/nucleo/guardas.ts',
-        contem: /export function separacaoMinima/,
-        porque:
-          'a distancia minima e a consequencia de nao haver colisao; declarar uma sem a outra ' +
-          'deixaria a frase pela metade',
+        arquivo: 'src/nucleo/encontros.ts',
+        contem: /export function colisaoPrevista/,
+        porque: 'so vale dizer que o choque remove o corpo se houver quem detecte o choque',
+      },
+      {
+        arquivo: 'src/nucleo/simulador.ts',
+        contem: /PASSO_CURTO_DIAS/,
+        porque: 'a frase promete o passo curto perto de outro corpo',
       },
     ],
   },

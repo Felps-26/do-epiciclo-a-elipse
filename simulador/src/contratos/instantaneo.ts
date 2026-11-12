@@ -26,6 +26,8 @@ export interface Instantaneo {
   /** Verdadeiro quando o quadro nao entregou o tempo pedido. */
   atrasado: boolean;
   pausado: boolean;
+  /** Indices do corpo criado e de quem ele passa perto, enquanto o passo esta encurtado. */
+  encontro: { corpo: number; alvo: number } | null;
 }
 
 /**

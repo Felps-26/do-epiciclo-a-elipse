@@ -163,6 +163,6 @@ test('o teto de corpos existe e a recusa diz qual é', async ({ page }) => {
     const el = document.querySelector('.criar');
     return el ? el.textContent ?? '' : '';
   });
-  expect(daTela).toContain('atravessam uns aos outros');
+  expect(daTela).toContain('sai da simulação');
   expect(MAXIMO_DE_CORPOS_CRIADOS).toBe(40);
 });

@@ -29,14 +29,14 @@ import {
 } from './nucleo/efemerides.ts';
 import { analisarSol } from './nucleo/analiseSol.ts';
 import { energia, momentoAngular } from './nucleo/estado.ts';
-import { UA_KM, kmPorS, mPorS2, uaParaKm } from './nucleo/unidades.ts';
+import { UA_KM, kmParaUa, kmPorS, mPorS2, uaParaKm } from './nucleo/unidades.ts';
 import { criarRenderizador } from './cena/renderizador.ts';
 import { distancia as distanciaEscrita } from './interface/formato.ts';
 import { criarSistemaVivo, type Recusa } from './app/sistemaVivo.ts';
 import { LUAS } from './dados/luas.ts';
 import { posicaoDesenhada } from './app/posicaoDesenhada.ts';
 import { PASSO_CURTO_DIAS } from './nucleo/integrador.ts';
-import { RECUSAS } from './dados/textos.ts';
+import { ENCONTROS, RECUSAS } from './dados/textos.ts';
 import { criarCena, type Cena } from './cena/cena.ts';
 import {
   alturaVisivelUa,
@@ -156,6 +156,7 @@ let publicacaoAnterior = 0;
 let tDiasAnterior = 0;
 let dtDeTempoSimulado = 0;
 let atrasado = false;
+let encontro: string | null = null;
 let larguraPx = 800;
 let alturaPx = 600;
 let rotulos: RotuloColocado[] = [];
@@ -448,8 +449,27 @@ function porExtenso(r: Recusa): string {
 const laco = criarLaco({
   catalogo,
   lerUi: () => ui.value,
+  vigia: {
+    ehCriado: (i) => catalogo.corpos[i]?.papel === 'teste',
+    // So os corpos da efemeride sao alvo: os criados atravessam uns aos outros.
+    raioUa: (i) => (catalogo.corpos[i]?.papel === 'teste' ? 0 : kmParaUa(catalogo.corpos[i]?.raioKm ?? 0)),
+  },
+  aoColidir(c) {
+    const nome = catalogo.corpos[c.corpo]?.nome ?? '?';
+    const alvo = catalogo.corpos[c.alvo]?.nome ?? '?';
+    vivo.registrarColisao(c.corpo);
+    publicarMudanca();
+    const data = dataPorExtenso(dataDaSimulacao(catalogo.jdEpoca, c.tDias));
+    despachar({ tipo: 'avisar', texto: ENCONTROS.colisao(nome, alvo, data) });
+  },
   aoQuadro(instantaneo, dtRealS) {
     atrasado = instantaneo.atrasado;
+    encontro = instantaneo.encontro
+      ? ENCONTROS.passagem(
+          catalogo.corpos[instantaneo.encontro.corpo]?.nome ?? '?',
+          catalogo.corpos[instantaneo.encontro.alvo]?.nome ?? '?',
+        )
+      : null;
     const estadoUi = ui.value;
 
     // 3. a camera. O pivo acompanha o corpo LENDO O MESMO instantaneo que as
@@ -1035,6 +1055,7 @@ function desenhar(): void {
       jd: catalogo.jdEpoca + laco.simulador.estado.tDias,
       tDias: laco.simulador.estado.tDias,
       atrasado,
+      encontro,
       tetoDiasPorSegundo: laco.tetoDiasPorSegundo,
       passoDias: laco.simulador.dtDias,
       larguraVisivelUa: larguraVisivelUa(camera, larguraPx / Math.max(1, alturaPx)),

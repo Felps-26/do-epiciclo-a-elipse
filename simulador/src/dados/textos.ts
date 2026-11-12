@@ -348,10 +348,11 @@ export const HONESTIDADE = {
       'você cria entram na mesma física dos outros, e a partir do primeiro deles o programa deixa ' +
       'de mostrar a efeméride do JPL e passa a mostrar um sistema inventado. Ele diz isso na ' +
       'tela, e tem um botão para voltar.\n\n' +
-      'Colisões não existem: os corpos atravessam uns aos outros. Calcular choque, quebra e ' +
-      'destroços é outro programa. Por isso há uma distância mínima entre corpos criados — dois ' +
-      'corpos no mesmo lugar dariam uma atração infinita, e o cálculo devolveria lixo para todos ' +
-      'os outros no mesmo passo.\n\n' +
+      'Colisões são tratadas do jeito mais simples: um corpo criado que bate num planeta ou no ' +
+      'Sol sai da simulação, e a tela diz quando. Não há choque, quebra, destroços nem soma de ' +
+      'massa; isso é outro programa. Quando um corpo criado passa perto de outro, a física encurta ' +
+      'o passo para 0,125 dia até ele se afastar, e a tela avisa. Corpos criados sem massa ' +
+      'atravessam uns aos outros.\n\n' +
       'A relatividade geral também não. O efeito maior seria girar lentamente a órbita de ' +
       'Mercúrio, 43 segundos de arco por século.\n\n' +
       'Por isso os resultados se afastam devagar das medidas do JPL. Comparando com a efeméride ' +
@@ -460,6 +461,14 @@ export const RECUSAS = {
     'para criar outro.',
 } as const;
 
+/** O que a vigia de encontros escreve na tela. */
+export const ENCONTROS = {
+  passagem: (nome: string, alvo: string): string =>
+    `${nome} está passando perto de ${alvo}: a física encurtou o passo para 0,125 dia até ele se afastar`,
+  colisao: (nome: string, alvo: string, data: string): string =>
+    `${nome} colidiu com ${alvo} em ${data} e saiu da simulação.`,
+} as const;
+
 /** Um número com vírgula, como se escreve em português. */
 function numeroPt(v: number, casas: number): string {
   return v.toFixed(casas).replace('.', ',');
@@ -482,8 +491,9 @@ export const SANDBOX = {
     'Na velocidade de escape ou acima dela — 1,41 vez a de órbita redonda. Ele vai embora e não ' +
     'volta.',
   semColisoes:
-    'Os corpos atravessam uns aos outros: este programa não calcula colisões. Dois corpos no ' +
-    'mesmo lugar dariam uma atração infinita, e por isso há uma distância mínima entre eles.',
+    'Um corpo que bate num planeta ou no Sol sai da simulação, sem destroços. Os criados ' +
+    'atravessam uns aos outros. Dois corpos no mesmo lugar dariam uma atração infinita, e por ' +
+    'isso há uma distância mínima para criar.',
   distintivo: 'Sistema modificado — não é mais a efeméride do JPL',
   fichaDeCriado: 'Corpo criado por você. Não vem de medida nenhuma, e por isso não tem fontes.',
 } as const;

@@ -20,7 +20,9 @@
  * consegue simular um quadro lento, e o lint que proibe `performance` dentro do
  * nucleo continua valendo.
  */
-import { PADRAO, PASSO_PADRAO_DIAS, type Integrador } from './integrador.ts';
+import { PADRAO, PASSO_CURTO_DIAS, PASSO_PADRAO_DIAS, type Integrador } from './integrador.ts';
+import { colisaoNoPasso, colisaoPrevista, encontroProximo, haCriado, type Par, type Vigia } from './encontros.ts';
+import { removerCorpo } from './estado.ts';
 import { ajustarRascunho, criarRascunho, type EstadoSistema, type Rascunho } from './tipos.ts';
 
 /** Devolve milissegundos monotonicos. Injetada; nunca lida daqui de dentro. */
@@ -33,6 +35,15 @@ export interface RelatorioPasso {
   /** Verdadeiro quando o orcamento nao coube e o excedente foi descartado. */
   atrasado: boolean;
   msGastos: number;
+  /** Corpo criado perto de outro com massa no fim do quadro; o passo foi encurtado. */
+  encontro?: Par | null;
+  /** Corpos criados removidos por colisao neste quadro, na ordem em que sairam. */
+  colisoes?: Colisao[];
+}
+
+/** `corpo` e o indice no momento da remocao: aplicar em ordem mantem as listas alinhadas. */
+export interface Colisao extends Par {
+  tDias: number;
 }
 
 export function fracaoEntregue(r: RelatorioPasso): number {
@@ -53,6 +64,8 @@ export interface OpcoesSimulador {
   passosMaxPorQuadro?: number;
   cronometro?: Cronometro;
   quadrosPorSegundo?: number;
+  /** Sem ela, nenhum encontro e vigiado. */
+  vigia?: Vigia;
 }
 
 export class Simulador {
@@ -62,7 +75,9 @@ export class Simulador {
   passosMaxPorQuadro: number;
   quadrosPorSegundo: number;
 
+  vigia: Vigia | null;
   private readonly cronometro: Cronometro;
+  private antes = new Float64Array(0);
   private rascunho: Rascunho;
   /** Fracao de passo que sobrou do quadro anterior. */
   private residuo = 0;
@@ -74,6 +89,7 @@ export class Simulador {
     this.passosMaxPorQuadro = opcoes.passosMaxPorQuadro ?? 140;
     this.quadrosPorSegundo = opcoes.quadrosPorSegundo ?? 60;
     this.cronometro = opcoes.cronometro ?? (() => 0);
+    this.vigia = opcoes.vigia ?? null;
     this.rascunho = criarRascunho(estado.capacidade);
   }
 
@@ -102,6 +118,9 @@ export class Simulador {
     // abaixo de um passo por quadro avancem suavemente em vez de ficarem
     // paradas ate juntar um passo inteiro.
     this.residuo += pedidos;
+    // Sem corpo criado o caminho e o de sempre, passo a passo identico ao
+    // validado contra o JPL: a vigia nao pode mexer nos nove por acidente.
+    if (this.vigia && haCriado(this.estado, this.vigia)) return this.avancarVigiado(pedidos, this.vigia);
     const querido = Math.trunc(this.residuo / this.dtDias);
     const passos = Math.min(querido, this.passosMaxPorQuadro);
     const atrasado = passos < querido;
@@ -120,6 +139,59 @@ export class Simulador {
     }
 
     return { passos, diasPedidos: pedidos, diasDados: passos * this.dtDias, atrasado, msGastos };
+  }
+
+  /**
+   * O mesmo orcamento, com o passo escolhido a cada passo: curto enquanto um
+   * corpo criado esta na vizinhanca de outro com massa, normal fora dela.
+   */
+  private avancarVigiado(pedidos: number, vigia: Vigia): RelatorioPasso {
+    const colisoes: Colisao[] = [];
+    let passos = 0;
+    let dados = 0;
+    let encontro = encontroProximo(this.estado, vigia);
+    const passoDe = (): number => (encontro ? Math.min(this.dtDias, PASSO_CURTO_DIAS) : this.dtDias);
+
+    const t0 = this.cronometro();
+    while (passos < this.passosMaxPorQuadro && this.residuo - dados >= passoDe()) {
+      const dt = passoDe();
+      const e = this.estado;
+      let prevista = colisaoPrevista(e, vigia, dt);
+      while (prevista) {
+        colisoes.push({ corpo: prevista.corpo, alvo: prevista.alvo, tDias: e.tDias + prevista.emDias });
+        removerCorpo(e, prevista.corpo);
+        prevista = colisaoPrevista(e, vigia, dt);
+      }
+      if (colisoes.length > 0 && !haCriado(e, vigia)) {
+        encontro = null;
+        break;
+      }
+      if (this.antes.length < 3 * e.n) this.antes = new Float64Array(3 * e.capacidade);
+      this.antes.set(e.pos.subarray(0, 3 * e.n));
+      this.integrador.passo(e, dt, this.rascunho);
+      e.tDias += dt;
+      dados += dt;
+      passos++;
+
+      // Sem fusao de massa: o corpo criado sai, e o alvo segue como estava.
+      let c = colisaoNoPasso(this.antes, e, vigia);
+      while (c) {
+        colisoes.push({ ...c, tDias: e.tDias });
+        removerCorpo(e, c.corpo);
+        this.antes.copyWithin(3 * c.corpo, 3 * (c.corpo + 1), 3 * (e.n + 1));
+        c = colisaoNoPasso(this.antes, e, vigia);
+      }
+      if (colisoes.length > 0 && !haCriado(e, vigia)) {
+        encontro = null;
+        break;
+      }
+      encontro = encontroProximo(e, vigia);
+    }
+    const msGastos = this.cronometro() - t0;
+
+    const atrasado = passos >= this.passosMaxPorQuadro && this.residuo - dados >= passoDe();
+    this.residuo = atrasado ? 0 : Math.max(0, this.residuo - dados);
+    return { passos, diasPedidos: pedidos, diasDados: dados, atrasado, msGastos, encontro, colisoes };
   }
 
   /** Pausa e avanca exatamente um passo. Aceita dt negativo. */

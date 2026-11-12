@@ -21,6 +21,8 @@ import { Simulador } from '../nucleo/simulador.ts';
 import { copiarEstado, restaurarEstado } from '../nucleo/estado.ts';
 import { medirPassosPorSegundo, passosMaxPorQuadro, tetoDiasPorSegundo } from '../nucleo/calibragem.ts';
 import { PADRAO } from '../nucleo/integrador.ts';
+import type { Vigia } from '../nucleo/encontros.ts';
+import type { Colisao } from '../nucleo/simulador.ts';
 import type { Catalogo } from '../dados/carregar.ts';
 import type { Instantaneo } from '../contratos/instantaneo.ts';
 import type { EstadoUi } from './estadoUi.ts';
@@ -40,15 +42,19 @@ export interface OpcoesLaco {
   catalogo: Catalogo;
   lerUi: () => EstadoUi;
   aoQuadro: (instantaneo: Instantaneo, dtRealS: number) => void;
+  vigia?: Vigia;
+  /** Chamada na ordem das remocoes, antes do quadro ser publicado. */
+  aoColidir?: (c: Colisao) => void;
 }
 
 const MAX_DT_REAL_S = 0.1;
 
-export function criarLaco({ catalogo, lerUi, aoQuadro }: OpcoesLaco): Laco {
+export function criarLaco({ catalogo, lerUi, aoQuadro, vigia, aoColidir }: OpcoesLaco): Laco {
   const inicial = copiarEstado(catalogo.estado);
   const simulador = new Simulador(catalogo.estado, {
     integrador: PADRAO,
     cronometro: () => performance.now(),
+    ...(vigia ? { vigia } : {}),
   });
 
   // Calibragem: mede a maquina em vez de chutar um numero. O aquecimento fica
@@ -79,6 +85,7 @@ export function criarLaco({ catalogo, lerUi, aoQuadro }: OpcoesLaco): Laco {
     n: catalogo.estado.n,
     atrasado: false,
     pausado: false,
+    encontro: null,
   };
 
   let rodando = false;
@@ -111,8 +118,9 @@ export function criarLaco({ catalogo, lerUi, aoQuadro }: OpcoesLaco): Laco {
 
     const ui = lerUi();
     const relatorio = ui.pausado
-      ? { passos: 0, atrasado: false }
+      ? { passos: 0, atrasado: false, encontro: instantaneo.encontro, colisoes: [] }
       : simulador.avancar(dtRealS, ui.diasPorSegundo);
+    for (const c of relatorio.colisoes ?? []) aoColidir?.(c);
 
     const e = simulador.estado;
     instantaneo.pos.set(e.pos.subarray(0, 3 * e.n));
@@ -122,6 +130,7 @@ export function criarLaco({ catalogo, lerUi, aoQuadro }: OpcoesLaco): Laco {
     instantaneo.jd = catalogo.jdEpoca + e.tDias;
     instantaneo.atrasado = relatorio.atrasado;
     instantaneo.pausado = ui.pausado;
+    instantaneo.encontro = relatorio.encontro ?? null;
 
     aoQuadro(instantaneo, dtRealS);
   }
