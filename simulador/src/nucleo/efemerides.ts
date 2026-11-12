@@ -145,15 +145,82 @@ export function elementosDeVetores(
   };
 }
 
+/** Quantas vezes a distancia atual o trecho de uma orbita aberta alcanca. */
+const ALCANCE_DO_TRECHO_ABERTO = 3;
+
 /**
- * Pontos (n,3) da elipse instantanea, em UA, no referencial da cena.
+ * A conica de dois corpos que passa por (r, v), em `nPontos`, somada a `centro`.
+ *
+ * Fechada, sai a elipse inteira, com os pontos espalhados pela anomalia
+ * excentrica. Aberta, sai o trecho da hiperbole (ou parabola) entre os pontos
+ * a `ALCANCE_DO_TRECHO_ABERTO` vezes a distancia atual, parametrizado pela
+ * anomalia verdadeira: `r = p/(1 + e cos v)` vale para todo e, e o semi-latus
+ * rectum `p = h^2/mu` nao explode perto de e = 1 como o semieixo.
+ *
+ * Vazio so quando nao ha plano orbital (queda radial ou corpo no centro).
+ */
+function pontosDaConica(
+  rVec: V3Leitura,
+  vVec: V3Leitura,
+  mu: number,
+  nPontos: number,
+  centro: V3Leitura,
+): Float64Array {
+  const r = norma(rVec);
+  const hVec = cruz(rVec, vVec);
+  const h = norma(hVec);
+  if (!(r > 0) || !(mu > 0) || !(h > 1e-14 * r * Math.sqrt(mu / r))) return new Float64Array(0);
+
+  const energiaEsp = escalar(vVec, vVec) / 2 - mu / r;
+  const vxh = cruz(vVec, hVec);
+  const eVec: V3 = [vxh[0] / mu - rVec[0] / r, vxh[1] / mu - rVec[1] / r, vxh[2] / mu - rVec[2] / r];
+  const exc = norma(eVec);
+
+  // Orbita quase circular nao tem periastro definido: qualquer base do plano
+  // serve, e a posicao atual e uma escolha tao boa quanto outra.
+  const pHat: V3 = exc > 1e-12 ? [eVec[0] / exc, eVec[1] / exc, eVec[2] / exc] : [rVec[0] / r, rVec[1] / r, rVec[2] / r];
+  const wHat: V3 = [hVec[0] / h, hVec[1] / h, hVec[2] / h];
+  const qHat = cruz(wHat, pHat);
+
+  const saida = new Float64Array(3 * nPontos);
+  const gravar = (k: number, x: number, y: number): void => {
+    saida[3 * k] = centro[0] + x * pHat[0] + y * qHat[0];
+    saida[3 * k + 1] = centro[1] + x * pHat[1] + y * qHat[1];
+    saida[3 * k + 2] = centro[2] + x * pHat[2] + y * qHat[2];
+  };
+
+  if (energiaEsp < 0) {
+    const a = -mu / (2 * energiaEsp);
+    const b = a * Math.sqrt(Math.max(0, 1 - exc * exc));
+    for (let k = 0; k < nPontos; k++) {
+      // Anomalia excentrica espalha os pontos pela geometria da elipse, que e o
+      // que um caminho desenhado quer. Espacamento por tempo e do laboratorio.
+      const anomalia = (2 * Math.PI * k) / (nPontos - 1);
+      gravar(k, a * (Math.cos(anomalia) - exc), b * Math.sin(anomalia));
+    }
+    return saida;
+  }
+
+  // Energia >= 0 com e numericamente abaixo de 1 e a parabola vista pelo
+  // arredondamento; tratar como e = 1 evita um trecho fechado falso.
+  const eAberta = Math.max(1, exc);
+  const p = (h * h) / mu;
+  const rMax = ALCANCE_DO_TRECHO_ABERTO * Math.max(r, p / (1 + eAberta));
+  const vLimite = Math.acos(Math.min(1, Math.max(-1, (p / rMax - 1) / eAberta)));
+  for (let k = 0; k < nPontos; k++) {
+    const v = -vLimite + (2 * vLimite * k) / (nPontos - 1);
+    const rk = p / (1 + eAberta * Math.cos(v));
+    gravar(k, rk * Math.cos(v), rk * Math.sin(v));
+  }
+  return saida;
+}
+
+/**
+ * Pontos (n,3) da orbita instantanea, em UA, no referencial da cena.
  *
  * Desenhada em torno da posicao atual do Sol, para acompanha-lo. Devolve um
- * Float64Array achatado (3 numeros por ponto), vazio quando a orbita nao esta
- * ligada.
- *
- * Na base perifocal, `p` aponta para o perielio, `w` e a normal do plano e `q`
- * fecha a base; a elipse ja sai no plano orbital real, sem rotacao depois.
+ * Float64Array achatado (3 numeros por ponto). Orbita fechada sai inteira;
+ * aberta sai como o trecho de hiperbole perto do corpo (`pontosDaConica`).
  */
 export function elipseOsculadora(
   e: EstadoSistema,
@@ -162,56 +229,18 @@ export function elipseOsculadora(
   iSol = 0,
 ): Float64Array {
   exigirQueNaoSejaOReferencial(i, iSol);
-  const { r: rVec, v: vVec } = relativoAoSol(e, i, iSol);
-  const mu = e.gm[iSol]! + e.gm[i]!;
-  const r = norma(rVec);
-  const energiaEsp = escalar(vVec, vVec) / 2 - mu / r;
-  if (energiaEsp >= 0) return new Float64Array(0);
-
-  const a = -mu / (2 * energiaEsp);
-  const hVec = cruz(rVec, vVec);
-  const vxh = cruz(vVec, hVec);
-  const eVec: V3 = [vxh[0] / mu - rVec[0] / r, vxh[1] / mu - rVec[1] / r, vxh[2] / mu - rVec[2] / r];
-  const exc = norma(eVec);
-
-  // Orbita quase circular nao tem perielio definido: qualquer base do plano
-  // serve, e a posicao atual e uma escolha tao boa quanto outra.
-  const pHat: V3 =
-    exc > 1e-12
-      ? [eVec[0] / exc, eVec[1] / exc, eVec[2] / exc]
-      : [rVec[0] / r, rVec[1] / r, rVec[2] / r];
-  const h = norma(hVec);
-  const wHat: V3 = [hVec[0] / h, hVec[1] / h, hVec[2] / h];
-  const qHat = cruz(wHat, pHat);
-
-  const b = a * Math.sqrt(Math.max(0, 1 - exc * exc));
-  const sx = e.pos[3 * iSol]!;
-  const sy = e.pos[3 * iSol + 1]!;
-  const sz = e.pos[3 * iSol + 2]!;
-
-  const saida = new Float64Array(3 * nPontos);
-  for (let k = 0; k < nPontos; k++) {
-    // Anomalia excentrica espalha os pontos pela geometria da elipse, que e o que
-    // um caminho desenhado quer. Espacamento por tempo e coisa do laboratorio.
-    const anomalia = (2 * Math.PI * k) / (nPontos - 1);
-    const x = a * (Math.cos(anomalia) - exc);
-    const y = b * Math.sin(anomalia);
-    saida[3 * k] = sx + x * pHat[0] + y * qHat[0];
-    saida[3 * k + 1] = sy + x * pHat[1] + y * qHat[1];
-    saida[3 * k + 2] = sz + x * pHat[2] + y * qHat[2];
-  }
-  return saida;
+  const { r, v } = relativoAoSol(e, i, iSol);
+  const sol: V3 = [e.pos[3 * iSol]!, e.pos[3 * iSol + 1]!, e.pos[3 * iSol + 2]!];
+  return pontosDaConica(r, v, e.gm[iSol]! + e.gm[i]!, nPontos, sol);
 }
 
 /**
- * A elipse que um corpo seguiria se fosse largado aqui, com esta velocidade.
+ * A orbita que um corpo seguiria se fosse largado aqui, com esta velocidade.
  *
  * Fechada, nao integrada: integrar custaria um worker e uma segunda fisica que
  * poderia discordar da primeira, para chegar no primeiro instante a esta mesma
- * elipse osculadora de dois corpos.
- *
- * Devolve vazio quando a orbita nao e fechada; a ausencia da linha diz que o
- * corpo vai embora.
+ * conica osculadora de dois corpos. Acima da velocidade de escape sai o trecho
+ * aberto, que mostra para onde o corpo vai.
  */
 export function previsaoDeOrbita(
   posUa: readonly [number, number, number],
@@ -221,38 +250,9 @@ export function previsaoDeOrbita(
   mu: number,
   nPontos = 240,
 ): Float64Array {
-  const r: [number, number, number] = [posUa[0] - solUa[0], posUa[1] - solUa[1], posUa[2] - solUa[2]];
-  const v: [number, number, number] = [
-    velUaDia[0] - solVelUaDia[0],
-    velUaDia[1] - solVelUaDia[1],
-    velUaDia[2] - solVelUaDia[2],
-  ];
-  const el = elementosDeVetores(r, v, mu);
-  if (!el.ligada) return new Float64Array(0);
-
-  const rn = norma(r);
-  const energiaEsp = escalar(v, v) / 2 - mu / rn;
-  const a = -mu / (2 * energiaEsp);
-  const hVec = cruz(r, v);
-  const vxh = cruz(v, hVec);
-  const eVec: V3 = [vxh[0] / mu - r[0] / rn, vxh[1] / mu - r[1] / rn, vxh[2] / mu - r[2] / rn];
-  const exc = norma(eVec);
-  const pHat: V3 = exc > 1e-12 ? [eVec[0] / exc, eVec[1] / exc, eVec[2] / exc] : [r[0] / rn, r[1] / rn, r[2] / rn];
-  const h = norma(hVec);
-  const wHat: V3 = [hVec[0] / h, hVec[1] / h, hVec[2] / h];
-  const qHat = cruz(wHat, pHat);
-  const b = a * Math.sqrt(Math.max(0, 1 - exc * exc));
-
-  const saida = new Float64Array(3 * nPontos);
-  for (let k = 0; k < nPontos; k++) {
-    const anomalia = (2 * Math.PI * k) / (nPontos - 1);
-    const x = a * (Math.cos(anomalia) - exc);
-    const y = b * Math.sin(anomalia);
-    saida[3 * k] = solUa[0] + x * pHat[0] + y * qHat[0];
-    saida[3 * k + 1] = solUa[1] + x * pHat[1] + y * qHat[1];
-    saida[3 * k + 2] = solUa[2] + x * pHat[2] + y * qHat[2];
-  }
-  return saida;
+  const r: V3 = [posUa[0] - solUa[0], posUa[1] - solUa[1], posUa[2] - solUa[2]];
+  const v: V3 = [velUaDia[0] - solVelUaDia[0], velUaDia[1] - solVelUaDia[1], velUaDia[2] - solVelUaDia[2]];
+  return pontosDaConica(r, v, mu, nPontos, solUa);
 }
 
 export interface CurvaDoLaboratorio {

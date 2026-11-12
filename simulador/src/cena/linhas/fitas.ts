@@ -11,8 +11,8 @@
  * quando a orbita muda, e nao a cada quadro por causa da origem flutuante, o que
  * evitaria reescrever 1.620 pontos sessenta vezes por segundo.
  *
- * O caminho previsto e a elipse osculadora: onde o corpo iria se, a partir deste
- * instante, so o Sol existisse. O rastro e por onde ele passou nesta simulacao. Em
+ * O caminho previsto e a conica osculadora: onde o corpo iria se, a partir deste
+ * instante, so o Sol existisse (elipse inteira, ou o trecho aberto de quem escapa). O rastro e por onde ele passou nesta simulacao. Em
  * escala humana os dois coincidem, o que serve de conferencia visual da integracao.
  */
 import { comprimirRaio, comprimirRelativos } from '../escala/escalaVisual.ts';
@@ -151,6 +151,9 @@ export function criarFitas(
   let trilhasLigadas = true;
   let atenuacaoAtual = 1;
   let focoAtual: string | null = null;
+  // Corpo sem conica desenhavel (queda radial). Guardado aqui, e nao so no
+  // `visible`, para a atenuacao do quadro seguinte nao religar a geometria velha.
+  const semCurva: boolean[] = [];
 
   /**
    * As tres condicoes numa conjuncao so, num lugar so: a opcao esta ligada, a linha
@@ -163,7 +166,8 @@ export function criarFitas(
       const chave = existe ? corpos[i]!.chave : null;
       const doFoco = chave !== null && chave === focoAtual;
       // O Sol nao tem orbita para desenhar.
-      orbitas[i]!.linha.visible = orbitasLigadas && existe && chave !== 'sol' && atenuacaoAtual > 0;
+      orbitas[i]!.linha.visible =
+        orbitasLigadas && existe && chave !== 'sol' && atenuacaoAtual > 0 && !semCurva[i];
       trilhas[i]!.linha.visible = trilhasLigadas && existe && (doFoco || atenuacaoAtual > 0);
     }
   }
@@ -171,6 +175,7 @@ export function criarFitas(
   // as orbitas ficariam na escala antiga ate o proximo multiplo de
   // QUADROS_ENTRE_RECALCULOS — ate dois segundos com os planetas fora delas.
   let maqueteAnterior: boolean | null = null;
+  let contagemAnterior = -1;
   const relativo = new Float32Array(PONTOS_DA_ELIPSE * 3);
 
   return {
@@ -235,6 +240,13 @@ export function criarFitas(
 
       const trocouDeEscala = maquete !== maqueteAnterior;
       maqueteAnterior = maquete;
+      // Corpo criado ou apagado: a casa precisa da conica certa ja neste quadro,
+      // e nao da que sobrou de quem a ocupava.
+      const mudouALista = corpos.length !== contagemAnterior;
+      if (mudouALista) {
+        contagemAnterior = corpos.length;
+        aplicarVisibilidade();
+      }
 
       if (trilhasLigadas) {
         conjunto.acompanhar(chavesDosCorpos());
@@ -279,16 +291,17 @@ export function criarFitas(
 
       quadro++;
       if (!orbitasLigadas) return;
-      if (!trocouDeEscala && quadro % QUADROS_ENTRE_RECALCULOS !== 0) return;
+      if (!trocouDeEscala && !mudouALista && quadro % QUADROS_ENTRE_RECALCULOS !== 0) return;
 
       for (let i = 1; i < Math.min(corpos.length, estado.n); i++) {
         const pontos = elipseOsculadora(estado, i, PONTOS_DA_ELIPSE);
         const fita = orbitas[i]!;
-        if (pontos.length === 0) {
-          fita.linha.visible = false;
-          continue;
+        const sem = pontos.length === 0;
+        if (sem !== (semCurva[i] ?? false)) {
+          semCurva[i] = sem;
+          aplicarVisibilidade();
         }
-        fita.linha.visible = true;
+        if (sem) continue;
         for (let k = 0; k < PONTOS_DA_ELIPSE; k++) {
           relativo[3 * k] = pontos[3 * k]! - sx;
           relativo[3 * k + 1] = pontos[3 * k + 1]! - sy;

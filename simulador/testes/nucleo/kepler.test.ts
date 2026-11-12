@@ -15,6 +15,7 @@ import {
   grausParaRad,
   normalizarAngulo,
   resolverKepler,
+  resolverKeplerHiperbolico,
   type ElementosClassicos,
 } from '@nucleo/kepler.ts';
 
@@ -197,5 +198,46 @@ describe('amostragem no tempo', () => {
     const p = amostrarNoTempo(TERRA, GM_SOL, 8);
     expect(p.length).toBe(24);
     expect(Math.hypot(p[0]! - p[21]!, p[1]! - p[22]!, p[2]! - p[23]!)).toBeGreaterThan(1e-3);
+  });
+});
+
+describe('órbitas abertas', () => {
+  // a < 0 na convenção da hipérbole; o movimento médio sai de mu e |a|.
+  const aHip = -2;
+  const HIPERBOLE: ElementosClassicos = {
+    aUa: aHip,
+    e: 1.5,
+    iRad: grausParaRad(12),
+    nodoRad: grausParaRad(40),
+    periastroRad: grausParaRad(75),
+    anomaliaMediaRad: 0,
+    movimentoMedioRadDia: Math.sqrt(GM_SOL / Math.abs(aHip) ** 3),
+    taxaDoNodoRadDia: 0,
+    taxaDoPeriastroRadDia: 0,
+  };
+
+  it('com e = 1,5 o estado conserva a energia mu/(2|a|) a 1e-12', () => {
+    for (const t of [-800, -90, 0, 3, 250, 4000]) {
+      const { pos, vel } = estadoDeElementos(HIPERBOLE, GM_SOL, t);
+      const r = Math.hypot(...pos);
+      const energia = (vel[0] ** 2 + vel[1] ** 2 + vel[2] ** 2) / 2 - GM_SOL / r;
+      const esperada = GM_SOL / (2 * Math.abs(aHip));
+      expect(Math.abs(energia - esperada) / esperada, `t = ${t}`).toBeLessThan(1e-12);
+    }
+  });
+
+  it('no periastro a distância é |a|(e − 1), e o corpo passa por lá uma vez só', () => {
+    const { pos } = estadoDeElementos(HIPERBOLE, GM_SOL, 0);
+    expect(Math.hypot(...pos)).toBeCloseTo(Math.abs(aHip) * 0.5, 12);
+    const longe = estadoDeElementos(HIPERBOLE, GM_SOL, 5000).pos;
+    expect(Math.hypot(...longe)).toBeGreaterThan(10);
+  });
+
+  it('a equação hiperbólica fecha mesmo com anomalia média enorme', () => {
+    for (const M of [1e-9, 0.3, 5, 80, 1e4]) {
+      const H = resolverKeplerHiperbolico(M, 1.2);
+      expect(Math.abs(1.2 * Math.sinh(H) - H - M) / Math.max(1, M)).toBeLessThan(1e-12);
+      expect(resolverKeplerHiperbolico(-M, 1.2)).toBeCloseTo(-H, 12);
+    }
   });
 });

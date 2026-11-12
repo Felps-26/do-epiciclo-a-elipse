@@ -119,5 +119,44 @@ describe('rastros do sandbox', () => {
     const alheios = rastro.filter((p) => Math.hypot(p[0] + sol[0]! - 0, p[1] + sol[1]! - 8) > 0.01);
     expect(alheios.length, 'a fita mostra pontos de outro corpo').toBe(0);
   });
-});
 
+  it('a órbita de um corpo que escapa é um trecho aberto estável, e não pisca', () => {
+    const { corpos, fitas, estado } = montar();
+    const sol = [estado.pos[0]!, estado.pos[1]!, estado.pos[2]!] as const;
+    const vEscape = Math.sqrt((2 * estado.gm[0]!) / 3) * 1.3;
+    inserirCorpo(
+      estado,
+      [sol[0] + 3, sol[1], sol[2]],
+      [estado.vel[0]!, estado.vel[1]! + vEscape, estado.vel[2]!],
+      0,
+    );
+    corpos.push({ chave: 'criado-1', nome: 'Criado 1' });
+    const i = estado.n - 1;
+    const linha = fitas.grupo.children[2 * i] as Line2;
+    const pontosDaOrbita = (): number[] => {
+      const inicio = linha.geometry.getAttribute('instanceStart') as unknown as { data: { array: Float32Array } };
+      return Array.from(inicio.data.array);
+    };
+
+    const visibilidades = new Set<boolean>();
+    let anterior: number[] | null = null;
+    for (let q = 0; q < 60; q++) {
+      // A atenuacao muda de quadro em quadro, como num voo de camera.
+      fitas.atenuar(q % 2 === 0 ? 1 : 0.9, null);
+      fitas.atualizar(estado, [0, 0, 0], 0, false);
+      visibilidades.add(fitas.estadoDaFita('criado-1')!.orbitaVisivel);
+      if (q >= 20) {
+        const atual = pontosDaOrbita();
+        if (anterior) expect(atual).toEqual(anterior);
+        anterior = atual;
+      }
+    }
+    expect([...visibilidades]).toEqual([true]);
+    const p = pontosDaOrbita();
+    expect(p.every((x) => Number.isFinite(x))).toBe(true);
+    // O trecho passa pelo corpo, que esta a 3 UA do Sol no eixo x.
+    let menor = Infinity;
+    for (let k = 0; k + 2 < p.length; k += 3) menor = Math.min(menor, Math.hypot(p[k]! - 3, p[k + 1]!, p[k + 2]!));
+    expect(menor).toBeLessThan(0.05);
+  });
+});

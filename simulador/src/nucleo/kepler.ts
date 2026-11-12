@@ -25,7 +25,7 @@ const DOIS_PI = 2 * Math.PI;
  * meio de uma conta.
  */
 export interface ElementosClassicos {
-  /** Semieixo maior, UA. */
+  /** Semieixo maior, UA. Negativo na hiperbole (e > 1). */
   aUa: number;
   e: number;
   /** Inclinacao sobre o plano de referencia, rad. */
@@ -89,6 +89,35 @@ export function resolverKepler(anomaliaMedia: number, e: number, tolerancia = 1e
   return 0.5 * (baixo + alto);
 }
 
+/**
+ * Resolve e·senh(H) − H = M, o ramo de e > 1.
+ *
+ * M nao e reduzido: na hiperbole o corpo passa pelo periastro uma vez so. O
+ * chute `asinh(M/e)` erra pouco nos dois extremos, e a funcao e monotona em H
+ * (derivada e·cosh(H) − 1 > 0), entao a bissecao fecha se Newton nao fechar.
+ */
+export function resolverKeplerHiperbolico(anomaliaMedia: number, e: number, tolerancia = 1e-13): number {
+  const M = anomaliaMedia;
+  let H = Math.asinh(M / e);
+  for (let k = 0; k < 50; k++) {
+    const passo = (e * Math.sinh(H) - H - M) / (e * Math.cosh(H) - 1);
+    H -= passo;
+    if (Math.abs(passo) < tolerancia * Math.max(1, Math.abs(H))) return H;
+  }
+
+  const sinal = M < 0 ? -1 : 1;
+  const alvo = Math.abs(M);
+  let baixo = 0;
+  let alto = Math.max(1, Math.asinh((2 * alvo) / (e - 1)));
+  while (e * Math.sinh(alto) - alto < alvo) alto *= 2;
+  for (let k = 0; k < 400 && alto - baixo > tolerancia * Math.max(1, alto); k++) {
+    const meio = 0.5 * (baixo + alto);
+    if (e * Math.sinh(meio) - meio > alvo) alto = meio;
+    else baixo = meio;
+  }
+  return sinal * 0.5 * (baixo + alto);
+}
+
 /** Anomalia verdadeira a partir da excentrica. A forma com meio angulo nao perde quadrante. */
 export function anomaliaVerdadeira(E: number, e: number): number {
   return 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
@@ -122,20 +151,39 @@ export function estadoDeElementos(
   const nodo = el.nodoRad + el.taxaDoNodoRadDia * diasDesdeAEpoca;
   const periastro = el.periastroRad + el.taxaDoPeriastroRadDia * diasDesdeAEpoca;
 
-  const E = resolverKepler(M, el.e);
-  const a = el.aUa;
   const e = el.e;
-  const r = a * (1 - e * Math.cos(E));
+  if (Math.abs(e - 1) < 1e-9) {
+    throw new RangeError('orbita parabolica: o semieixo nao define a conica; use os vetores de estado');
+  }
 
-  // Base perifocal: x para o periastro, y a 90 graus no sentido do movimento.
-  const xP = a * (Math.cos(E) - e);
-  const yP = a * Math.sqrt(1 - e * e) * Math.sin(E);
-
-  // Velocidade perifocal. `sqrt(mu*a)/r` nao passa pela anomalia verdadeira e por
-  // isso nao perde precisao perto do periastro.
-  const fator = Math.sqrt(mu * a) / r;
-  const vxP = -fator * Math.sin(E);
-  const vyP = fator * Math.sqrt(1 - e * e) * Math.cos(E);
+  let xP: number;
+  let yP: number;
+  let vxP: number;
+  let vyP: number;
+  if (e < 1) {
+    const E = resolverKepler(M, e);
+    const a = el.aUa;
+    const r = a * (1 - e * Math.cos(E));
+    // Base perifocal: x para o periastro, y a 90 graus no sentido do movimento.
+    xP = a * (Math.cos(E) - e);
+    yP = a * Math.sqrt(1 - e * e) * Math.sin(E);
+    // `sqrt(mu*a)/r` nao passa pela anomalia verdadeira e por isso nao perde
+    // precisao perto do periastro.
+    const fator = Math.sqrt(mu * a) / r;
+    vxP = -fator * Math.sin(E);
+    vyP = fator * Math.sqrt(1 - e * e) * Math.cos(E);
+  } else {
+    // Na hiperbole o semieixo e negativo por convencao; as contas usam |a|.
+    const H = resolverKeplerHiperbolico(M, e);
+    const a = Math.abs(el.aUa);
+    const r = a * (e * Math.cosh(H) - 1);
+    const raiz = Math.sqrt(e * e - 1);
+    xP = a * (e - Math.cosh(H));
+    yP = a * raiz * Math.sinh(H);
+    const fator = Math.sqrt(mu * a) / r;
+    vxP = -fator * Math.sinh(H);
+    vyP = fator * raiz * Math.cosh(H);
+  }
 
   const cO = Math.cos(nodo);
   const sO = Math.sin(nodo);
