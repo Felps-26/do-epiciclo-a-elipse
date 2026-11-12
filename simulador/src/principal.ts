@@ -1196,6 +1196,7 @@ declare global {
     __foco?: () => number;
     __obstaculosDosRotulos?: () => { x: number; y: number; largura: number; altura: number }[];
     __fita?: (chave: string) => unknown;
+    __cascaEmRaios?: (chave: string) => number | null;
     __orientacaoDe?: (chave: string) => [number, number, number, number] | null;
   }
 }
@@ -1232,6 +1233,7 @@ window.__obstaculosDosRotulos = () => ultimosObstaculos.map((o) => ({ ...o }));
 
 window.__foco = () => cena?.foco ?? 0;
 window.__fita = (chave: string) => cena?.estadoDaFita(chave) ?? null;
+window.__cascaEmRaios = (chave: string) => cena?.cascaEmRaios(chave) ?? null;
 
 window.__backend = () => backend;
 

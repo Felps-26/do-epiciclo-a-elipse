@@ -86,6 +86,7 @@ export interface CorpoMontado {
   trocarMapa(papel: string, textura: Texture): void;
   /** Raio equatorial desenhado, em UA, com o exagero ja aplicado. */
   definirRaioDesenhado(raioUa: number): void;
+  readonly raioDesenhadoUa: number;
   /**
    * `raioEmPixels` e o raio aparente do corpo na tela e serve so ao teto de giro.
    * Omitido, nao ha teto, o que mantem quem nao mede pixels (um teste, uma
@@ -236,6 +237,10 @@ export function montarCorpo(chave: string, mapas: MapasDoCorpo, ehOSol: boolean)
       return img?.width ?? 0;
     },
 
+    get raioDesenhadoUa() {
+      return raioDesenhadoUa;
+    },
+
     definirRaioDesenhado(raioUa) {
       raioDesenhadoUa = raioUa;
       // Achatamento: o eixo polar e menor que o equatorial. A escala vai na
@@ -309,7 +314,6 @@ export function montarCorpo(chave: string, mapas: MapasDoCorpo, ehOSol: boolean)
       uniformes.meioAngulo.value = RAIO_SOL_UA / Math.max(distanciaRealAoSolUa, 1e-9);
       // Irradiancia com a distancia REAL, e nunca a comprimida.
       uniformes.irradiancia.value = 1 / Math.max(distanciaRealAoSolUa ** 2, 1e-12);
-      void raioDesenhadoUa;
     },
   };
 }

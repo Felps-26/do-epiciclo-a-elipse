@@ -104,6 +104,8 @@ export interface Cena {
   readonly foco: number;
   /** O estado visual das linhas de um corpo. Ver `linhas/fitas.ts`. */
   estadoDaFita(chave: string): EstadoDaFita | null;
+  /** Raio da casca de prova dividido pelo raio desenhado do corpo. Para a medicao. */
+  cascaEmRaios(chave: string): number | null;
   /**
    * Zera o atraso que o teto de giro acumulou em todos os corpos. Chamada por "Voltar
    * ao início", que promete devolver o programa ao estado de partida, e o meridiano
@@ -386,6 +388,11 @@ export function criarCena(
       );
     },
 
+    cascaEmRaios(chave) {
+      const c = naCena.find((x) => x.chave === chave);
+      const raio = c?.montado.raioDesenhadoUa;
+      return c && raio ? c.casca.scale.x / raio : null;
+    },
     estadoDaFita(chave) {
       return fitas.estadoDaFita(chave);
     },
@@ -671,7 +678,8 @@ export function criarCena(
         const doSol = c.chave === 'sol' ? limitesDoSol(ampliado, raioRealUa, dMercurioUa) : null;
         const raio = doSol ? doSol.raioUa : ampliado;
         c.montado.definirRaioDesenhado(raio);
-        c.casca.scale.setScalar(1.003);
+        // A casca mora no grupo, que nao tem escala: 1,003 aqui seria 1,003 UA.
+        c.casca.scale.setScalar(raio * 1.003);
 
         // A coroa acompanha o disco e fica sempre de frente para a camera.
         // Tres raios de extensao: alem disso ela vira um vidro fosco sobre o
