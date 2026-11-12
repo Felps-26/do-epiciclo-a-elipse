@@ -23,9 +23,9 @@ export default defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
-        // --use-angle=metal deixa o caminho WebGL2 rodar sobre Metal no macOS, que e o
-        // backend real do fallback. Sem isto o CI mediria SwiftShader, que nao e o alvo.
-        launchOptions: { args: ['--use-angle=metal', '--enable-unsafe-webgpu'] },
+        // SwiftShader desenha igual em qualquer maquina e no CI, entao as imagens de
+        // referencia valem em todo lugar. O Metal do Mac fica para conferencia manual.
+        launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--enable-unsafe-webgpu'] },
       },
     },
   ],
