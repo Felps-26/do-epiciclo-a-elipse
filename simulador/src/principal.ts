@@ -685,7 +685,9 @@ const laco = criarLaco({
 definirContexto({
   chaves: catalogo.corpos.map((c) => c.chave),
   tetoDiasPorSegundo: laco.tetoDiasPorSegundo,
-  nomeDe: (chave) => catalogo.corpos.find((c) => c.chave === chave)?.nome ?? chave,
+  // O mesmo `nomeDaChave` de `publicarMudanca`: sem ele, as luas saiam pela chave
+  // crua ("io selecionado.") ate o sandbox rodar uma vez.
+  nomeDe: (chave) => nomeDaChave(chave),
 });
 
 aoEfeito((efeito) => {

@@ -151,3 +151,13 @@ test('a roda no centro continua funcionando como antes', async ({ page }) => {
   await page.waitForTimeout(150);
   expect(await raio()).toBeLessThan(antes);
 });
+
+test('escolher uma lua anuncia o nome dela, e não a chave', async ({ page }) => {
+  // As luas aparecem na lista com o planeta escolhido.
+  await page.getByRole('option', { name: /^Júpiter/ }).click();
+  await page.getByRole('option', { name: /^Ganimedes/ }).click();
+  const anunciado = (): Promise<string> =>
+    page.evaluate(() => [...document.querySelectorAll('[role="status"][aria-live="polite"]')].map((e) => e.textContent ?? '').join(' | '));
+  await expect.poll(anunciado).toContain('Ganimedes selecionado.');
+  expect(await anunciado()).not.toContain('ganimedes selecionado');
+});
