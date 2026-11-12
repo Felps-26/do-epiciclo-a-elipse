@@ -28,7 +28,7 @@ export function haCriado(e: EstadoSistema, vigia: Vigia): boolean {
 }
 
 /**
- * O primeiro corpo criado dentro da vizinhanca de um corpo com massa. A
+ * O primeiro corpo criado dentro da vizinhanca de outro, com massa num dos dois. A
  * vizinhanca e a mesma da guarda de criacao, medida com o passo padrao: e nela
  * que o passo de 0,5 dia deixa de caber 40 vezes na volta local.
  */
@@ -37,7 +37,9 @@ export function encontroProximo(e: EstadoSistema, vigia: Vigia): Par | null {
     if (!vigia.ehCriado(i)) continue;
     for (let j = 0; j < e.n; j++) {
       if (j === i) continue;
-      const minima = separacaoMinima(e.gm[j]!, PASSO_PADRAO_DIAS);
+      // A massa maior do par manda: uma estrela criada perto de um planeta curva
+      // a orbita do planeta tanto quanto o planeta curvaria a de um asteroide.
+      const minima = separacaoMinima(Math.max(e.gm[i]!, e.gm[j]!), PASSO_PADRAO_DIAS);
       if (minima <= 0) continue;
       const d = Math.hypot(
         e.pos[3 * i]! - e.pos[3 * j]!,
