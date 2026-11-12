@@ -28,7 +28,7 @@
  * que o real, e a compressao alteraria um resultado fisico visivel, que e o que a
  * regra "a escala visual nunca altera a fisica" existe para impedir.
  */
-import { float, mix, normalWorld, positionWorld, smoothstep, uniform, vec3, vec4 } from 'three/tsl';
+import { dot, float, mix, normalWorld, positionWorld, smoothstep, uniform, vec3, vec4 } from 'three/tsl';
 import type { texture } from 'three/tsl';
 import type Node from 'three/src/nodes/core/Node.js';
 
@@ -185,6 +185,8 @@ export interface MapasDaSuperficie {
   albedo: NoDeTextura;
   noite?: NoDeTextura;
   nuvens?: NoDeTextura;
+  /** O mapa de nuvens e uma foto colorida (Venus), e nao uma mascara cinza (Terra). */
+  nuvensColoridas?: boolean;
   /** Quanto o corpo reflete, da ficha da NASA. Modula o brilho do lado de dia. */
   albedoGeometrico: number;
   /** Profundidade optica do anel num raio dado. Ausente em corpo sem anel. */
@@ -231,8 +233,16 @@ export function corDaSuperficie(u: UniformesDeLuz, mapas: MapasDaSuperficie) {
     // Terra teria o oceano visivel e buracos pretos em forma de nuvem por cima,
     // apagando o que o piso acabou de acender. Elas continuam escondendo as luzes de
     // cidade.
-    const cobertura = mapas.nuvens.r;
-    cor = mix(cor, vec3(1, 1, 1).mul(luzVisivel).mul(u.irradiancia), cobertura.mul(float(0.9)));
+    if (mapas.nuvensColoridas) {
+      // Em Venus a foto E o topo das nuvens: a cor dela e o albedo, e qualquer
+      // pixel que nao seja preto cobre a superficie, que de fora nunca aparece.
+      const albedoDasNuvens = mapas.nuvens.rgb;
+      const cobertura = smoothstep(float(0.02), float(0.2), dot(albedoDasNuvens, vec3(0.2126, 0.7152, 0.0722)));
+      cor = mix(cor, albedoDasNuvens.mul(luzVisivel).mul(u.irradiancia), cobertura);
+    } else {
+      const cobertura = mapas.nuvens.r;
+      cor = mix(cor, vec3(1, 1, 1).mul(luzVisivel).mul(u.irradiancia), cobertura.mul(float(0.9)));
+    }
   }
 
   return vec4(cor, float(1));

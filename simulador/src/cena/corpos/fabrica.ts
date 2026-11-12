@@ -55,6 +55,7 @@ import {
   type UniformesDeLuz,
 } from '../iluminacao/modeloDeLuz.ts';
 import { ESFERA } from './esfera.ts';
+import { nuvensColoridas } from '../texturas/carregador.ts';
 import { orientacaoDoCorpo } from './orientacao.ts';
 import { amortecimentoDoGiro } from './giroVisivel.ts';
 
@@ -187,7 +188,7 @@ export function montarCorpo(chave: string, mapas: MapasDoCorpo, ehOSol: boolean)
     : corDaSuperficie(uniformes, {
         albedo,
         ...(refs['noite'] ? { noite: refs['noite'] } : {}),
-        ...(refs['nuvens'] ? { nuvens: refs['nuvens'] } : {}),
+        ...(refs['nuvens'] ? { nuvens: refs['nuvens'], nuvensColoridas: nuvensColoridas(visual.chave) } : {}),
         ...(tauDoAnel ? { tauDoAnel } : {}),
         albedoGeometrico: visual.albedoGeometrico,
       });

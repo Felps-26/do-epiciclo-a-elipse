@@ -18,11 +18,33 @@
  * enquadramento 'perto', o que da folga para chegar e sair sem trocar duas vezes, e
  * continua longe o bastante de 20 para nenhum vizinho no quadro pedir 8K junto.
  */
-import { DataTexture, RGBAFormat, SRGBColorSpace, TextureLoader, type Texture } from 'three';
+import { DataTexture, LinearSRGBColorSpace, RGBAFormat, SRGBColorSpace, TextureLoader, type Texture } from 'three';
 import type { WebGPURenderer } from 'three/webgpu';
 import { mapaDe } from '../../dados/corposVisuais.ts';
 
 const carregador = new TextureLoader();
+
+/** Assinatura do `TextureLoader.load`, injetavel para o teste contar as cargas. */
+export type Carregar = (url: string, ok: (t: Texture) => void, progresso?: undefined, erro?: () => void) => void;
+const carregarDoDisco: Carregar = (url, ok, progresso, erro) => {
+  carregador.load(url, ok, progresso, erro);
+};
+
+/** Corpos cujo mapa de nuvens e uma foto colorida, e nao uma mascara cinza. */
+const NUVENS_COLORIDAS = new Set(['venus']);
+
+/**
+ * Como os numeros do arquivo viram cor. O que e cor vista (albedo, luzes,
+ * anel, fundo, nuvens coloridas) esta em sRGB; uma mascara de cobertura e dado
+ * linear e nao pode ser decodificada.
+ */
+export function espacoDeCor(corpo: string, papel: string): 'srgb' | 'linear' {
+  if (papel === 'nuvens') return NUVENS_COLORIDAS.has(corpo) ? 'srgb' : 'linear';
+  if (papel === 'relevo') return 'linear';
+  return 'srgb';
+}
+
+export const nuvensColoridas = (corpo: string): boolean => NUVENS_COLORIDAS.has(corpo);
 
 export type Nivel = '2k' | '4k' | '8k';
 
@@ -30,6 +52,11 @@ const SOBE_ABAIXO_DE_8K = 6; // raios do corpo — so o corpo em foco chega aqui
 const DESCE_ACIMA_DE_8K = 12;
 const SOBE_ABAIXO_DE = 20;
 const DESCE_ACIMA_DE = 40;
+
+/** O fundo nao tem distancia: entra no maior nivel que existe. */
+export function nivelDoFundo(niveis: Partial<Record<string, string>>): Nivel | null {
+  return melhorDisponivel('8k', niveis);
+}
 
 /** Do mais alto para o mais baixo. `melhorDisponivel` desce por esta ordem. */
 const DO_ALTO_PARA_O_BAIXO: readonly Nivel[] = ['8k', '4k', '2k'];
@@ -68,6 +95,8 @@ interface Entrada {
   textura: Texture;
   nivel: Nivel | null;
   carregando: Nivel | null;
+  /** O arquivo em uso. Niveis que apontam para o mesmo arquivo nao recarregam. */
+  caminho: string | null;
 }
 
 /**
@@ -90,14 +119,17 @@ export class Texturas {
   private readonly entradas = new Map<string, Entrada>();
   private readonly fila: (() => void)[] = [];
 
-  constructor(private readonly renderizador: WebGPURenderer) {}
+  constructor(
+    private readonly renderizador: Pick<WebGPURenderer, 'initTexture'>,
+    private readonly carregar: Carregar = carregarDoDisco,
+  ) {}
 
   /** A textura em uso agora. Sempre devolve algo desenhavel. */
   obter(corpo: string, papel: string, corInicial: [number, number, number]): Texture {
     const chave = `${corpo}/${papel}`;
     let e = this.entradas.get(chave);
     if (!e) {
-      e = { textura: corSolida(...corInicial), nivel: null, carregando: null };
+      e = { textura: corSolida(...corInicial), nivel: null, carregando: null, caminho: null };
       this.entradas.set(chave, e);
     }
     return e.textura;
@@ -132,11 +164,17 @@ export class Texturas {
     if (efetivo === null || e.nivel === efetivo || e.carregando === efetivo) return;
     const querido = efetivo;
     const caminho = mapa.niveis[querido]!;
+    // O anel de Saturno tem o mesmo arquivo nos tres niveis: subir de nivel nao
+    // pode baixar e subir para a GPU a mesma imagem de novo.
+    if (caminho === e.caminho) {
+      e.nivel = querido;
+      return;
+    }
     e.carregando = querido;
-    carregador.load(
+    this.carregar(
       caminho,
       (t) => {
-        t.colorSpace = papel === 'albedo' || papel === 'noite' || papel === 'viaLactea' ? SRGBColorSpace : t.colorSpace;
+        t.colorSpace = espacoDeCor(corpo, papel) === 'srgb' ? SRGBColorSpace : LinearSRGBColorSpace;
         t.anisotropy = 8;
         // A troca entra na fila em vez de acontecer aqui: subir um 4K custa
         // dezenas de milissegundos, e o carregamento termina no meio de um quadro.
@@ -144,6 +182,7 @@ export class Texturas {
           const antiga = e.textura;
           e.textura = t;
           e.nivel = querido;
+          e.caminho = caminho;
           e.carregando = null;
           this.renderizador.initTexture(t);
           // Descarta o marcador de 1 pixel; uma textura de verdade fica.

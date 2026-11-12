@@ -33,7 +33,8 @@ import { alturaVisivelUa, posicaoDaCamera, type EstadoCamera } from './camera/ca
 import { aplicarOrigem, distancias } from './origemFlutuante.ts';
 import { fatorDeProjecao, raioDesenhadoUa } from './escala/exageroDeTamanho.ts';
 import { montarCoroa, montarCorpo, montarCascaDeProva, type CorpoMontado } from './corpos/fabrica.ts';
-import { Texturas } from './texturas/carregador.ts';
+import { Texturas, nivelDoFundo } from './texturas/carregador.ts';
+import { exposicaoQuerida, suavizarExposicao } from './iluminacao/exposicao.ts';
 import { CORPOS_VISUAIS, OBLIQUIDADE_DA_ECLIPTICA, mapaDe } from '../dados/corposVisuais.ts';
 import { criarComposicao } from './pos/composicao.ts';
 import { criarAneisDeDistancia, criarFitas, criarPrevisao } from './linhas/fitas.ts';
@@ -138,22 +139,6 @@ export interface Cena {
    */
   direcaoNaTela(xCss: number, yCss: number, larguraCss: number, alturaCss: number): [number, number, number];
 }
-
-/**
- * Exposicao automatica.
- *
- * A luz que chega a um corpo cai com `1/d²`, e isso fica na fisica: Saturno, a 9,5
- * UA, recebe 1/90 do que a Terra recebe. Mas uma tela nao tem 90 vezes de faixa
- * dinamica sobrando, e com a exposicao fixa em "1 UA" Urano e Netuno viram pixels
- * pretos. Entao o brilho relativo entre os corpos continua fisico e a cena inteira
- * e multiplicada por um fator so, como a exposicao de uma camera. Como todo recurso
- * visual do programa, ele aparece escrito ("exposição ×90").
- *
- * O limite superior existe porque, perto de Netuno, a exposicao necessaria
- * levantaria tambem o ruido do fundo.
- */
-const EXPOSICAO_MAXIMA = 400;
-const EXPOSICAO_MINIMA = 0.02;
 
 export interface ProjecaoDeCorpo {
   chave: string;
@@ -270,8 +255,9 @@ export function criarCena(
   // equatorial do panorama para a ecliptica da cena — sem isso o plano da
   // galaxia apareceria inclinado 23° a mais.
   const viaLactea = mapaDe('ceu', 'viaLactea');
-  if (viaLactea?.niveis['2k']) {
-    new TextureLoader().load(viaLactea.niveis['2k'], (t) => {
+  const nivelDaViaLactea = viaLactea ? nivelDoFundo(viaLactea.niveis) : null;
+  if (viaLactea && nivelDaViaLactea) {
+    new TextureLoader().load(viaLactea.niveis[nivelDaViaLactea]!, (t) => {
       t.mapping = EquirectangularReflectionMapping;
       t.colorSpace = SRGBColorSpace;
       cena.background = t;
@@ -382,8 +368,9 @@ export function criarCena(
     get fatiasNoUltimoQuadro() {
       return fatias;
     },
+    // O fator escrito na tela e o aplicado neste quadro, e nao o alvo.
     get exposicao() {
-      return exposicao;
+      return exposicaoSuave;
     },
     get foco() {
       return focoDoQuadro;
@@ -723,18 +710,14 @@ export function criarCena(
               reais[3 * sujeito + 2]! - reais[2]!,
             )
           : 1;
-      const querida = Math.max(dSujeito, 0.3) ** 2;
-      exposicao = Math.min(EXPOSICAO_MAXIMA, Math.max(EXPOSICAO_MINIMA, querida));
+      exposicao = exposicaoQuerida(dSujeito);
       // Suaviza, porque mudar a exposicao de um quadro para o outro pisca a tela, e
       // encosta no fim. Uma aproximacao exponencial pura nunca chega ao alvo, entao a
       // imagem nunca para de mudar, nem com a camera parada e a fisica pausada. Era a causa
       // de 17% dos pixels trocarem de valor entre dois quadros identicos, que o teste de
       // z-fighting acusava como disputa de profundidade. Dentro de 0,2% a exposicao assume
       // o valor final.
-      exposicaoSuave =
-        Math.abs(exposicao - exposicaoSuave) < exposicao * 0.002
-          ? exposicao
-          : exposicaoSuave + (exposicao - exposicaoSuave) * 0.08;
+      exposicaoSuave = suavizarExposicao(exposicaoSuave, exposicao);
 
       // O foco. Calculado aqui porque e aqui que `dists[i]` e `c.raioKm`
       // ja existem, e em RAIOS REAIS — ver `escala/foco.ts` para por que o raio
