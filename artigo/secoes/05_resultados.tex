@@ -1,7 +1,7 @@
 \section{Resultados}\label{cap:resultados}
 % orçamento: 2.900 palavras
 
-Os números das \autoref{sec:res-validacao} e \ref{sec:res-integradores} foram obtidos por uma segunda implementação do núcleo físico, em Python e NumPy, escrita a partir do mesmo arquivo de condições iniciais. Ela reproduz, até a última casa decimal publicada, a tabela de validação da documentação do programa. Como usa o mesmo algoritmo e o mesmo passo, confirma o porte para TypeScript, e não a física; a física é validada pela comparação com o JPL. Os roteiros estão no \autoref{ap:experimentos}.
+Os números das \autoref{sec:res-validacao} e \ref{sec:res-integradores} foram obtidos por uma segunda implementação do núcleo físico, em Python e NumPy, escrita a partir do mesmo arquivo de condições iniciais. Ela reproduz, até a última casa decimal publicada, a tabela de validação da documentação do programa. Como usa o mesmo algoritmo e o mesmo passo, confirma o porte para TypeScript, e não a física; a física é validada pela comparação com o JPL. Os roteiros estão no Apêndice~\ref{ap:experimentos}.
 
 \subsection{Validação contra a efeméride do JPL}\label{sec:res-validacao}
 
@@ -63,7 +63,7 @@ Todos os corpos passam com folga. O pior caso é Mercúrio: nas cinco datas, 0,0
 
 Antes de comparar com o JPL, conferimos o termo da \autoref{eq:pn} num problema de dois corpos, com Mercúrio partindo do periélio ($a = 0{,}387098$\,UA, $e = 0{,}205630$) e passo de 0,05 dia. Em um século, o periélio avançou 42,8$''$ com o termo, contra os 42,98$''$ esperados, e $-0{,}12''$ sem ele, nas duas implementações.
 
-Depois integramos o sistema de nove corpos de 2026 até $+100$ e $-100$ anos, com e sem o termo, e comparamos a posição de Mercúrio com a DE440s, que inclui a relatividade \cite{park2021}. A \autoref{tab:relatividade} mostra o resultado. No passo de 0,5 dia, o do programa, o termo não ajuda: o truncamento domina, e o erro com o termo fica um pouco maior. No passo de 0,05 dia, o erro em dez anos sem o termo é de 1\,833\,km, o patamar da \autoref{fig:trabalho-precisao}; com o termo, cai para 3\,km. Em cem anos, cai de 6\,188 para 146\,km. O patamar era a relatividade.
+Depois integramos o sistema de nove corpos de 2026 até $+100$ e $-100$ anos, com e sem o termo, e comparamos a posição de Mercúrio com a DE440s, que inclui a relatividade \cite{park2021}. A \autoref{tab:relatividade} mostra o resultado. No passo de 0,5 dia, o do programa, o termo não ajuda: o truncamento domina, e o erro com o termo fica um pouco maior. No passo de 0,05 dia, o erro em dez anos sem o termo é de 1\,833\,km, da ordem do patamar da \autoref{fig:trabalho-precisao}; com o termo, cai para 3\,km. Em cem anos, cai de 6\,188 para 146\,km. O patamar era a relatividade.
 
 \begin{table}[htb]
   \centering
@@ -80,7 +80,7 @@ Depois integramos o sistema de nove corpos de 2026 até $+100$ e $-100$ anos, co
     0,05 dia & com & 3 & 146 & 129 \\
     \bottomrule
   \end{tabular}
-  \legend{Integrador de Yoshida de quarta ordem, sistema de nove corpos a partir de 1º de janeiro de 2026. Fonte: elaborada pelos autores.}
+  \legend{Integrador de Yoshida de quarta ordem, sistema de nove corpos a partir de 1º de janeiro de 2026. Datas em anos julianos ($\pm3652{,}5$ e $\pm36\,525$ dias); na utoref{tab:validacao}, $\pm10$ anos são $\pm3652$ dias, o que explica a diferença em $+10$ anos (14\,206 contra 14\,365\,km). Fonte: elaborada pelos autores.}
 \end{table}
 
 Como a força da \autoref{eq:pn} depende da velocidade, as duas implementações avaliam o termo com uma estimativa da velocidade no meio de cada \emph{kick}; com a velocidade do começo, o erro cairia só com a primeira potência do passo, e não com a quarta.
@@ -104,7 +104,7 @@ Do gráfico saem três leituras:
 \begin{enumerate}
   \item As inclinações das curvas confirmam as ordens teóricas: reduzir o passo à metade divide o erro do leapfrog por cerca de 4 ($\Delta t^2$) e o do Yoshida por cerca de 16 ($\Delta t^4$), enquanto o passo é grande o bastante para que o truncamento domine.
   \item No passo escolhido, 0,5 dia, o Yoshida gasta 21\,912 avaliações e erra $1{,}4\times10^4$\,km. O leapfrog precisa de mais de 116\,000 avaliações, mais de cinco vezes o custo, para chegar ao mesmo erro.
-  \item Abaixo de cerca de $10^3$\,km o erro deixa de cair, por menor que seja o passo. O patamar é a relatividade, que o modelo padrão não inclui: com o termo pós-newtoniano, no passo de 0,05 dia, o erro de Mercúrio em dez anos cai de 1\,833 para 3\,km (\autoref{sec:res-relatividade}). Sem o termo, diminuir o passo além desse ponto só gasta tempo.
+  \item Abaixo de alguns milhares de quilômetros o erro deixa de cair e passa a oscilar, por menor que seja o passo. O patamar é a relatividade, que o modelo padrão não inclui: com o termo pós-newtoniano, no passo de 0,05 dia, o erro de Mercúrio em dez anos cai de 1\,833 para 3\,km (\autoref{sec:res-relatividade}). Sem o termo, diminuir o passo além desse ponto só gasta tempo.
 \end{enumerate}
 
 \subsubsection{Conservação de energia a longo prazo}
@@ -157,7 +157,7 @@ A \autoref{tab:fourier} e a \autoref{fig:convergencia} mostram, para a elipse os
   \legend{(a) Os oito planetas; a linha pontilhada é o piso de $10^{-12}$\,UA. (b) Órbitas hipotéticas com $a = 1$\,UA: quanto mais alongada, mais devagar a série converge. Fonte: elaborada pelos autores.}
 \end{figure}
 
-Em termos absolutos os desvios com poucos termos são grandes: milhões de quilômetros para os planetas externos com $|n|\leq1$. Em termos relativos, porém, com $|n|\leq1$ o desvio de Júpiter já é de 2,4\,\% do semieixo, e com $|n|\leq2$ todos os planetas, exceto Mercúrio, ficam abaixo de 0,4\,\% (Júpiter, 0,09\,\%). É o que \citeonline{farias2016} observou nos gráficos: dois ou três termos já reproduzem a órbita em menos de 0,4\,\% do semieixo, com a exceção de Mercúrio.
+Em termos absolutos os desvios com poucos termos são grandes: milhões de quilômetros para os planetas externos com $|n|\leq1$. Em termos relativos, porém, com $|n|\leq1$ o desvio de Júpiter já é de 2,4\,\% do semieixo, e com $|n|\leq2$ todos os planetas, exceto Mercúrio, ficam abaixo de 0,4\,\% (Júpiter, 0,09\,\%). Isso quantifica o que \citeonline{farias2016} observaram nos gráficos: dois ou três termos já reproduzem bem a órbita, exceto a de Mercúrio.
 
 \subsubsection{Conferência da forma fechada}
 
@@ -172,7 +172,7 @@ Considere agora o modelo do \emph{Commentariolus} (\autoref{tab:copernico-raios}
   z_\text{Copérnico}(M) = -r_1 + R\,e^{\ii M} + r_2\,e^{2\ii M}.
   \label{eq:copernico-modelo}
 \end{equation}
-É a \autoref{eq:copernico-fourier} com $R \leftrightarrow a$, $r_1 \leftrightarrow \frac32 ae$ e $r_2 \leftrightarrow \frac12 ae$. Em particular, o modelo de Copérnico tem $r_1/r_2 = 3$ para \emph{todos} os planetas, e essa é exatamente a razão $\frac32 : \frac12$ que a série de Fourier impõe. A \autoref{tab:copernico-fourier} e a \autoref{fig:copernico} comparam os números. Nessa equação a origem é o Sol; o efeito de pô-la no Sol médio está na \autoref{sec:sol-medio}.
+É a \autoref{eq:copernico-fourier} com $R \leftrightarrow a$, $r_1 \leftrightarrow \frac32 ae$ e $r_2 \leftrightarrow \frac12 ae$. Em particular, o modelo de Copérnico tem $r_1/r_2 \approx 3$ para todos os planetas (exatamente 3 para Vênus e Júpiter), e essa é a razão $\frac32 : \frac12$ que a série de Fourier impõe. A \autoref{tab:copernico-fourier} e a \autoref{fig:copernico} comparam os números. Nessa equação a origem é o Sol; o efeito de pô-la no Sol médio está na \autoref{sec:sol-medio}.
 
 \begin{table}[htb]
   \centering
@@ -201,10 +201,10 @@ Considere agora o modelo do \emph{Commentariolus} (\autoref{tab:copernico-raios}
   \caption{Os epiciclos de Copérnico e os coeficientes de Fourier}
   \label{fig:copernico}
   \includegraphics[width=\textwidth]{copernico.pdf}
-  \legend{(a) Raios em escala logarítmica. (b) A excentricidade implícita em cada epiciclo de Copérnico, comparada com a moderna; as duas estimativas coincidem porque $r_1/r_2 = 3$. Fonte: elaborada pelos autores.}
+  \legend{(a) Raios em escala logarítmica. (b) A excentricidade implícita em cada epiciclo de Copérnico, comparada com a moderna; as duas estimativas coincidem porque $r_1/r_2 \approx 3$. Fonte: elaborada pelos autores.}
 \end{figure}
 
-Para Marte, Júpiter e Saturno a concordância é boa. Os deferentes reproduzem os semieixos com erro de 0,2\,\% a 3,6\,\%, e os dois epiciclos reproduzem $|c_0|$ e $|c_2|$ com erro de 0,4\,\% a 8\,\%. A excentricidade implícita nos raios de Copérnico, $r_1/(1{,}5R)$, fica a menos de 0,005 da moderna nos três casos. Com a mesma métrica usada na \autoref{sec:res-fourier}, o modelo de Copérnico com os números dele erra a posição de Marte em no máximo 0,017\,UA, ou 1,1\,\% do semieixo; o de Júpiter em 0,9\,\%. Em Saturno o erro chega a 3,6\,\%, quase todo vindo do deferente, e não dos epiciclos.
+Para Marte, Júpiter e Saturno a concordância é boa. Os deferentes reproduzem os semieixos com erro de 0,2\,\% a 3,6\,\%, e os dois epiciclos reproduzem $|c_0|$ e $|c_2|$ com erro de 0,4\,\% a 7,5\,\%. A excentricidade implícita nos raios de Copérnico, $r_1/(1{,}5R)$, fica a menos de 0,005 da moderna nos três casos. Com a mesma métrica usada na \autoref{sec:res-fourier}, o modelo de Copérnico com os números dele erra a posição de Marte em no máximo 0,017\,UA, ou 1,1\,\% do semieixo; o de Júpiter em 0,9\,\%. Em Saturno o erro chega a 3,6\,\%, quase todo vindo do deferente, e não dos epiciclos.
 
 Para Mercúrio e Vênus a concordância é pior, e por razões diferentes. Em Mercúrio a excentricidade é grande o bastante para que os termos de segunda ordem, desprezados na \autoref{eq:copernico-fourier}, cheguem a 10--15\,\% dos de primeira; além disso, o modelo de Mercúrio é historicamente o mais complicado da astronomia pré-kepleriana. Em Vênus a órbita é quase circular, e a excentricidade implícita (0,028) é quatro vezes a real; uma hipótese é que os dados de Copérnico para Vênus carreguem a marca da excentricidade da própria órbita da Terra (0,017), da qual um planeta interior é sempre observado. Ela é testada na \autoref{sec:sol-medio}.
 
@@ -244,7 +244,7 @@ Essa concordância só diz algo sobre Copérnico se outros modelos não reproduz
   \legend{Escala logarítmica. (a) Parâmetros modernos. (b) Parâmetros históricos; o equante usa o $a$ moderno. Fonte: elaborada pelos autores.}
 \end{figure}
 
-Com parâmetros modernos (\autoref{tab:modelos-classicos} e \autoref{fig:modelos-classicos}), o equante e a série empatam: em Marte, 0,0067 e 0,0071\,UA, ou $539''$ e $515''$ em longitude. Copérnico, com $R = a$, erra 0,013\,UA em posição e $614''$ em longitude. A diferença vem toda de $R = a$: a série tem $c_1 = a(1 - \frac12 e^2 + \dots)$, e o erro extra é um termo radial de $\frac12 ae^2$. Com $R = |c_1|$, o modelo de Copérnico erra 0,0067\,UA e $473''$, empatado com o equante. O excêntrico erra 0,14\,UA em posição; com $d=2ae$ acerta a longitude em primeira ordem ($1\,610''$), com $d=ae$ não ($19\,304''$). A estrutura de Copérnico, portanto, não é a única correta em primeira ordem: o equante chega ao mesmo erro com um círculo e um ponto de movimento uniforme, e a série explica por que os dois funcionam. O que é próprio de Copérnico é que cada termo do seu modelo é, em primeira ordem, um coeficiente da série.
+Com parâmetros modernos (\autoref{tab:modelos-classicos} e \autoref{fig:modelos-classicos}), o equante e a série empatam: em Marte, 0,0067 e 0,0071\,UA, ou $539''$ e $515''$ em longitude. Copérnico, com $R = a$, erra 0,013\,UA em posição e $614''$ em longitude. A diferença vem toda de $R = a$: a série tem $c_1 = a(1 - \frac12 e^2 + \dots)$, e o erro extra é um termo radial de $\frac12 ae^2$. Com $R = |c_1|$, o modelo de Copérnico erra 0,0067\,UA e $473''$, empatado com o equante. O excêntrico erra 0,14\,UA em posição; com $d=2ae$ acerta a longitude em primeira ordem ($1\,610''$), com $d=ae$ não ($19\,304''$). A estrutura de Copérnico, portanto, não é a única correta em primeira ordem: o equante chega ao mesmo erro com um círculo e um ponto de movimento uniforme, e a série explica por que os dois funcionam. O que distingue a construção do \emph{Commentariolus}, a mesma que Ibn al-Shatir usara no século XIV \cite{kennedy1959,swerdlow1973}, é que cada termo dela é, em primeira ordem, um coeficiente da série; a razão 3:1 vem da divisão da excentricidade do equante em $\frac32 e + \frac12 e$, e por isso equante e epiciclos concordam entre si e com a série.
 
 No \emph{Almagesto}, o centro do deferente fica a 6, 2;45 e 3;25 partes de 60 da Terra para Marte, Júpiter e Saturno \cite[p.~494--536]{toomer1984}. Com o $a$ moderno, já que o deferente de Ptolomeu não tem escala heliocêntrica, o equante erra a longitude em $2\,606''$, $1\,058''$ e $679''$, e Copérnico $1\,548''$, $1\,347''$ e $678''$. Nenhum dos dois é sistematicamente melhor.
 
@@ -268,7 +268,7 @@ A \autoref{fig:kepler-iteracoes} mede o número de iterações de Newton necess�
 
 \subsection{Erro das luas}\label{sec:res-luas}
 
-A \autoref{tab:luas} mostra o erro de posição das treze luas propagadas analiticamente, medido contra o JPL Horizons entre 2020 e 2040, a cada 13 dias. Os parâmetros foram ajustados em dados de 2000 a 2016, de modo que essa janela mede o erro do \emph{modelo} e não o do ajuste. O erro não cresce de forma sistemática: a razão entre o pior erro da segunda e o da primeira metade da janela fica entre 0,97 e 1,07 para seis das treze luas e não passa de 1,7 em nenhuma. Ele vem de termos periódicos, como as ressonâncias entre as galileanas, que um modelo de dois corpos com precessão não contém.
+A \autoref{tab:luas} mostra o erro de posição das treze luas propagadas analiticamente, medido contra o JPL Horizons entre 2020 e 2040, a cada 13 dias. Os parâmetros foram ajustados em dados de 2000 a 2016, de modo que essa janela mede o erro do \emph{modelo} e não o do ajuste. O erro não cresce de forma sistemática: a razão entre o pior erro da segunda e o da primeira metade da janela fica entre 0,97 e 1,07 para seis das treze luas e não passa de 1,7 em nenhuma. Ele vem provavelmente de termos periódicos que um modelo de dois corpos com precessão não contém (por exemplo, as ressonâncias entre as galileanas); não separamos as causas.
 
 \begin{table}[htb]
   \centering
@@ -294,7 +294,7 @@ A \autoref{tab:luas} mostra o erro de posição das treze luas propagadas analit
     Tritão   & Netuno  & 354\,800   & 52\,636 & 29\,194 & 14,8\,\% \\
     \bottomrule
   \end{tabular}
-  \legend{Fonte: arquivo \arquivo{derivaDasLuas.json}, gerado por \arquivo{ferramentas/conferir\_luas.mjs}.}
+  \legend{Fonte: elaborada pelos autores, com \arquivo{ferramentas/conferir\_luas.mjs}.}
 \end{table}
 
 \subsection{Fenômenos que emergem da simulação}

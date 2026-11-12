@@ -1,7 +1,7 @@
 \section{Método: o simulador e sua validação}\label{sec:metodo}
 % orçamento: 2.500 palavras
 
-As órbitas analisadas na \autoref{cap:resultados} não vêm de uma fórmula: vêm de uma simulação do Sol e dos oito planetas, integrada a partir de posições e velocidades do JPL e conferida contra a efeméride do próprio JPL. Esta seção descreve o modelo físico, o integrador, o programa e o modo como ele foi testado. As derivações seguem textos clássicos de mecânica celeste \cite{symon1982,goldstein2002,murray1999,danby1988}, e as passagens mais longas estão no \autoref{ap:derivacoes}.
+As órbitas analisadas na \autoref{cap:resultados} não vêm de uma fórmula: vêm de uma simulação do Sol e dos oito planetas, integrada a partir de posições e velocidades do JPL e conferida contra a efeméride do próprio JPL. Esta seção descreve o modelo físico, o integrador, o programa e o modo como ele foi testado. As derivações seguem textos clássicos de mecânica celeste \cite{symon1982,goldstein2002,murray1999,danby1988}, e as passagens mais longas estão no Apêndice~\ref{ap:derivacoes}.
 
 \subsection{Modelo físico}\label{cap:fisica}
 
@@ -20,11 +20,12 @@ A \autoref{eq:nbody} não tem solução geral para $N\geq3$, mas conserva o mome
   E = \sum_i \tfrac12 GM_i\,|\dot{\vr}_i|^2 \;-\; \sum_{i<j}\frac{GM_i\,GM_j}{|\vr_i-\vr_j|},
   \label{eq:energia}
 \end{equation}
+Escrita com $GM_i$ no lugar das massas, essa expressão é a energia multiplicada por $G$, o que não altera o desvio relativo.
 e essas grandezas medem a qualidade de uma solução numérica. A conservação do momento linear tem uma consequência visível: o Sol não fica parado, e descreve em torno do centro de massa do sistema uma trajetória que chega a quase dois raios solares (\autoref{fig:sol-baricentro}).
 
 \subsubsection{Dois corpos e as leis de Kepler}\label{sec:doiscorpos}
 
-Com o Sol e um único planeta, a posição relativa $\vr = \vr_\text{planeta}-\vr_\odot$ obedece a $\ddot{\vr} = -\mu\,\vr/r^3$, com $\mu = G(M_\odot+m)$. O momento angular específico $\vh = \vr\times\dot{\vr}$ é constante, então o movimento é plano e a área varrida cresce uniformemente, que é a segunda lei de Kepler. O vetor de Laplace--Runge--Lenz $\ve = \dot{\vr}\times\vh/\mu - \vr/r$ também é constante, e o produto $\ve\cdot\vr$ dá a equação da cônica $r = a(1-e^2)/(1+e\cos\nu)$, a primeira lei, com $\nu$ a anomalia verdadeira (\autoref{ap:derivacoes}). A energia por unidade de massa leva à relação vis-viva
+Com o Sol e um único planeta, a posição relativa $\vr = \vr_\text{planeta}-\vr_\odot$ obedece a $\ddot{\vr} = -\mu\,\vr/r^3$, com $\mu = G(M_\odot+m)$. O momento angular específico $\vh = \vr\times\dot{\vr}$ é constante, então o movimento é plano e a área varrida cresce uniformemente, que é a segunda lei de Kepler. O vetor de Laplace--Runge--Lenz $\ve = \dot{\vr}\times\vh/\mu - \vr/r$ também é constante, e o produto $\ve\cdot\vr$ dá a equação da cônica $r = a(1-e^2)/(1+e\cos\nu)$, a primeira lei, com $\nu$ a anomalia verdadeira (Apêndice~\ref{ap:derivacoes}). A energia por unidade de massa leva à relação vis-viva
 \begin{equation}
   v^2 = \mu\Bigl(\frac{2}{r} - \frac{1}{a}\Bigr),
   \label{eq:visviva}
@@ -49,7 +50,7 @@ em que $M = 2\pi(t-\tau)/T$ é a anomalia média e $\tau$ o instante de passagem
 
 \subsubsection{Referenciais e escala de tempo}
 
-As posições estão no referencial da eclíptica e equinócio de J2000, alinhado ao ICRF, com origem no baricentro do Sistema Solar, e o tempo é o Tempo Dinâmico Baricêntrico (TDB), a variável das efemérides do JPL \cite{park2021}. Cada planeta é representado pelo baricentro do seu sistema, com a $GM$ do sistema inteiro: o ponto chamado Terra é o centro de massa Terra--Lua, e o ponto Júpiter inclui as luas. É assim que o JPL integra os planetas. O centro da Terra fica a cerca de 4\,700\,km desse ponto, e o desenho de perto leva isso em conta.
+As posições estão no referencial da eclíptica de J2000 (o ICRF girado pela obliquidade), com origem no baricentro do Sistema Solar, e o tempo é o Tempo Dinâmico Baricêntrico (TDB), a variável das efemérides do JPL \cite{park2021}. Cada planeta é representado pelo baricentro do seu sistema, com a $GM$ do sistema inteiro: o ponto chamado Terra é o centro de massa Terra--Lua, e o ponto Júpiter inclui as luas. É assim que o JPL integra os planetas. O centro da Terra fica a cerca de 4\,700\,km desse ponto, e o desenho de perto leva isso em conta.
 
 \subsubsection{O que o modelo não inclui}\label{sec:nao-inclui}
 
@@ -71,7 +72,7 @@ O integrador simplético mais simples é o \emph{leapfrog}, ou Verlet de velocid
   \vv_{k+1}   = \vv_{k+1/2} + \tfrac12\Delta t\,\va(\vr_{k+1}).
   \label{eq:leapfrog}
 \end{equation}
-É de segunda ordem e simétrico no tempo, e custa uma avaliação de força por passo, porque $\va(\vr_{k+1})$ pode ser reaproveitada no passo seguinte. O simulador não faz esse reaproveitamento e gasta duas avaliações; nas comparações de custo da \autoref{sec:res-integradores} contamos uma, que é o custo do método. Chamando esse passo de $S_2(\Delta t)$, \citeonline{yoshida1990} mostrou que a composição
+É de segunda ordem e simétrico no tempo, e custa uma avaliação de força por passo, porque $\va(\vr_{k+1})$ pode ser reaproveitada no passo seguinte. O simulador não faz esse reaproveitamento e gasta duas avaliações; nas comparações de custo da \autoref{sec:res-integradores} contamos uma, que é o custo do método. Essa forma, ``impulso--deslocamento--impulso'', é a do leapfrog avulso da \autoref{fig:trabalho-precisao}. A composição de Yoshida usa a forma equivalente ``deslocamento--impulso--deslocamento'' (Verlet de posição), $\vr_{k+1/2}=\vr_k+\tfrac12\Delta t\,\vv_k$, $\vv_{k+1}=\vv_k+\Delta t\,\va(\vr_{k+1/2})$, $\vr_{k+1}=\vr_{k+1/2}+\tfrac12\Delta t\,\vv_{k+1}$, que custa uma avaliação por passo e é a que o programa executa. Chamando esse passo de $S_2(\Delta t)$, \citeonline{yoshida1990} mostrou que a composição
 \begin{equation}
   S_4(\Delta t) = S_2(w_1\Delta t)\;S_2(w_0\Delta t)\;S_2(w_1\Delta t),\qquad
   w_1 = \frac{1}{2 - 2^{1/3}},\quad w_0 = 1 - 2w_1,
@@ -117,7 +118,7 @@ A terceira versão, usada neste artigo, foi escrita em TypeScript para o navegad
     \centering\includegraphics[width=\textwidth]{v3_saturno_e_os_aneis.jpg}
     \caption{Saturno e os anéis}
   \end{subfigure}
-  \legend{Fonte: capturas do programa.}
+  \legend{Fonte: elaborada pelos autores (capturas do programa).}
 \end{figure}
 
 A versão 3D acrescenta treze luas\label{sec:luas}, que não entram no integrador: Io dá uma volta em 1,77 dia, o que seriam três passos e meio por órbita, e reduzir o passo global alteraria a camada validada contra o JPL. As luas são propagadas pela equação de Kepler a partir dos elementos médios do JPL, com precessão secular do nodo e do periastro, e não perturbam os planetas. O erro dessa escolha é medido numa janela que os dados de ajuste nunca viram (\autoref{sec:res-luas}).
@@ -130,4 +131,4 @@ O comando \codigo{npm test} roda cinco etapas, e qualquer falha interrompe as se
 
 Antes de terminar a versão 3D, uma varredura sistemática levantou 40 defeitos visuais. Numa triagem em 6 de novembro de 2026, 15 estavam corrigidos; dos 25 restantes, 1 foi confirmado na tela, 21 foram encontrados só na leitura do código e não observados, e 3 não puderam ser testados. A lista completa, com o estado de cada um, acompanha o código.
 
-Parte da programação, da revisão de código e da investigação de defeitos foi feita com o apoio do assistente Claude, da Anthropic \cite{anthropic2026}. Os resultados numéricos da \autoref{cap:resultados} são reproduzidos por roteiros em Python escritos à parte do programa, com o mesmo algoritmo e os mesmos dados de partida, descritos no \autoref{ap:reproducao}.
+Parte da programação, da revisão de código e da investigação de defeitos foi feita com o apoio do assistente Claude, da Anthropic \cite{anthropic2026}. Os resultados numéricos da \autoref{cap:resultados} são reproduzidos por roteiros em Python escritos à parte do programa, com o mesmo algoritmo e os mesmos dados de partida, descritos no Apêndice~\ref{ap:reproducao}.

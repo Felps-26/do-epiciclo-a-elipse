@@ -18,7 +18,7 @@ npm run build    # gera dist/
 
 \subsection{Os experimentos}\label{ap:experimentos}
 
-Todas as tabelas e figuras da \autoref{cap:resultados} que não são capturas de tela foram geradas pelos roteiros em Python de \arquivo{artigo/experimentos/} (\autoref{tab:roteiros}). Eles reimplementam, em menos de duzentas linhas, o núcleo físico do simulador: a força da \autoref{eq:nbody}, os integradores leapfrog, Yoshida e RK4, o termo pós-newtoniano do Sol, os elementos osculadores, a equação de Kepler e a série de Fourier, e leem o mesmo arquivo de condições iniciais, obtido do JPL Horizons para 1º de janeiro de 2026, 0h TDB. Requerem Python 3 com NumPy, SciPy e Matplotlib (o E6 e o E7 também precisam do pacote \emph{jplephem} e do arquivo \arquivo{de440s.bsp} do JPL), e devem ser rodados de dentro da pasta, na ordem da tabela; os arquivos JSON que geram são lidos pelos roteiros de figuras.
+Todas as tabelas e figuras da \autoref{cap:resultados} que não são capturas de tela, exceto a \autoref{tab:luas} (gerada por \arquivo{simulador/ferramentas/conferir\_luas.mjs}, em Node.js), foram geradas pelos roteiros em Python de \arquivo{artigo/experimentos/} (\autoref{tab:roteiros}). Eles reimplementam, em menos de duzentas linhas, o núcleo físico do simulador: a força da \autoref{eq:nbody}, os integradores leapfrog, Yoshida e RK4, o termo pós-newtoniano do Sol, os elementos osculadores, a equação de Kepler e a série de Fourier, e leem o mesmo arquivo de condições iniciais, obtido do JPL Horizons para 1º de janeiro de 2026, 0h TDB. Requerem Python 3 com NumPy, SciPy e Matplotlib (o E6 e o E7 também precisam do pacote \emph{jplephem} e do arquivo \arquivo{de440s.bsp} do JPL), e devem ser rodados de dentro da pasta, na ordem da tabela; os arquivos JSON que geram são lidos pelos roteiros de figuras.
 
 \begin{table}[htb]
   \centering
@@ -31,6 +31,7 @@ Todas as tabelas e figuras da \autoref{cap:resultados} que não são capturas de
     \midrule
     \arquivo{e1\_validacao.py} & \autoref{tab:validacao} \\
     \arquivo{e2\_integradores.py} & dados das \autoref{fig:trabalho-precisao} e \ref{fig:energia} \\
+    \arquivo{e3\_fourier.py} & \autoref{tab:fourier} e a conferência da forma fechada com Bessel (\autoref{cap:resultados}) \
     \arquivo{e4\_copernico.py} & \autoref{tab:copernico-fourier} \\
     \arquivo{e5\_ptolomeu.py} & \autoref{tab:modelos-classicos} e \autoref{fig:modelos-classicos} (usa \arquivo{modelos\_classicos.py}) \\
     \arquivo{e6\_varredura.py} & \autoref{tab:varredura} e \autoref{fig:varredura}, contra a DE440s (\arquivo{referencia\_jpl.py}) \\

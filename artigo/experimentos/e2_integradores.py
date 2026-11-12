@@ -9,7 +9,7 @@ for met, dts in [('leapfrog',[0.5,0.25,0.125,0.0625,1/32]),('yoshida4',[2,1,0.5,
         e = np.linalg.norm(p[1]-ref[1])*UA_KM
         aval = int(round(dias/dt))*AVALIACOES[met]
         out['wp'].append((met, dt, aval, e)); print(met, dt, aval, f'{e:.3e}')
-# energy over 300 years, dt=1 day all methods (record every 50 steps)
+# energy over 1000 years, dt=2 days all methods (record every 50 steps)
 p0,v0,gm0 = estado_inicial(); E0 = energia(p0,v0,gm0); L0=np.linalg.norm(momento_angular(p0,v0,gm0))
 for met in ['leapfrog','yoshida4','rk4']:
     reg = lambda k,p,v,gm: (k, (energia(p,v,gm)-E0)/abs(E0), (np.linalg.norm(momento_angular(p,v,gm))-L0)/L0)

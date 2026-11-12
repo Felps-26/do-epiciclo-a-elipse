@@ -10,6 +10,7 @@ Pressupõe que a pasta `artigo/` esteja ao lado de `simulador/` (lê o arquivo
     cd artigo/experimentos
     python e1_validacao.py      # tabela de validação contra o JPL      (~20 s)
     python e2_integradores.py   # custo x precisão e energia em 1000 anos (~1 min)
+    python e3_fourier.py        # convergência da série e conferência com Bessel
     python e4_copernico.py      # Copérnico x coeficientes de Fourier
     python modelos_classicos.py # confere a ordem em e dos modelos clássicos
     python e5_ptolomeu.py       # Copérnico x equante x excêntrico x Fourier; Sol médio

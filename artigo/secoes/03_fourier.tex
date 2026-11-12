@@ -63,7 +63,7 @@ em que escrevemos $c_n^{(y)}$ para o coeficiente de cosseno de $y$, para não co
 \]
 são exatamente os raios $R_n$ e $r_n$ das equações 22 e 23 de \citeonline{farias2016}, que o TCC chamou de epiciclo de frequência $n\omega$ e epiciclo que gira em sentido contrário.
 
-A forma real não serve para desenhar epiciclos: o par $a_n\cos + b_n\sin$ em $x$ com $c_n\cos + d_n\sin$ em $y$ descreve uma elipse alinhada aos eixos, e não um círculo. Por isso o simulador usa a forma complexa, com $n$ percorrendo também os inteiros negativos.
+A forma real não serve para desenhar epiciclos: o par $a_n\cos + b_n\sin$ em $x$ com $c_n\cos + d_n\sin$ em $y$ descreve uma elipse centrada na origem, em geral inclinada, e não um círculo. Por isso o simulador usa a forma complexa, com $n$ percorrendo também os inteiros negativos.
 
 \subsection{A órbita de Kepler como função do tempo}\label{sec:param-tempo}
 
@@ -114,7 +114,7 @@ A posição média do planeta \emph{no tempo} fica a $\tfrac32 ae$ do Sol, do la
 
 \subsubsection{Os demais termos}
 
-Para $n\neq0$, integra-se por partes e troca-se a variável para $E$; os detalhes estão no \autoref{ap:derivacoes}. Usando a representação integral de Bessel, $J_k(x) = \frac{1}{2\pi}\int_0^{2\pi}\cos(k\tau - x\sin\tau)\,\dd\tau$, chega-se a
+Para $n\neq0$, integra-se por partes e troca-se a variável para $E$; os detalhes estão no Apêndice~\ref{ap:derivacoes}. Usando a representação integral de Bessel, $J_k(x) = \frac{1}{2\pi}\int_0^{2\pi}\cos(k\tau - x\sin\tau)\,\dd\tau$, chega-se a
 \begin{equation}
   \boxed{\;c_n = \frac{a}{n}\,J_n'(ne) + \frac{b}{ne}\,J_n(ne),\qquad n\neq 0,\;}
   \label{eq:cn-bessel}
@@ -153,4 +153,4 @@ a transformada discreta de Fourier (DFT) \cite{press2007}. A soma reproduz a int
   \item mesmo dentro do limite, o erro depende de quão depressa $|c_n|$ decai. Para órbitas muito alongadas o espectro decai devagar, e a dobra dos termos altos contamina os baixos. Medido no programa, com 720 amostras: erro de coeficiente de $3\times10^{-16}$\,UA em $e = 0{,}6$, $10^{-14}$ em $e = 0{,}9$ e $10^{-8}$ em $e = 0{,}95$.
 \end{enumerate}
 
-O desvio da série truncada é medido ponto a ponto contra as próprias amostras. Pela identidade de Parseval, o desvio quadrático médio da série truncada em $|n|\leq N$ é $\bigl(\sum_{|n|>N}|c_n|^2\bigr)^{1/2}$: cada termo omitido contribui com o quadrado do próprio raio. É por isso que a convergência é tão rápida para órbitas quase circulares, em que os raios dos epiciclos caem como potências de $e$.
+O desvio da série truncada é medido ponto a ponto contra as próprias amostras. Pela identidade de Parseval, o desvio quadrático médio da série truncada em $|n|\leq N$ é $\bigl(\sum_{|n|>N}|c_n|^2\bigr)^{1/2}$: cada termo omitido contribui com o quadrado do próprio raio. As tabelas mostram o desvio absoluto médio, que é limitado pelo quadrático médio. É por isso que a convergência é tão rápida para órbitas quase circulares, em que os raios dos epiciclos caem como potências de $e$.

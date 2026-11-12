@@ -57,6 +57,8 @@
 }
 \makeatother
 
+% NBR 6022: o título da lista é REFERÊNCIAS
+\addto\captionsbrazilian{\renewcommand{\refname}{Referências}\renewcommand{\bibname}{Referências}}
 \setlength{\parindent}{1.3cm}
 \setlength{\parskip}{0.2cm}
 \OnehalfSpacing
@@ -87,12 +89,14 @@
 \input{secoes/07_conclusao}
 
 % ------------------------------------------------ elementos pós-textuais
-\input{pretextuais/agradecimentos}
-
+% NBR 6022:2018: referências, apêndices e, por último, agradecimentos
 \bibliography{referencias}
 
 \appendix
+\renewcommand{\thesection}{\Alph{section}}
 \input{apendices/A_derivacoes}
 \input{apendices/B_reproducao}
+
+\input{pretextuais/agradecimentos}
 
 \end{document}
