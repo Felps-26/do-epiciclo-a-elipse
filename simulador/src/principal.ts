@@ -240,6 +240,29 @@ function retanguloDoPainel(
 }
 
 /**
+ * As pecas escritas por cima da cena: a regua do rodape, os avisos do topo e do
+ * canto e o painel tecnico. Uma placa de rotulo que caisse ali ficava por baixo do
+ * texto, os dois ilegiveis.
+ */
+const PECAS_SOBRE_A_CENA = '.visor__leitura, .visor__avisosDoTopo > *, .avisos > *, .tecnico';
+
+function obstaculosDaInterface(
+  larguraPx: number,
+  alturaPx: number,
+): { x: number; y: number; largura: number; altura: number }[] {
+  const canvas = document.querySelector('canvas');
+  if (!canvas) return [];
+  const c = canvas.getBoundingClientRect();
+  const saida = retanguloDoPainel(larguraPx, alturaPx);
+  for (const el of document.querySelectorAll(PECAS_SOBRE_A_CENA)) {
+    const r = el.getBoundingClientRect();
+    if (r.width === 0 || r.height === 0) continue;
+    saida.push({ x: r.left - c.left, y: r.top - c.top, largura: r.width, altura: r.height });
+  }
+  return saida;
+}
+
+/**
  * Retangulos que o posicionador de rotulos recebeu no ultimo calculo, publicados
  * para medicao. O painel entrava como uma tira de 8 px em vez dos 320 px reais, e
  * nenhum teste distinguia os dois pelo resultado: se nenhum corpo calhasse na faixa,
@@ -986,7 +1009,7 @@ function calcularRotulos(estadoUi: EstadoUi): RotuloColocado[] {
   }
 
   const agrupados = estadoUi.modo === 'sistema' ? agruparInternos(candidatos) : candidatos;
-  const obstaculos = retanguloDoPainel(larguraPx, alturaPx);
+  const obstaculos = obstaculosDaInterface(larguraPx, alturaPx);
 
   ultimosObstaculos = obstaculos;
 

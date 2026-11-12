@@ -412,3 +412,20 @@ test('com a câmera padrão, todo nome fica a menos de 12 px do corpo ou ganha l
   });
   expect(longe).toEqual([]);
 });
+
+test('a régua do rodapé e os avisos entram na lista de obstáculos dos nomes (#27)', async ({ page }) => {
+  await page.keyboard.press('4');
+  await expect(page.locator('.avisos__item').first()).toBeVisible();
+  await page.waitForTimeout(400);
+  const { obstaculos, pecas } = await page.evaluate(() => {
+    const c = document.querySelector('canvas')!.getBoundingClientRect();
+    const rel = (sel: string) => {
+      const r = document.querySelector(sel)!.getBoundingClientRect();
+      return { x: r.left - c.left, y: r.top - c.top };
+    };
+    return { obstaculos: window.__obstaculosDosRotulos?.() ?? [], pecas: [rel('.visor__leitura'), rel('.avisos__item')] };
+  });
+  for (const p of pecas) {
+    expect(obstaculos.some((o) => Math.abs(o.x - p.x) < 1 && Math.abs(o.y - p.y) < 1), JSON.stringify(p)).toBe(true);
+  }
+});

@@ -75,9 +75,32 @@ test('a barra de cima cabe no orçamento, em cada modo', async ({ page }) => {
 });
 
 test('sobre a cena não há NADA clicável', async ({ page }) => {
-  expect(await page.locator('.visor__botoes .botao').count()).toBe(TETO.visor);
-  expect(await page.locator('.visor__botoes').count(), 'a faixa de botões voltou a existir')
-    .toBe(0);
+  // Um aviso no canto e o painel técnico abertos: são as peças que já roubaram
+  // o arrasto e o duplo clique da câmera.
+  await page.keyboard.press('4');
+  await expect(page.locator('.avisos__item').first()).toBeVisible();
+  await page.locator('summary', { hasText: 'Leitura' }).click();
+  await page.getByRole('checkbox', { name: /Mostrar dados técnicos/ }).check();
+
+  // Uma grade de pontos sobre o canvas: em cada um, quem recebe o ponteiro tem de
+  // ser o próprio canvas (ou a placa do grupo dos internos, que leva ao zoom).
+  const roubados = await page.evaluate(() => {
+    const canvas = document.querySelector('canvas')!;
+    const c = canvas.getBoundingClientRect();
+    const fora: string[] = [];
+    for (let i = 1; i < 20; i++) {
+      for (let j = 1; j < 20; j++) {
+        const x = c.left + (i / 20) * c.width;
+        const y = c.top + (j / 20) * c.height;
+        const el = document.elementFromPoint(x, y);
+        if (!el || el === canvas || el.closest('.lateral') || el.closest('.rotulos__placa--grupo')) continue;
+        fora.push(`${el.tagName.toLowerCase()}.${[...el.classList].join('.')} em ${Math.round(x)},${Math.round(y)}`);
+      }
+    }
+    return fora;
+  });
+  expect(roubados, 'há peça sobre a cena capturando o ponteiro').toEqual([]);
+  expect(TETO.visor).toBe(0);
 
   // A guarda: e as leituras continuam lá. Um visor vazio passaria neste teste
   // e teria perdido a régua, a exposição e as etiquetas de licença — que são o

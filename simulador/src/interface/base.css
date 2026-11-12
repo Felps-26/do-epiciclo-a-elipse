@@ -22,6 +22,7 @@
   --borda: #3a4258;
   --separador: #788cb4;
   --grade: #282e40;
+  --caixa: #6c7692;
   --marca-ligada: #253147;
 
   --acento: #7caeff;
@@ -342,19 +343,16 @@ body {
   width: 1px;
   height: 1px;
 }
-/* Em repouso a caixa usa `--grade`, e nao `--separador`.
-   `--separador` (#788cb4) e quase a cor do texto apagado: vinte caixas vazias
-   desenhadas nela eram vinte retangulos claros competindo com a cena, que e
-   exatamente a queixa de "disruptivo entre marcar as opcoes e visualizar". A
-   caixa vazia nao carrega informacao nenhuma — quem carrega e o "✓" —, entao
-   ela pode recuar ate ser so um contorno. */
+/* Em repouso a caixa usa `--caixa`: entre o `--grade` (1,35:1, a caixa sumia e a
+   opcao desligada nao parecia controle) e o `--separador`, que fazia vinte
+   retangulos claros competirem com a cena. 3:1 e o minimo de um controle. */
 .alternador__caixa {
   flex: 0 0 auto;
   display: grid;
   place-items: center;
   width: 1.35rem;
   height: 1.35rem;
-  border: 1px solid var(--grade);
+  border: 1px solid var(--caixa);
   border-radius: 5px;
   background: transparent;
   color: var(--acento);
@@ -832,6 +830,11 @@ body {
   flex-direction: column;
   gap: 0.3rem;
   max-width: 24rem;
+  /* Leitura: o arrasto e o duplo clique da camera atravessam. */
+  pointer-events: none;
+}
+.avisos .botao {
+  pointer-events: auto;
 }
 .avisos__item {
   margin: 0;

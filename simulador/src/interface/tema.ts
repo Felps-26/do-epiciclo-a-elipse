@@ -55,6 +55,7 @@ export const TEMA = {
   borda: [58, 66, 88] as Cor, // decorativa; nao carrega informacao
   separador: [120, 140, 180] as Cor, // quando a linha significa alguma coisa
   grade: [40, 46, 64] as Cor, // aneis de distancia no fundo
+  caixa: [108, 118, 146] as Cor, // contorno da caixa de selecao vazia: controle, 3:1
 
   // -- estados --------------------------------------------------------------
   acento: [124, 174, 255] as Cor, // 8,6:1, selecao e controle ativo
@@ -119,6 +120,8 @@ export const PARES_PARA_CONFERIR: ParDeContraste[] = [
   // Os tres pares que o desenho novo dos controles de marcacao criou. O "✓" e
   // um caractere e vai medido como texto (4,5), e nao como grafico (3): ele e
   // a forma que carrega o estado para quem nao distingue as duas cores.
+  { nome: 'caixa vazia sobre painel', frente: TEMA.caixa, atras: TEMA.painel, minimo: 3 },
+  { nome: 'caixa vazia sobre painel alto', frente: TEMA.caixa, atras: TEMA.painelAlto, minimo: 3 },
   { nome: 'o ✓ sobre a caixa marcada', frente: TEMA.acento, atras: TEMA.marcaLigada, minimo: 4.5 },
   { nome: 'texto fraco sobre o trilho do segmentado', frente: TEMA.textoFraco, atras: TEMA.grade, minimo: 4.5 },
   { nome: 'texto sobre o trilho do segmentado', frente: TEMA.texto, atras: TEMA.grade, minimo: 4.5 },
