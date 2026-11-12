@@ -159,4 +159,34 @@ describe('rastros do sandbox', () => {
     for (let k = 0; k + 2 < p.length; k += 3) menor = Math.min(menor, Math.hypot(p[k]! - 3, p[k + 1]!, p[k + 2]!));
     expect(menor).toBeLessThan(0.05);
   });
+
+  it('restaurar o sistema limpa os rastros: nenhum arco solto onde os planetas estavam', async () => {
+    const { copiarEstado, restaurarEstado } = await import('@nucleo/estado.ts');
+    const { avancar, PADRAO } = await import('@nucleo/integrador.ts');
+    const { criarRascunho } = await import('@nucleo/tipos.ts');
+    const catalogo = carregar();
+    const corpos = catalogo.corpos.map((c) => ({ chave: c.chave, nome: c.nome }));
+    const periodos = [null, 88, 225, 365, 687, 4333, 10759, 30687, 60190];
+    const fitas = criarFitas(corpos, periodos);
+    const estado = catalogo.estado;
+    const inicial = copiarEstado(estado);
+    const rascunho = criarRascunho(estado.capacidade);
+    for (let k = 0; k < 400; k++) {
+      avancar(estado, PADRAO, 0.5, 20, rascunho);
+      fitas.atualizar(estado, [0, 0, 0], estado.tDias, false);
+    }
+    // O mesmo caminho de "Restaurar o Sistema Solar": o estado volta, os rastros limpam.
+    restaurarEstado(estado, inicial);
+    fitas.limparTrilhas();
+    fitas.atualizar(estado, [0, 0, 0], estado.tDias, false);
+
+    for (const i of [6, 7, 8]) {
+      const pontos = pontosDoRastro(fitas.grupo, i);
+      const x = estado.pos[3 * i]! - estado.pos[0]!;
+      const y = estado.pos[3 * i + 1]! - estado.pos[1]!;
+      const z = estado.pos[3 * i + 2]! - estado.pos[2]!;
+      const longe = pontos.filter((p) => Math.hypot(p[0] - x, p[1] - y, p[2] - z) > 0.01);
+      expect(longe.length, `${corpos[i]!.nome}: ${longe.length} pontos longe do planeta`).toBe(0);
+    }
+  });
 });
