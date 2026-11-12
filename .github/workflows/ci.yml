@@ -26,3 +26,32 @@ jobs:
       - run: npm run lint
       - run: npm run arquitetura
       - run: npm run unidade
+
+  # Ponta a ponta só no Ubuntu: o SwiftShader desenha igual em qualquer máquina, e as
+  # imagens de referência foram gravadas com ele. O teste marcado @lento (percorre
+  # todas as dicas pelo teclado) fica de fora; ele roda à mão.
+  ponta-a-ponta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    defaults:
+      run:
+        working-directory: simulador
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: simulador/.nvmrc
+          cache: npm
+          cache-dependency-path: simulador/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: npx playwright test --grep-invert @lento
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: falhas-e2e
+          path: |
+            simulador/test-results/
+            simulador/testes/e2e/douradas/**/_diff-*.png
+          retention-days: 14

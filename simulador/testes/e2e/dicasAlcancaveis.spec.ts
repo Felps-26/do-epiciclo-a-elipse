@@ -116,7 +116,7 @@ async function acionar(pagina: Page, rotulo: string): Promise<boolean> {
   return true;
 }
 
-test('toda dica e alcancavel a partir da tela principal, so com o teclado', async ({ page }) => {
+test('toda dica e alcancavel a partir da tela principal, so com o teclado @lento', async ({ page }) => {
   test.setTimeout(300_000);
 
   const perguntas = Object.values(DICAS).map((d) => d.pergunta);
