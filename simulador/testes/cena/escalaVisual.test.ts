@@ -147,3 +147,21 @@ describe('o enquadramento acompanha a escala', () => {
     expect(enquadrar('acompanhar', sol, jupiter, true).raio).toBeCloseTo(comprimirRaio(5.46) * 1.25, 12);
   });
 });
+
+describe('o brilho do Sol na visão geral (B3)', () => {
+  it('o disco não passa de 40% da distância desenhada de Mercúrio, e a coroa de 1,6 vez', async () => {
+    const { limitesDoSol } = await import('@cena/escala/exageroDeTamanho.ts');
+    // Visão geral: o piso deixava o Sol com raio maior que a distância de Mercúrio.
+    const l = limitesDoSol(0.45, 0.00465, 0.4);
+    expect(l.raioUa).toBeCloseTo(0.16, 12);
+    expect(l.coroaUa).toBeCloseTo(0.64, 12);
+    expect(l.coroaUa / 2).toBeLessThan(0.4);
+  });
+
+  it('de perto, nada muda: o disco real é muito menor que o teto', async () => {
+    const { limitesDoSol } = await import('@cena/escala/exageroDeTamanho.ts');
+    const l = limitesDoSol(0.00465, 0.00465, 0.4);
+    expect(l.raioUa).toBe(0.00465);
+    expect(l.coroaUa).toBeCloseTo(0.00465 * 6, 12);
+  });
+});

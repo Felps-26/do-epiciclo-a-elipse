@@ -31,7 +31,7 @@ import { corpoSobOPonto, raioDoContornoUa } from './selecao.ts';
 import { fatiasDeProfundidade, janelaOrtografica } from './camera/planoProximo.ts';
 import { alturaVisivelUa, posicaoDaCamera, type EstadoCamera } from './camera/cameraOrbital.ts';
 import { aplicarOrigem, distancias } from './origemFlutuante.ts';
-import { fatorDeProjecao, raioDesenhadoUa } from './escala/exageroDeTamanho.ts';
+import { fatorDeProjecao, limitesDoSol, raioDesenhadoUa } from './escala/exageroDeTamanho.ts';
 import { montarCoroa, montarCorpo, montarCascaDeProva, type CorpoMontado } from './corpos/fabrica.ts';
 import { Texturas, nivelDoFundo } from './texturas/carregador.ts';
 import { exposicaoQuerida, suavizarExposicao } from './iluminacao/exposicao.ts';
@@ -646,6 +646,16 @@ export function criarCena(
         posDesenho[2]! - camUa[2],
       );
 
+      const iMercurio = naCena.findIndex((c) => c.chave === 'mercurio');
+      const dMercurioUa =
+        iMercurio > 0
+          ? Math.hypot(
+              posDesenho[3 * iMercurio]! - posDesenho[0]!,
+              posDesenho[3 * iMercurio + 1]! - posDesenho[1]!,
+              posDesenho[3 * iMercurio + 2]! - posDesenho[2]!,
+            )
+          : 0;
+
       let maisProximo = Infinity;
       let maisDistante = 0;
       for (let i = 0; i < naCena.length; i++) {
@@ -655,7 +665,9 @@ export function criarCena(
         // caem com a distancia; em ortografica sao constantes. Todo o resto (exagero de
         // tamanho, raio aparente, escolha por clique) fala em pixels e nao precisa saber qual
         // das duas esta ligada.
-        const raio = raioDesenhadoUa(raioRealUa, pixelsPorUa(dists[i]!), tamanhoReal, c.chave === 'sol');
+        const ampliado = raioDesenhadoUa(raioRealUa, pixelsPorUa(dists[i]!), tamanhoReal, c.chave === 'sol');
+        const doSol = c.chave === 'sol' ? limitesDoSol(ampliado, raioRealUa, dMercurioUa) : null;
+        const raio = doSol ? doSol.raioUa : ampliado;
         c.montado.definirRaioDesenhado(raio);
         c.casca.scale.setScalar(1.003);
 
@@ -663,8 +675,8 @@ export function criarCena(
         // Tres raios de extensao: alem disso ela vira um vidro fosco sobre o
         // sistema inteiro, e o que se quer e que o Sol continue tendo halo
         // quando o disco cabe num pixel.
-        if (c.chave === 'sol' && coroa) {
-          coroa.scale.setScalar(Math.max(raio, 1e-9) * 6);
+        if (doSol && coroa) {
+          coroa.scale.setScalar(Math.max(doSol.coroaUa, 1e-9));
           coroa.quaternion.copy(ativa.quaternion);
         }
 

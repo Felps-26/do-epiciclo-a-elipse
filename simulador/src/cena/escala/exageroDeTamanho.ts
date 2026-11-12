@@ -75,3 +75,21 @@ export function ampliacao(raioRealUa: number, pixelsPorUa: number, ehSol: boolea
   const pPiso = pisoEmPixels(raioRealUa * 149597870.7, ehSol);
   return Math.cbrt(pReal ** 3 + pPiso ** 3) / pReal;
 }
+
+/**
+ * O Sol desenhado nao pode engolir Mercurio. Na visao geral o piso em pixels deixava o
+ * disco solar com 11 px e Mercurio a 9 px do centro, e o bloom do disco lavava os quatro
+ * internos. O disco fica com no maximo 40% da distancia desenhada de Mercurio, e a coroa
+ * (diametro do plano) com no maximo 1,6 vez essa distancia, sem nunca encolher alem do
+ * tamanho real nem ficar menor que o proprio disco.
+ */
+export function limitesDoSol(
+  raioDesenhadoUa: number,
+  raioRealUa: number,
+  dMercurioUa: number,
+): { raioUa: number; coroaUa: number } {
+  if (!(dMercurioUa > 0)) return { raioUa: raioDesenhadoUa, coroaUa: raioDesenhadoUa * 6 };
+  const raioUa = Math.min(raioDesenhadoUa, Math.max(raioRealUa, 0.4 * dMercurioUa));
+  const coroaUa = Math.min(raioUa * 6, Math.max(raioUa * 3, 1.6 * dMercurioUa));
+  return { raioUa, coroaUa };
+}
