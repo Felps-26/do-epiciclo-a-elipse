@@ -20,6 +20,7 @@
  * `transform` nao vai no `style` do Preact: ver `nascerEm`.
  */
 import type { JSX } from 'preact';
+import { CHAVE_DOS_INTERNOS } from './agrupamento.ts';
 import type { RotuloColocado } from './posicionador.ts';
 import { corDoCorpo } from '../dados/cores.ts';
 import { paraCss } from '../interface/contraste.ts';
@@ -45,9 +46,12 @@ function nascerEm(transform: string) {
 export function CamadaDeRotulos({
   rotulos,
   comNomes = true,
+  aoEscolherGrupo,
 }: {
   rotulos: readonly RotuloColocado[];
   comNomes?: boolean;
+  /** Clique na placa "Planetas internos": a camada so avisa, quem decide e a interface. */
+  aoEscolherGrupo?: () => void;
 }): JSX.Element {
   return (
     <div class="rotulos" aria-hidden="true">
@@ -72,6 +76,13 @@ export function CamadaDeRotulos({
             />
           );
         })}
+      {/* A linha do corpo ate a placa, quando a placa ficou longe dele. A ancoragem
+          decide por quadro se ela aparece. */}
+      {(comNomes ? rotulos : [])
+        .filter((r) => r.forma !== 'ponto')
+        .map((r) => (
+          <span key={`linha-${r.chave}`} class="rotulos__linha" data-linha={r.chave} style={{ visibility: 'hidden' }} />
+        ))}
       {(comNomes ? rotulos : []).map((r) =>
         r.forma === 'ponto' ? (
           <span
@@ -84,8 +95,9 @@ export function CamadaDeRotulos({
         ) : (
           <span
             key={r.chave}
-            class={`rotulos__placa${r.ocluido ? ' rotulos__placa--atras' : ''}`}
+            class={`rotulos__placa${r.ocluido ? ' rotulos__placa--atras' : ''}${r.chave === CHAVE_DOS_INTERNOS ? ' rotulos__placa--grupo' : ''}`}
             data-rotulo={r.chave}
+            {...(r.chave === CHAVE_DOS_INTERNOS && aoEscolherGrupo ? { onClick: aoEscolherGrupo } : {})}
             ref={nascerEm(`translate(${r.x}px, ${r.y}px)`)}
           >
             {/* A barra colorida carrega a cor; o NOME e sempre `texto`, em

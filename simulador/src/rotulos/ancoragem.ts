@@ -29,8 +29,16 @@ const FOLGA_PX = 0.5;
 export interface Ancora {
   x: number;
   y: number;
+  /** Raio do corpo na tela neste quadro. Sem ele, vale o da ultima colocacao. */
+  raioPx?: number;
 }
 
+/**
+ * O desvio guardado e o RESIDUO: o deslocamento da placa menos a parte que vem do
+ * raio do disco. Durante um voo o raio cresce a cada quadro e a colocacao (30 Hz)
+ * fica sempre atrasada; guardando o residuo, o alvo nao muda com o zoom, o prazo
+ * fixo dispara, e a placa e reposta na borda do disco com o raio do proprio quadro.
+ */
 interface Desvio {
   dx: number;
   dy: number;
@@ -38,6 +46,37 @@ interface Desvio {
   alvoY: number;
   /** Quando este alvo passou a valer, em segundos. */
   desde: number;
+}
+
+export interface PosicaoNoQuadro {
+  x: number;
+  y: number;
+  centroX: number;
+  centroY: number;
+  raioPx: number;
+  largura: number;
+  altura: number;
+}
+
+/** Acima deste vao entre o disco e a placa, desenha-se uma linha ligando os dois. */
+export const LIMIAR_DA_LIGACAO_PX = 12;
+
+/**
+ * A linha da borda do disco ate o ponto mais proximo da placa, ou `null` quando a
+ * placa esta encostada no corpo. Sem ela, nomes desempilhados ficam numa coluna
+ * ao lado do Sol e nao se sabe de quem e cada um.
+ */
+export function segmentoDeLigacao(
+  cx: number,
+  cy: number,
+  raioPx: number,
+  placa: { x: number; y: number; largura: number; altura: number },
+): { x1: number; y1: number; x2: number; y2: number } | null {
+  const x2 = Math.min(Math.max(cx, placa.x), placa.x + placa.largura);
+  const y2 = Math.min(Math.max(cy, placa.y), placa.y + placa.altura);
+  const d = Math.hypot(x2 - cx, y2 - cy);
+  if (d - raioPx <= LIMIAR_DA_LIGACAO_PX) return null;
+  return { x1: cx + ((x2 - cx) / d) * raioPx, y1: cy + ((y2 - cy) / d) * raioPx, x2, y2 };
 }
 
 export type MemoriaDoDesvio = Map<string, Desvio>;
@@ -55,8 +94,8 @@ export function posicoesSuavizadas(
   memoria: MemoriaDoDesvio,
   dtS: number,
   agoraS: number,
-): Map<string, { x: number; y: number; centroX: number; centroY: number }> {
-  const saida = new Map<string, { x: number; y: number; centroX: number; centroY: number }>();
+): Map<string, PosicaoNoQuadro> {
+  const saida = new Map<string, PosicaoNoQuadro>();
   const vivos = new Set<string>();
 
   // `dt` preso a um teto: voltar de uma aba escondida traz um `dt` de minutos,
@@ -71,8 +110,10 @@ export function posicoesSuavizadas(
     // no quadro em que um corpo sai de vista e a colocacao ainda nao soube.
     const centroX = ancora?.x ?? r.centroX;
     const centroY = ancora?.y ?? r.centroY;
-    const alvoX = r.x - r.centroX;
-    const alvoY = r.y - r.centroY;
+    const raioPx = ancora?.raioPx ?? r.raioPx;
+    const [dirX, dirY] = r.direcao ?? [0, 0];
+    const alvoX = r.x - r.centroX - dirX * r.raioPx;
+    const alvoY = r.y - r.centroY - dirY * r.raioPx;
 
     let d = memoria.get(r.chave);
     if (!d) {
@@ -95,7 +136,15 @@ export function posicoesSuavizadas(
       }
     }
 
-    saida.set(r.chave, { x: centroX + d.dx, y: centroY + d.dy, centroX, centroY });
+    saida.set(r.chave, {
+      x: centroX + d.dx + dirX * raioPx,
+      y: centroY + d.dy + dirY * raioPx,
+      centroX,
+      centroY,
+      raioPx,
+      largura: r.largura,
+      altura: r.altura,
+    });
   }
 
   // Esquecer quem saiu. Sem isto o mapa cresce com cada corpo criado e apagado
@@ -127,14 +176,15 @@ interface NosDaCamada {
   sujo: boolean;
   rotulo: HTMLElement[];
   anel: HTMLElement[];
+  linha: HTMLElement[];
 }
 
 const CACHE = new WeakMap<HTMLElement, NosDaCamada>();
 
-function nosDe(raiz: HTMLElement, qual: 'rotulo' | 'anel'): HTMLElement[] {
+function nosDe(raiz: HTMLElement, qual: 'rotulo' | 'anel' | 'linha'): HTMLElement[] {
   let c = CACHE.get(raiz);
   if (!c) {
-    c = { sujo: true, rotulo: [], anel: [] };
+    c = { sujo: true, rotulo: [], anel: [], linha: [] };
     const registro = c;
     new MutationObserver(() => {
       registro.sujo = true;
@@ -145,25 +195,45 @@ function nosDe(raiz: HTMLElement, qual: 'rotulo' | 'anel'): HTMLElement[] {
     c.sujo = false;
     c.rotulo = [...raiz.querySelectorAll<HTMLElement>('[data-rotulo]')];
     c.anel = [...raiz.querySelectorAll<HTMLElement>('[data-anel]')];
+    c.linha = [...raiz.querySelectorAll<HTMLElement>('[data-linha]')];
   }
   return c[qual];
 }
 
-export function escrever(
-  raiz: HTMLElement,
-  posicoes: ReadonlyMap<string, { x: number; y: number; centroX: number; centroY: number }>,
-): void {
+export function escrever(raiz: HTMLElement, posicoes: ReadonlyMap<string, PosicaoNoQuadro>): void {
   for (const no of nosDe(raiz, 'rotulo')) {
     const p = posicoes.get(no.dataset['rotulo'] ?? '');
-    if (p) no.style.transform = `translate(${p.x}px, ${p.y}px)`;
+    // Uma placa que a colocacao derrubou (teto, foco) sai NESTE quadro. Esperar a
+    // proxima publicacao a deixava congelada no lugar por ate 125 ms.
+    if (!p) {
+      no.style.visibility = 'hidden';
+      continue;
+    }
+    no.style.visibility = '';
+    no.style.transform = `translate(${p.x}px, ${p.y}px)`;
   }
   for (const no of nosDe(raiz, 'anel')) {
     const p = posicoes.get(no.dataset['anel'] ?? '');
     if (!p) continue;
-    // O anel e centrado no CORPO, e nao na placa: ele marca o corpo. E por isso
-    // ele nao e suavizado — o corpo nao salta, e um anel que deslizasse
-    // ficaria atras do proprio corpo enquanto a camera gira.
-    const raio = Number(no.dataset['raio'] ?? '16');
+    // O anel e centrado no CORPO, e nao na placa: ele marca o corpo. Nao e
+    // suavizado, e o tamanho vem do raio deste quadro: durante o voo o disco
+    // cresce a 60 Hz, e o anel crescia aos saltos da publicacao.
+    const raio = Math.max(p.raioPx + 8, 16);
+    no.style.width = `${2 * raio}px`;
+    no.style.height = `${2 * raio}px`;
     no.style.transform = `translate(${p.centroX - raio}px, ${p.centroY - raio}px)`;
+  }
+  for (const no of nosDe(raiz, 'linha')) {
+    const p = posicoes.get(no.dataset['linha'] ?? '');
+    const s = p ? segmentoDeLigacao(p.centroX, p.centroY, p.raioPx, p) : null;
+    if (!s) {
+      no.style.visibility = 'hidden';
+      continue;
+    }
+    // Um elemento de 1x1 px, esticado e girado: so `transform`, sem layout.
+    const comprimento = Math.hypot(s.x2 - s.x1, s.y2 - s.y1);
+    const angulo = Math.atan2(s.y2 - s.y1, s.x2 - s.x1);
+    no.style.visibility = '';
+    no.style.transform = `translate(${s.x1}px, ${s.y1}px) rotate(${angulo}rad) scaleX(${comprimento})`;
   }
 }

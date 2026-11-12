@@ -45,7 +45,7 @@ describe('ancoragem por quadro', () => {
     const mem = criarMemoriaDoDesvio();
     const r = rotulo('terra', [100, 100], [112, 94]);
     const p = posicoesSuavizadas([r], ancoras({ terra: [100, 100] }), mem, 1 / 60, 0);
-    expect(p.get('terra')).toEqual({ x: 112, y: 94, centroX: 100, centroY: 100 });
+    expect(p.get('terra')).toMatchObject({ x: 112, y: 94, centroX: 100, centroY: 100 });
   });
 
   it('o corpo se move e a placa vai JUNTO, sem atraso nenhum', () => {
@@ -158,6 +158,6 @@ describe('ancoragem por quadro', () => {
   it('sem âncora neste quadro, a placa fica onde a colocação a pôs', () => {
     const mem = criarMemoriaDoDesvio();
     const p = posicoesSuavizadas([rotulo('terra', [100, 100], [112, 94])], new Map(), mem, 1 / 60, 0);
-    expect(p.get('terra')).toEqual({ x: 112, y: 94, centroX: 100, centroY: 100 });
+    expect(p.get('terra')).toMatchObject({ x: 112, y: 94, centroX: 100, centroY: 100 });
   });
 });

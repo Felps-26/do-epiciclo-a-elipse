@@ -69,7 +69,11 @@ export function Visor({
         aria-label="Sistema Solar em três dimensões"
         aria-describedby="visor-instrucoes"
       />
-      <CamadaDeRotulos rotulos={rotulos} comNomes={e.opcoes.rotulos} />
+      <CamadaDeRotulos
+        rotulos={rotulos}
+        comNomes={e.opcoes.rotulos}
+        aoEscolherGrupo={() => despachar({ tipo: 'trocar-modo', modo: 'internos' })}
+      />
 
       <p id="visor-instrucoes" class="visualmente-oculto">
         Arraste para girar a câmera, ou use as setas. Segure Shift para deslocar. Use mais e menos

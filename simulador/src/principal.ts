@@ -55,7 +55,8 @@ import { comprimirPonto, comprimirRaio } from './cena/escala/escalaVisual.ts';
 import { ELEVACAO_MAXIMA } from './cena/camera/cameraOrbital.ts';
 import type { AnaliseDoSolNaTela, DadosTecnicos, LeituraDeCorpo } from './contratos/instantaneo.ts';
 import { abreviar, colocar, type Candidato, type RotuloColocado } from './rotulos/posicionador.ts';
-import { tetoDeRotulos } from './cena/escala/foco.ts';
+import { tetoComDiscos } from './cena/escala/foco.ts';
+import { CHAVE_DOS_INTERNOS, agruparInternos } from './rotulos/agrupamento.ts';
 import {
   criarMemoriaDoDesvio,
   escrever as escreverRotulos,
@@ -164,7 +165,7 @@ let alturaPx = 600;
 let rotulos: RotuloColocado[] = [];
 /** O desvio suavizado de cada placa em relacao ao corpo dela. Ver `ancoragem.ts`. */
 const desvioDosRotulos = criarMemoriaDoDesvio();
-const ancorasDoQuadro = new Map<string, { x: number; y: number }>();
+const ancorasDoQuadro = new Map<string, { x: number; y: number; raioPx: number }>();
 let azimuteAnterior = 0;
 const memoriaDeDirecao = new Map<string, number>();
 observarMudancasDeFonte();
@@ -562,7 +563,11 @@ const laco = criarLaco({
     if (cena && rotulos.length > 0 && camadaDeRotulos) {
       const projecoes = cena.projetar(larguraPx, alturaPx);
       ancorasDoQuadro.clear();
-      for (const p of projecoes) if (p.naFrente) ancorasDoQuadro.set(p.chave, { x: p.x, y: p.y });
+      for (const p of projecoes) if (p.naFrente) ancorasDoQuadro.set(p.chave, { x: p.x, y: p.y, raioPx: p.raioPx });
+      // O grupo dos internos fica em volta do Sol, e anda com ele.
+      const sol = ancorasDoQuadro.get('sol');
+      const grupo = rotulos.find((r) => r.chave === CHAVE_DOS_INTERNOS);
+      if (sol && grupo) ancorasDoQuadro.set(CHAVE_DOS_INTERNOS, { x: sol.x, y: sol.y, raioPx: grupo.raioPx });
       escreverRotulos(
         camadaDeRotulos,
         posicoesSuavizadas(rotulos, ancorasDoQuadro, desvioDosRotulos, dtRealS, agoraEmSegundos()),
@@ -952,6 +957,7 @@ function calcularRotulos(estadoUi: EstadoUi): RotuloColocado[] {
     });
   }
 
+  const agrupados = estadoUi.modo === 'sistema' ? agruparInternos(candidatos) : candidatos;
   const obstaculos = retanguloDoPainel(larguraPx, alturaPx);
 
   ultimosObstaculos = obstaculos;
@@ -959,7 +965,7 @@ function calcularRotulos(estadoUi: EstadoUi): RotuloColocado[] {
   const girandoRapido = Math.abs(camera.azimute - azimuteAnterior) > 0.01;
   azimuteAnterior = camera.azimute;
 
-  return colocar(candidatos, {
+  return colocar(agrupados, {
     larguraTela: larguraPx,
     alturaTela: alturaPx,
     alturaDoTexto: 14,
@@ -971,7 +977,11 @@ function calcularRotulos(estadoUi: EstadoUi): RotuloColocado[] {
     // texto legivel abaixo de 4,5:1, e a roda pode parar em qualquer ponto. Descer o teto
     // usa a prioridade existente, em que o corpo acompanhado vale +1000 e e o ultimo nome
     // a sair.
-    teto: tetoDeRotulos(cena.foco, 18),
+    teto: tetoComDiscos(
+      cena.foco,
+      18,
+      agrupados.map((c) => c.raioPx),
+    ),
   });
 }
 

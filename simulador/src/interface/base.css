@@ -1070,6 +1070,22 @@ body {
   border-radius: 1px;
 }
 
+.rotulos__placa--grupo {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.rotulos__linha {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  background: rgb(200 210 230 / 0.55);
+  transform-origin: 0 50%;
+  will-change: transform;
+}
+
 .rotulos__ponto {
   width: 6px;
   height: 6px;

@@ -70,6 +70,11 @@ export interface RotuloColocado {
   largura: number;
   altura: number;
   ocluido: boolean;
+  /**
+   * De que lado do corpo a placa ficou, como (dx, dy) em -1, 0, 1. A ancoragem usa
+   * para manter a placa na borda do disco enquanto o raio cresce entre colocacoes.
+   */
+  direcao?: readonly [number, number];
 }
 
 /** Oito direcoes em volta do corpo, na ordem de preferencia. */
@@ -171,6 +176,7 @@ export function colocar(candidatos: readonly Candidato[], opcoes: Opcoes): Rotul
             largura,
             altura,
             ocluido: c.ocluido,
+            direcao: [dx, dy],
           };
           ocupados.push(r);
           break;

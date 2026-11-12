@@ -389,3 +389,26 @@ test('abaixo do ponto de quebra, nenhum nome é desenhado ATRÁS do painel', asy
   const invadem = lista.filter((p) => p.x + p.largura > limite + 1).map((p) => p.texto);
   expect(invadem, `${invadem.join(', ')} ficaram atrás do painel`).toEqual([]);
 });
+
+test('com a câmera padrão, todo nome fica a menos de 12 px do corpo ou ganha linha', async ({ page }) => {
+  await page.waitForTimeout(1200);
+  const longe = await page.evaluate(() => {
+    const proj = new Map((window.__projecoes?.() ?? []).map((p) => [p.chave, p]));
+    const fora: string[] = [];
+    for (const placa of document.querySelectorAll<HTMLElement>('.rotulos [data-rotulo]')) {
+      const chave = placa.dataset['rotulo']!;
+      if (chave === 'internos' || placa.style.visibility === 'hidden') continue;
+      const p = proj.get(chave);
+      if (!p) continue;
+      const caixa = placa.getBoundingClientRect();
+      const visor = placa.parentElement!.getBoundingClientRect();
+      const x = Math.min(Math.max(p.x, caixa.left - visor.left), caixa.right - visor.left);
+      const y = Math.min(Math.max(p.y, caixa.top - visor.top), caixa.bottom - visor.top);
+      const vao = Math.hypot(x - p.x, y - p.y) - p.raioPx;
+      const linha = document.querySelector<HTMLElement>(`.rotulos [data-linha="${chave}"]`);
+      if (vao > 12.5 && (!linha || linha.style.visibility === 'hidden')) fora.push(`${chave}: ${vao.toFixed(1)} px`);
+    }
+    return fora;
+  });
+  expect(longe).toEqual([]);
+});

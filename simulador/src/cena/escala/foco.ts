@@ -78,3 +78,15 @@ export function tetoDeRotulos(f: number, tetoBase: number): number {
   if (f <= 0) return tetoBase;
   return Math.max(1, Math.round(tetoBase * (1 - f) + 1 * f));
 }
+
+/** Raio na tela, em px, a partir do qual um corpo e um disco que se ve, e nao um ponto. */
+const DISCO_PX = 8;
+
+/**
+ * O teto do foco, sem deixar sem nome quem enche a tela. Com Jupiter em foco pleno o
+ * teto caia a 1, e as quatro galileanas, grandes e separadas, ficavam sem nome.
+ */
+export function tetoComDiscos(f: number, tetoBase: number, raiosPx: readonly number[]): number {
+  const discos = raiosPx.filter((r) => r >= DISCO_PX).length;
+  return Math.min(tetoBase, Math.max(tetoDeRotulos(f, tetoBase), discos));
+}
