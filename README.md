@@ -14,9 +14,9 @@ The project started from a question in an undergraduate thesis (see Credits): ca
 
 ## Try it online
 
-[![CI](https://github.com/USUARIO/REPOSITORIO/actions/workflows/ci.yml/badge.svg)](https://github.com/USUARIO/REPOSITORIO/actions/workflows/ci.yml) <!-- preencher na Tarefa 17 -->
+[![CI](https://github.com/Felps-26/do-epiciclo-a-elipse/actions/workflows/ci.yml/badge.svg)](https://github.com/Felps-26/do-epiciclo-a-elipse/actions/workflows/ci.yml)
 
-Live version: https://USUARIO.github.io/REPOSITORIO/ <!-- preencher na Tarefa 17 -->
+Live version: https://felps-26.github.io/do-epiciclo-a-elipse/
 
 The online version ships only the 2K textures, so surfaces look softer in close-ups than in the delivery folder, which also has 4K.
 
@@ -72,7 +72,7 @@ To compile the paper, run `artigo/compilar.bat` with MiKTeX or TeX Live (pdfLaTe
 
 ## Known defects
 
-A visual sweep of the simulator on 6 November 2026 listed 40 findings. 35 survived an attempt to refute them. At the time of the sweep, 15 were fixed and 25 were still open: 1 seen on screen, 21 found by reading code but not observed on screen, and 3 not tested. The full list, with severity and visible effect, is in `simulador/ACHADOS-VISUAIS.md`. That list can lag behind `simulador/CONTRATO.md`, which records as fixed several items the list still shows as open.
+A visual sweep of the simulator on 6 November 2026 listed 40 findings. At the time of the sweep, 15 were fixed and 25 were still open: 1 seen on screen, 21 found by reading code but not observed on screen, and 3 not tested. The full list, with severity and visible effect, is in `simulador/ACHADOS-VISUAIS.md`. That list can lag behind `simulador/CONTRATO.md`, which records as fixed several items the list still shows as open.
 
 The online version has only the 2K textures. When the camera gets close to a body, the program asks for the 4K and 8K files, which are not there, and the surface stays at 2K.
 

@@ -14,9 +14,9 @@ O projeto partiu de uma pergunta de um trabalho de conclusão de curso (veja os 
 
 ## Versão online
 
-[![CI](https://github.com/USUARIO/REPOSITORIO/actions/workflows/ci.yml/badge.svg)](https://github.com/USUARIO/REPOSITORIO/actions/workflows/ci.yml) <!-- preencher na Tarefa 17 -->
+[![CI](https://github.com/Felps-26/do-epiciclo-a-elipse/actions/workflows/ci.yml/badge.svg)](https://github.com/Felps-26/do-epiciclo-a-elipse/actions/workflows/ci.yml)
 
-Versão no ar: https://USUARIO.github.io/REPOSITORIO/ <!-- preencher na Tarefa 17 -->
+Versão no ar: https://felps-26.github.io/do-epiciclo-a-elipse/
 
 A versão online leva só as texturas 2K, então as superfícies ficam mais suaves nas aproximações do que na pasta de entrega, que também traz o 4K.
 
@@ -72,7 +72,7 @@ Para compilar o artigo, rode `artigo/compilar.bat` com MiKTeX ou TeX Live (pdfLa
 
 ## Defeitos conhecidos
 
-Uma varredura visual do simulador em 06/11/2026 listou 40 achados, e 35 resistiram a uma tentativa de refutação. Na data da varredura, 15 estavam corrigidos e 25 seguiam abertos: 1 visto na tela, 21 encontrados por leitura de código e não observados na tela, e 3 não testados. A lista completa, com gravidade e efeito visível, está em `simulador/ACHADOS-VISUAIS.md`. Ela pode estar atrasada em relação ao `simulador/CONTRATO.md`, que registra como corrigidos vários itens que a lista ainda mostra como abertos.
+Uma varredura visual do simulador em 06/11/2026 listou 40 achados. Na data da varredura, 15 estavam corrigidos e 25 seguiam abertos: 1 visto na tela, 21 encontrados por leitura de código e não observados na tela, e 3 não testados. A lista completa, com gravidade e efeito visível, está em `simulador/ACHADOS-VISUAIS.md`. Ela pode estar atrasada em relação ao `simulador/CONTRATO.md`, que registra como corrigidos vários itens que a lista ainda mostra como abertos.
 
 A versão online tem só as texturas 2K. Quando a câmera chega perto de um corpo, o programa pede os arquivos 4K e 8K, que não estão lá, e a superfície fica em 2K.
 
