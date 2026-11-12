@@ -17,7 +17,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { IDS, JANELA_DE_CONFERENCIA, baseDoPlano, medirErro, posicao, vetores } from './luas_comum.mjs';
+import { IDS, JANELA_DE_CONFERENCIA, baseDoPlano, medirErro, posicaoDaTela, vetores } from './luas_comum.mjs';
 
 /** De onde vem o lado medido da subtracao. Ver `procedencia.test.ts`. */
 const FONTE = {
@@ -51,13 +51,13 @@ for (const l of dados.luas) {
   if (pontos.length < 400) throw new Error(`${l.chave}: so ${pontos.length} pontos`);
 
   const base = baseDoPlano(l.poloUsado);
-  const inteira = medirErro(l, base, l.anomaliaMediaGraus, pontos, JD0);
+  const inteira = medirErro(l, base, l.anomaliaMediaGraus, pontos, JD0, posicaoDaTela);
 
   // A metade de cada lado, para responder a unica pergunta que importa sobre
   // deriva: o erro no fim e maior que o do comeco?
   const meio = Math.floor(pontos.length / 2);
-  const primeira = medirErro(l, base, l.anomaliaMediaGraus, pontos.slice(0, meio), JD0);
-  const segunda = medirErro(l, base, l.anomaliaMediaGraus, pontos.slice(meio), JD0);
+  const primeira = medirErro(l, base, l.anomaliaMediaGraus, pontos.slice(0, meio), JD0, posicaoDaTela);
+  const segunda = medirErro(l, base, l.anomaliaMediaGraus, pontos.slice(meio), JD0, posicaoDaTela);
 
   relatorio.push({
     chave: l.chave,
@@ -71,7 +71,7 @@ for (const l of dados.luas) {
   });
 
   for (const dias of [0, 1234.5, 9496.5, 14610]) {
-    const [x, y, z] = posicao(l, base, dias, l.anomaliaMediaGraus);
+    const [x, y, z] = posicaoDaTela(l, base, dias, l.anomaliaMediaGraus);
     amarras.push({ chave: l.chave, dias, xKm: x, yKm: y, zKm: z });
   }
 

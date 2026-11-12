@@ -63,6 +63,9 @@ describe('o catalogo', () => {
   });
 });
 
+/** As luas propagadas por elementos medios. A da Terra sai da serie de Meeus. */
+const DE_KEPLER = LUAS.filter((l) => l.chave !== 'lua');
+
 describe('a propagacao', () => {
   it('e determinista: o mesmo dia devolve o mesmo ponto', () => {
     for (const l of LUAS) {
@@ -75,7 +78,7 @@ describe('a propagacao', () => {
   });
 
   it('a distancia ao planeta fica entre periastro e apoastro', () => {
-    for (const l of LUAS) {
+    for (const l of DE_KEPLER) {
       const periodo = 360 / l.taxaDaAnomaliaMediaGrausDia;
       let menor = Infinity;
       let maior = 0;
@@ -92,7 +95,7 @@ describe('a propagacao', () => {
   });
 
   it('uma volta completa volta ao mesmo lugar', () => {
-    for (const l of LUAS) {
+    for (const l of DE_KEPLER) {
       const periodo = 360 / l.taxaDaAnomaliaMediaGrausDia;
       const a = p();
       const b = p();
@@ -118,13 +121,14 @@ describe('a propagacao', () => {
 
     const v = p();
     let maiorZ = 0;
-    const periodo = 360 / lua.taxaDaAnomaliaMediaGrausDia;
-    for (let k = 0; k < 400; k++) {
-      posicaoDaLua(lua, lua.base, (k / 400) * periodo, v);
+    for (let k = 0; k < 800; k++) {
+      posicaoDaLua(lua, lua.base, 9496.5 + k * 0.5, v);
       maiorZ = Math.max(maiorZ, Math.abs(v[2]) / Math.hypot(v[0], v[1], v[2]));
     }
-    // sen(5,16 graus) = 0,0900.
-    expect(Math.asin(maiorZ) * (180 / Math.PI)).toBeCloseTo(lua.inclinacaoGraus, 1);
+    // A inclinacao media e 5,145 graus e oscila uns 0,15 com o Sol.
+    const maior = Math.asin(maiorZ) * (180 / Math.PI);
+    expect(maior).toBeGreaterThan(4.95);
+    expect(maior).toBeLessThan(5.35);
   });
 
   it('as luas de Urano orbitam num plano quase perpendicular a ecliptica', () => {
@@ -289,7 +293,9 @@ describe('a implementacao da tela e a da medicao sao a mesma', () => {
     expect(deriva.amarras.length, 'a ferramenta nao gravou pontos de amarra').toBeGreaterThan(40);
 
     const v = p();
-    for (const a of deriva.amarras) {
+    // A Lua da Terra sai de `luaMeeus.ts`, que a ferramenta importa direto: ha
+    // uma implementacao so, e nada para amarrar.
+    for (const a of deriva.amarras.filter((x) => x.chave !== 'lua')) {
       const lua = LUAS.find((l) => l.chave === a.chave)!;
       expect(lua, a.chave).toBeDefined();
       posicaoDaLua(lua, lua.base, a.dias, v);

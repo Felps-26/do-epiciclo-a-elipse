@@ -278,9 +278,11 @@ export const HONESTIDADE = {
       'tela, recebem luz e projetam sombra, e não puxam nada — inclusive não puxam o planeta que ' +
       'orbitam.\n\n' +
       'O erro disso foi medido, contra a efeméride do JPL, num intervalo de vinte anos que o ' +
-      'modelo nunca viu ao ser construído: vai de 456 km em Deimos a 52.636 km em Tritão, ' +
-      'e a Lua fica em 15.293 km. Ele não cresce com o tempo — é um desvio limitado, feito dos ' +
-      'empurrões periódicos que um modelo de duas massas não tem. A sombra que a Lua projeta ' +
+      'modelo nunca viu ao ser construído: vai de 456 km em Deimos a 52.636 km em Tritão. Ele ' +
+      'não cresce com o tempo — é um desvio limitado, feito dos empurrões periódicos que um ' +
+      'modelo de duas massas não tem. A Lua da Terra é a exceção: ela sai de uma série com os ' +
+      '120 termos principais da teoria lunar (Meeus, capítulo 47), que acompanha esses ' +
+      'empurrões; com os elementos médios ela errava 15.293 km. A sombra que a Lua projeta ' +
       'sobre a Terra é consequência geométrica da iluminação, e com esse erro ela não serve para ' +
       'prever um eclipse.\n\n' +
 

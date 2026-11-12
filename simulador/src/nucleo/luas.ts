@@ -9,7 +9,8 @@
  * O preco e que a posicao vem de elementos medios com taxas seculares, e erra. O
  * erro foi medido em 2020–2040, janela que o gerador dos dados nunca viu, e e
  * publicado corpo a corpo, de 456 km em Deimos a 52.636 km em Tritao. Nao cresce:
- * sao os termos periodicos que um modelo de duas massas nao tem.
+ * sao os termos periodicos que um modelo de duas massas nao tem. A Lua da Terra,
+ * que e a que se ve de perto, sai da serie de Meeus (`luaMeeus.ts`).
  *
  * As luas sao cinematicas: leem o tempo e devolvem uma posicao, sem entrar em
  * `forcas.ts` nem alterar o estado. Inserir a decima quarta nao muda um bit da
@@ -17,10 +18,13 @@
  */
 import type { BaseDoPlano, ElementosDeLua } from '../contratos/lua.ts';
 import { resolverKepler } from './kepler.ts';
+import { posicaoDaLuaMeeus } from './luaMeeus.ts';
 import { doPlanoParaEcliptica } from './planoDeReferencia.ts';
 import { UA_KM } from './unidades.ts';
 
 const GRAU = Math.PI / 180;
+/** J2000,0: a epoca dos elementos de `luas.json`, de onde `dias` e contado. */
+const JD_DA_EPOCA_DOS_ELEMENTOS = 2451545.0;
 
 /**
  * Posicao da lua em UA, relativa ao centro do planeta, na ecliptica J2000. `dias`
@@ -33,6 +37,10 @@ export function posicaoDaLua(
   dias: number,
   saida: [number, number, number],
 ): void {
+  if (el.chave === 'lua') {
+    posicaoDaLuaMeeus(JD_DA_EPOCA_DOS_ELEMENTOS + dias, saida);
+    return;
+  }
   const M = (el.anomaliaMediaGraus + el.taxaDaAnomaliaMediaGrausDia * dias) * GRAU;
   const no = (el.noGraus + el.taxaDoNoGrausDia * dias) * GRAU;
   const w = (el.periastroGraus + el.taxaDoPeriastroGrausDia * dias) * GRAU;

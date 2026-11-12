@@ -15,6 +15,9 @@
  * modelo: qualquer ajuste linear forca residuo sem componente linear DENTRO da
  * janela ajustada, e medir ali e medir o proprio ajuste.
  */
+import { posicaoDaLuaMeeus } from '../src/nucleo/luaMeeus.ts';
+import { UA_KM } from '../src/nucleo/unidades.ts';
+
 const HORIZONS = 'https://ssd.jpl.nasa.gov/api/horizons.api';
 const EPS = (23.4392911 * Math.PI) / 180;
 export const GRAU = Math.PI / 180;
@@ -129,12 +132,24 @@ export function posicao(l, base, dias, m0Graus) {
   return l.plano === 'ecliptic' ? noPlano : paraEcliptica(base, noPlano);
 }
 
+/**
+ * A posicao que a tela desenha. A Lua da Terra sai da serie de Meeus, importada
+ * do proprio nucleo (o Node 22 le TypeScript): uma implementacao so, sem copia.
+ * `dias` conta de J2000, como em `posicao`.
+ */
+export function posicaoDaTela(l, base, dias, m0Graus) {
+  if (l.chave !== 'lua') return posicao(l, base, dias, m0Graus);
+  const v = [0, 0, 0];
+  posicaoDaLuaMeeus(2451545 + dias, v);
+  return [v[0] * UA_KM, v[1] * UA_KM, v[2] * UA_KM];
+}
+
 /** Erro maximo e rms em km, contra uma serie de vetores do Horizons. */
-export function medirErro(l, base, m0, pontos, jd0) {
+export function medirErro(l, base, m0, pontos, jd0, propagar = posicao) {
   let maximo = 0;
   let soma = 0;
   for (const [jd, x, y, z] of pontos) {
-    const p = posicao(l, base, jd - jd0, m0);
+    const p = propagar(l, base, jd - jd0, m0);
     const d = Math.hypot(p[0] - x, p[1] - y, p[2] - z);
     if (d > maximo) maximo = d;
     soma += d * d;
