@@ -65,6 +65,8 @@ O desenho usa WebGPU por padrão; `?render=webgl2` força WebGL2.
 | Posições contra a efeméride do JPL | abaixo de 0,5% da distância ao Sol em ±100 anos (Mercúrio é o pior caso) | `nucleo/efemeride.test.ts` |
 | Interpolação entre passos de meio dia | 0,09 km em Mercúrio | `nucleo/hermite.test.ts` |
 | Posição das luas | de 456 km (Deimos) a 52.636 km (Tritão), em 2020–2040, janela que o gerador não viu | `nucleo/luas.test.ts` |
+| Posição da Lua (série de Meeus) | 20 km no máximo, na mesma janela | `ferramentas/conferir_luas.mjs` |
+| Precisão alta (passo de 0,125 dia, com relatividade) | Mercúrio a 64 km do JPL em +10 anos, contra 14.365 km no padrão | `nucleo/precisao.test.ts` |
 | Energia total | oscila, não cresce | "Mostrar dados técnicos" na tela |
 
 O erro de posição é medido em cinco datas (±1, ±10 e ±100 anos), não em varredura contínua.

@@ -287,7 +287,8 @@ export const HONESTIDADE = {
       'não cresce com o tempo — é um desvio limitado, feito dos empurrões periódicos que um ' +
       'modelo de duas massas não tem. A Lua da Terra é a exceção: ela sai de uma série com os ' +
       '120 termos principais da teoria lunar (Meeus, capítulo 47), que acompanha esses ' +
-      'empurrões; com os elementos médios ela errava 15.293 km.\n\n' +
+      'empurrões: no mesmo intervalo ela erra no máximo 20 km, contra 15.293 km com os ' +
+      'elementos médios.\n\n' +
 
       'O lado noturno não é preto. Ele recebe 14% da luz do meio-dia, e é a mesma luz, com ' +
       'um mínimo — não uma segunda lâmpada. Sem isso, aproximar-se de um planeta pelo lado ' +

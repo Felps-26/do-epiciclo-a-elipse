@@ -293,9 +293,7 @@ describe('a implementacao da tela e a da medicao sao a mesma', () => {
     expect(deriva.amarras.length, 'a ferramenta nao gravou pontos de amarra').toBeGreaterThan(40);
 
     const v = p();
-    // A Lua da Terra sai de `luaMeeus.ts`, que a ferramenta importa direto: ha
-    // uma implementacao so, e nada para amarrar.
-    for (const a of deriva.amarras.filter((x) => x.chave !== 'lua')) {
+    for (const a of deriva.amarras) {
       const lua = LUAS.find((l) => l.chave === a.chave)!;
       expect(lua, a.chave).toBeDefined();
       posicaoDaLua(lua, lua.base, a.dias, v);
