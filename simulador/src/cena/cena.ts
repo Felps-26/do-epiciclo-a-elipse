@@ -10,7 +10,7 @@ import { corDoCorpo } from '../dados/cores.ts';
 import { MAXIMO_DE_CORPOS_CRIADOS } from '../nucleo/guardas.ts';
 import { LUAS } from '../dados/luas.ts';
 import { posicoesDesenhadas } from './posicoesDesenhadas.ts';
-import { atenuacaoDasLinhas, foco as calcularFoco } from './escala/foco.ts';
+import { atenuacaoDasLinhas, focoDaCena } from './escala/foco.ts';
 import {
   Color,
   NoToneMapping,
@@ -192,6 +192,8 @@ export function criarCena(
   /** A coroa do Sol. Criada junto com o corpo dele, logo abaixo. */
   let coroa: Mesh | null = null;
 
+  /** Reaproveitado a cada quadro pelo foco: o raio real de cada corpo, em UA. */
+  const raiosReaisUa: number[] = [];
   const naCena: CorpoNaCena[] = corpos.map((c) => {
     const cor = COR_INICIAL[c.chave] ?? [160, 160, 160];
     const montado = montarCorpo(
@@ -734,11 +736,10 @@ export function criarCena(
       // O foco. Calculado aqui porque e aqui que `dists[i]` e `c.raioKm`
       // ja existem, e em RAIOS REAIS — ver `escala/foco.ts` para por que o raio
       // desenhado seria a escolha obvia e errada.
-      focoDoQuadro = 0;
-      if (opcoes.alvoDaCamera) {
-        const k = naCena.findIndex((c) => c.chave === opcoes.alvoDaCamera);
-        if (k >= 0) focoDoQuadro = calcularFoco(dists[k]!, naCena[k]!.raioKm / UA_KM);
-      }
+      raiosReaisUa.length = naCena.length;
+      for (let i = 0; i < naCena.length; i++) raiosReaisUa[i] = naCena[i]!.raioKm / UA_KM;
+      const k = opcoes.alvoDaCamera ? naCena.findIndex((c) => c.chave === opcoes.alvoDaCamera) : -1;
+      focoDoQuadro = focoDaCena(dists, raiosReaisUa, k);
       const atenuacao = atenuacaoDasLinhas(focoDoQuadro);
 
       // As fitas vivem num grupo ancorado no SOL: assim a geometria so muda

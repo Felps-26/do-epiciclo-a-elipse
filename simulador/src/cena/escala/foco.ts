@@ -90,3 +90,20 @@ export function tetoComDiscos(f: number, tetoBase: number, raiosPx: readonly num
   const discos = raiosPx.filter((r) => r >= DISCO_PX).length;
   return Math.min(tetoBase, Math.max(tetoDeRotulos(f, tetoBase), discos));
 }
+
+/**
+ * O foco da cena. Com um corpo seguido, e o dele; sem nenhum, e o do corpo mais
+ * focado pela posicao da camera. Antes so o modo contava: aproximar com a roda ate
+ * Saturno encher a tela deixava as elipses e os aneis de distancia em opacidade cheia,
+ * cruzando o planeta como retas.
+ */
+export function focoDaCena(
+  distanciasUa: ArrayLike<number>,
+  raiosReaisUa: readonly number[],
+  indiceDoAlvo: number,
+): number {
+  if (indiceDoAlvo >= 0) return foco(distanciasUa[indiceDoAlvo]!, raiosReaisUa[indiceDoAlvo]!);
+  let maior = 0;
+  for (let i = 0; i < raiosReaisUa.length; i++) maior = Math.max(maior, foco(distanciasUa[i]!, raiosReaisUa[i]!));
+  return maior;
+}

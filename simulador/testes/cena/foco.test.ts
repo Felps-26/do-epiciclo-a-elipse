@@ -137,3 +137,17 @@ describe('o teto de rótulos', () => {
     }
   });
 });
+
+describe('o foco sem corpo seguido (#21)', () => {
+  it('aproximar com a roda até um corpo encher a tela esmaece as linhas', async () => {
+    const { focoDaCena, atenuacaoDasLinhas } = await import('@cena/escala/foco.ts');
+    const raios = [0.00465, 0.000389];
+    // Sem alvo, a 3 raios de Saturno: foco pleno, linhas apagadas.
+    expect(focoDaCena([9.5, 0.000389 * 3], raios, -1)).toBe(1);
+    expect(atenuacaoDasLinhas(focoDaCena([9.5, 0.000389 * 3], raios, -1))).toBe(0);
+    // Longe de tudo: nada muda.
+    expect(focoDaCena([31.5, 30], raios, -1)).toBe(0);
+    // Com alvo, vale o do alvo, como antes.
+    expect(focoDaCena([0.00465 * 3, 30], raios, 1)).toBe(0);
+  });
+});
