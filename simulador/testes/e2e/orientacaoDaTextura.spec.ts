@@ -128,10 +128,19 @@ async function olharDe(pagina: Page, alvo: string, de: string): Promise<void> {
     },
     [alvo, de],
   );
-  await pagina.waitForTimeout(900);
+  await assentar(pagina);
+}
+
+/** Espera a cena parar de mudar: texturas chegando e exposição andando. Com
+ * renderização por software, um tempo fixo não basta. */
+async function assentar(pagina: Page): Promise<void> {
+  await pagina.waitForTimeout(300);
+  await pagina.waitForFunction(() => window.__assentou?.() === true, undefined, { timeout: 60_000 });
+  await pagina.waitForTimeout(600);
 }
 
 test.beforeEach(async ({ page }) => {
+  test.setTimeout(180_000);
   await page.setViewportSize({ width: 900, height: 900 });
   await abrir(page);
   await expect(page.getByRole('banner')).toBeVisible();
@@ -141,7 +150,7 @@ test.beforeEach(async ({ page }) => {
   await page.getByRole('radio', { name: 'Só elas' }).click();
   await page.getByRole('option', { name: /^Lua/ }).click();
   await page.keyboard.press('4');
-  await page.waitForFunction(() => window.__assentou?.() === true, undefined, { timeout: 20000 });
+  await page.waitForFunction(() => window.__assentou?.() === true, undefined, { timeout: 60_000 });
   await page.getByRole('button', { name: 'Esconder painel' }).click();
   await page.waitForTimeout(300);
 });
@@ -157,7 +166,7 @@ test('da Terra vê-se a face PRÓXIMA da Lua, e do outro lado a oculta', async (
     window.__camera!.azimute += Math.PI;
     window.__camera!.elevacao *= -1;
   });
-  await page.waitForTimeout(1500);
+  await assentar(page);
   const oculta = await fracaoDeMar(page, 'lua');
 
   // Medido: 0,53 na face próxima e 0,29 na oculta. O limiar fica no meio, com
