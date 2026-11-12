@@ -94,3 +94,37 @@ describe('a escada de velocidade', () => {
     expect(mudarVelocidade(30, -1, 7300)).toBe(5);
   });
 });
+
+describe('TDB para UTC', () => {
+  it('1º de janeiro de 2026, 0h TDB, é 31/12/2025 23:58:51 UTC, a menos de 1 s', async () => {
+    const { utcDeJulianoTdb, instanteCurto, tdbMenosUtcSegundos } = await import('@nucleo/relogio.ts');
+    expect(instanteCurto(utcDeJulianoTdb(2461041.5))).toBe('31/12/2025 23:58:51');
+    expect(Math.abs(tdbMenosUtcSegundos(2461041.5) - 69.184)).toBeLessThan(1);
+  });
+
+  it('segue os segundos intercalares de 1972 até hoje', async () => {
+    const { tdbMenosUtcSegundos, julianoDeData } = await import('@nucleo/relogio.ts');
+    expect(tdbMenosUtcSegundos(julianoDeData(1980, 6, 1))).toBeCloseTo(32.184 + 19, 9);
+    expect(tdbMenosUtcSegundos(julianoDeData(2016, 12, 31))).toBeCloseTo(32.184 + 36, 9);
+    expect(tdbMenosUtcSegundos(julianoDeData(2017, 1, 1))).toBeCloseTo(32.184 + 37, 9);
+  });
+
+  it('fora da era dos segundos intercalares usa ΔT, sem saltar na emenda', async () => {
+    const { tdbMenosUtcSegundos, julianoDeData } = await import('@nucleo/relogio.ts');
+    // ΔT em 1950 vale cerca de 29 s; em 1900, cerca de -3 s.
+    expect(tdbMenosUtcSegundos(julianoDeData(1950, 1, 1))).toBeCloseTo(29.1, 0);
+    expect(tdbMenosUtcSegundos(julianoDeData(1900, 1, 1))).toBeCloseTo(-2.8, 0);
+    // Em 2126 o valor cresce para minutos, continuo com o de 2026.
+    const em2026 = tdbMenosUtcSegundos(julianoDeData(2026, 12, 31));
+    const em2027 = tdbMenosUtcSegundos(julianoDeData(2027, 1, 2));
+    expect(Math.abs(em2027 - em2026)).toBeLessThan(1);
+    expect(tdbMenosUtcSegundos(julianoDeData(2126, 1, 1))).toBeGreaterThan(120);
+  });
+
+  it('julianoDeData é o inverso de dataDeJulianoTdb', async () => {
+    const { julianoDeData } = await import('@nucleo/relogio.ts');
+    expect(julianoDeData(2000, 1, 1.5)).toBe(2451545);
+    expect(julianoDeData(2026, 1, 1)).toBe(2461041.5);
+    expect(dataDeJulianoTdb(julianoDeData(1957, 10, 4))).toEqual({ ano: 1957, mes: 10, dia: 4 });
+  });
+});

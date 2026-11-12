@@ -21,6 +21,7 @@ import { CamadaDeRotulos } from '../../rotulos/camada.tsx';
 import type { RotuloColocado } from '../../rotulos/posicionador.ts';
 import { PRECISAO, RODAPE } from '../../dados/textos.ts';
 import { PASSO_PADRAO_DIAS } from '../../nucleo/integrador.ts';
+import { instanteCurto, instanteDeJuliano, utcDeJulianoTdb } from '../../nucleo/relogio.ts';
 import type { DadosTecnicos } from '../../contratos/instantaneo.ts';
 
 interface Props {
@@ -122,6 +123,12 @@ export function Visor({
           vista transforma "integrador simplético" de palavra em observacao. */}
       {e.opcoes.tecnico && tecnicos ? (
         <dl class="tecnico" aria-label="Dados técnicos">
+          <div>
+            <dt>instante</dt>
+            <dd>
+              {instanteCurto(instanteDeJuliano(tecnicos.jdTdb))} TDB, ~{instanteCurto(utcDeJulianoTdb(tecnicos.jdTdb))} UTC
+            </dd>
+          </div>
           <div>
             <dt>passo</dt>
             <dd>{tecnicos.passoDias.toString().replace('.', ',')} dia</dd>

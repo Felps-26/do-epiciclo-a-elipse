@@ -624,6 +624,7 @@ const laco = criarLaco({
       ),
       corpos: e.n,
       backend,
+      jdTdb: catalogo.jdEpoca + e.tDias,
     };
     publicacaoAnterior = agora;
 

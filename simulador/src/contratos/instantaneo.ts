@@ -118,4 +118,6 @@ export interface DadosTecnicos {
   desvioDeMomentoAngular: number;
   corpos: number;
   backend: string;
+  /** O instante desenhado, em dia juliano TDB. A tela escreve tambem o UTC aproximado. */
+  jdTdb: number;
 }

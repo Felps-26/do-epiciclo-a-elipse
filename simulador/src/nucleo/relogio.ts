@@ -47,6 +47,105 @@ export function dataDeJulianoTdb(jd: number): DataCivil {
   return { ano, mes, dia };
 }
 
+/** Data civil -> dia juliano da meia-noite (Meeus 7.1), calendario gregoriano. */
+export function julianoDeData(ano: number, mes: number, dia: number): number {
+  const y = mes > 2 ? ano : ano - 1;
+  const m = mes > 2 ? mes : mes + 12;
+  const a = Math.floor(y / 100);
+  const b = 2 - a + Math.floor(a / 4);
+  return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + dia + b - 1524.5;
+}
+
+// TAI − UTC desde 1972 (IERS). Depois do ultimo, presume-se que nao ha outro.
+// prettier-ignore
+const SALTOS: readonly (readonly [number, number, number])[] = [
+  [1972, 1, 10], [1972, 7, 11], [1973, 1, 12], [1974, 1, 13], [1975, 1, 14], [1976, 1, 15],
+  [1977, 1, 16], [1978, 1, 17], [1979, 1, 18], [1980, 1, 19], [1981, 7, 20], [1982, 7, 21],
+  [1983, 7, 22], [1985, 7, 23], [1988, 1, 24], [1990, 1, 25], [1991, 1, 26], [1992, 7, 27],
+  [1993, 7, 28], [1994, 7, 29], [1996, 1, 30], [1997, 7, 31], [1999, 1, 32], [2006, 1, 33],
+  [2009, 1, 34], [2012, 7, 35], [2015, 7, 36], [2017, 1, 37],
+];
+const JD_DOS_SALTOS = SALTOS.map(([a, m]) => julianoDeData(a, m, 1));
+/** Ate onde os segundos intercalares sao conhecidos; depois disso, estimativa. */
+const ANO_DO_ULTIMO_DADO = 2026;
+
+/** ΔT de Espenak e Meeus (NASA, 2006), em segundos, por trechos. */
+function deltaTEspenakMeeus(ano: number): number {
+  const u = (ano - 1820) / 100;
+  if (ano < 1900 || ano >= 2150) return -20 + 32 * u * u;
+  if (ano < 1920) {
+    const t = ano - 1900;
+    return -2.79 + 1.494119 * t - 0.0598939 * t ** 2 + 0.0061966 * t ** 3 - 0.000197 * t ** 4;
+  }
+  if (ano < 1941) {
+    const t = ano - 1920;
+    return 21.2 + 0.84493 * t - 0.0761 * t ** 2 + 0.0020936 * t ** 3;
+  }
+  if (ano < 1961) {
+    const t = ano - 1950;
+    return 29.07 + 0.407 * t - t ** 2 / 233 + t ** 3 / 2547;
+  }
+  if (ano < 1986) {
+    const t = ano - 1975;
+    return 45.45 + 1.067 * t - t ** 2 / 260 - t ** 3 / 718;
+  }
+  if (ano < 2005) {
+    const t = ano - 2000;
+    return 63.86 + 0.3345 * t - 0.060374 * t ** 2 + 0.0017275 * t ** 3 + 0.000651814 * t ** 4 + 0.00002373599 * t ** 5;
+  }
+  if (ano < 2050) {
+    const t = ano - 2000;
+    return 62.92 + 0.32217 * t + 0.005589 * t ** 2;
+  }
+  return -20 + 32 * u * u - 0.5628 * (2150 - ano);
+}
+
+/**
+ * TDB − UTC em segundos (TDB e TT diferem menos de 2 ms).
+ *
+ * De 1972 ate o ultimo dado, e exato: 32,184 s mais os segundos intercalares.
+ * Antes, o ΔT de Espenak e Meeus (UTC ~ UT1). Depois, o ultimo valor exato mais a
+ * subida que os mesmos polinomios preveem, para nao saltar na emenda.
+ */
+export function tdbMenosUtcSegundos(jdTdb: number): number {
+  const ano = 2000 + (jdTdb - 2451545) / 365.25;
+  if (jdTdb < JD_DOS_SALTOS[0]!) return deltaTEspenakMeeus(ano);
+  if (ano > ANO_DO_ULTIMO_DADO) {
+    const ultimo = 32.184 + SALTOS[SALTOS.length - 1]![2];
+    return ultimo + deltaTEspenakMeeus(ano) - deltaTEspenakMeeus(ANO_DO_ULTIMO_DADO);
+  }
+  let k = 0;
+  while (k + 1 < JD_DOS_SALTOS.length && jdTdb >= JD_DOS_SALTOS[k + 1]!) k++;
+  return 32.184 + SALTOS[k]![2];
+}
+
+export interface InstanteCivil extends DataCivil {
+  hora: number;
+  minuto: number;
+  segundo: number;
+}
+
+/** Data e hora de um dia juliano, arredondadas ao segundo, sem mudar de escala. */
+export function instanteDeJuliano(jd: number): InstanteCivil {
+  const segundosNoDia = Math.round((jd + 0.5 - Math.floor(jd + 0.5)) * 86400);
+  // 86400 arredondado pertence ao dia seguinte.
+  const virou = segundosNoDia === 86400;
+  const data = dataDeJulianoTdb(virou ? Math.floor(jd + 0.5) + 0.5 : jd);
+  const s = virou ? 0 : segundosNoDia;
+  return { ...data, hora: Math.floor(s / 3600), minuto: Math.floor((s % 3600) / 60), segundo: s % 60 };
+}
+
+/** O instante em UTC aproximado, para quando a tela mostra hora e nao so a data. */
+export function utcDeJulianoTdb(jdTdb: number): InstanteCivil {
+  return instanteDeJuliano(jdTdb - tdbMenosUtcSegundos(jdTdb) / 86400);
+}
+
+/** "31/12/2025 23:58:51". */
+export function instanteCurto(i: InstanteCivil): string {
+  const p = (n: number): string => String(n).padStart(2, '0');
+  return `${dataCurta(i)} ${p(i.hora)}:${p(i.minuto)}:${p(i.segundo)}`;
+}
+
 export function dataDaSimulacao(jdEpoca: number, tDias: number): DataCivil {
   return dataDeJulianoTdb(jdEpoca + tDias);
 }
