@@ -228,8 +228,8 @@
       "url": "https://astrogeology.usgs.gov/",
       "licenca": "domínio público (produto do governo dos EUA)",
       "resolucao_da_fonte": "Io_GalileoSSI-Voyager_Global_Mosaic_ClrMerge_1km.tif",
-      "longitude_da_fonte": "positiva para oeste, de -180° a 180°",
-      "nota_da_projecao": "a imagem entregue foi espelhada e/ou girada para a convenção do programa: longitude 0 no meio, crescendo para leste"
+      "longitude_da_fonte": "positiva para leste, de -180° a 180°",
+      "nota_da_projecao": "as amostras correm para leste; a imagem entregue foi girada, quando preciso, para a convenção do programa: longitude 0 no meio, crescendo para leste"
     },
     {
       "corpo": "europa",
@@ -240,13 +240,13 @@
         "8k": "texturas/8k/europa.jpg"
       },
       "procedencia": "imagem",
-      "nota": "mosaico global Voyager + Galileo SSI, 500 m/pixel, em tons de cinza — a cor do Galileo não cobre o globo inteiro",
+      "nota": "mosaico global Voyager + Galileo SSI, 500 m/pixel, em tons de cinza — a cor do Galileo não cobre o globo inteiro; as partes que nenhuma sonda fotografou estão pintadas com a cor média da lua",
       "fonte": "USGS Astrogeology Science Center",
       "url": "https://astrogeology.usgs.gov/",
       "licenca": "domínio público (produto do governo dos EUA)",
       "resolucao_da_fonte": "Europa_Voyager_GalileoSSI_global_mosaic_500m.tif",
-      "longitude_da_fonte": "positiva para oeste, de 0° a 360°",
-      "nota_da_projecao": "a imagem entregue foi espelhada e/ou girada para a convenção do programa: longitude 0 no meio, crescendo para leste"
+      "longitude_da_fonte": "positiva para leste, de 0° a 360°",
+      "nota_da_projecao": "as amostras correm para leste; a imagem entregue foi girada, quando preciso, para a convenção do programa: longitude 0 no meio, crescendo para leste"
     },
     {
       "corpo": "ganimedes",
@@ -257,13 +257,13 @@
         "8k": "texturas/8k/ganymede.jpg"
       },
       "procedencia": "imagem",
-      "nota": "mosaico global colorido Voyager + Galileo SSI, 1.435 m/pixel",
+      "nota": "mosaico global colorido Voyager + Galileo SSI, 1.435 m/pixel; as partes que nenhuma sonda fotografou estão pintadas com a cor média da lua",
       "fonte": "USGS Astrogeology Science Center",
       "url": "https://astrogeology.usgs.gov/",
       "licenca": "domínio público (produto do governo dos EUA)",
       "resolucao_da_fonte": "Ganymede_Voyager_GalileoSSI_Global_ClrMosaic_1435m.tif",
       "longitude_da_fonte": "positiva para leste, de 0° a 360°",
-      "nota_da_projecao": "a imagem entregue foi espelhada e/ou girada para a convenção do programa: longitude 0 no meio, crescendo para leste"
+      "nota_da_projecao": "as amostras correm para leste; a imagem entregue foi girada, quando preciso, para a convenção do programa: longitude 0 no meio, crescendo para leste"
     },
     {
       "corpo": "calisto",
@@ -274,13 +274,13 @@
         "8k": "texturas/8k/callisto.jpg"
       },
       "procedencia": "imagem",
-      "nota": "mosaico global Voyager + Galileo SSI, 1 km/pixel, em tons de cinza",
+      "nota": "mosaico global Voyager + Galileo SSI, 1 km/pixel, em tons de cinza; as partes que nenhuma sonda fotografou estão pintadas com a cor média da lua",
       "fonte": "USGS Astrogeology Science Center",
       "url": "https://astrogeology.usgs.gov/",
       "licenca": "domínio público (produto do governo dos EUA)",
       "resolucao_da_fonte": "Callisto_Voyager_GalileoSSI_global_mosaic_1km.tif",
-      "longitude_da_fonte": "positiva para oeste, de 0° a 360°",
-      "nota_da_projecao": "a imagem entregue foi espelhada e/ou girada para a convenção do programa: longitude 0 no meio, crescendo para leste"
+      "longitude_da_fonte": "positiva para leste, de 0° a 360°",
+      "nota_da_projecao": "as amostras correm para leste; a imagem entregue foi girada, quando preciso, para a convenção do programa: longitude 0 no meio, crescendo para leste"
     },
     {
       "corpo": "encelado",
@@ -291,13 +291,13 @@
         "8k": "texturas/8k/enceladus.jpg"
       },
       "procedencia": "imagem",
-      "nota": "mosaico global Cassini ISS, 110 m/pixel",
+      "nota": "mosaico global Cassini ISS, 110 m/pixel; as partes que nenhuma sonda fotografou estão pintadas com a cor média da lua",
       "fonte": "USGS Astrogeology Science Center",
       "url": "https://astrogeology.usgs.gov/",
       "licenca": "domínio público (produto do governo dos EUA)",
       "resolucao_da_fonte": "Enceladus_Cassini_mosaic_global_110m.tif",
-      "longitude_da_fonte": "positiva para oeste, de -180° a 180°",
-      "nota_da_projecao": "a imagem entregue foi espelhada e/ou girada para a convenção do programa: longitude 0 no meio, crescendo para leste"
+      "longitude_da_fonte": "positiva para leste, de -180° a 180°",
+      "nota_da_projecao": "as amostras correm para leste; a imagem entregue foi girada, quando preciso, para a convenção do programa: longitude 0 no meio, crescendo para leste"
     }
   ]
 }

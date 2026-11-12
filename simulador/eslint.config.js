@@ -52,7 +52,11 @@ export default tseslint.config(
       parserOptions: {
         // Os arquivos de configuracao na raiz sao JS puro e nao estao no tsconfig. Sem isto o
         // lint com tipos recusa cada um deles com "not found by the project service".
-        projectService: { allowDefaultProject: ['*.js', '*.mjs', '*.cjs', 'ferramentas/*.mjs'] },
+        // O teto padrao e 8 arquivos; as ferramentas ja passam disso.
+        projectService: {
+          allowDefaultProject: ['*.js', '*.mjs', '*.cjs', 'ferramentas/*.mjs'],
+          maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 16,
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },

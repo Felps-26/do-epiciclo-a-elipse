@@ -34,6 +34,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { preencherSemDado } from './mosaicos.mjs';
 
 const executar = promisify(execFile);
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -132,32 +133,36 @@ const MAPAS = [
   {
     corpo: 'io', papel: 'albedo', fonte: 'usgs', procedencia: 'imagem',
     arquivo: 'io', origem: 'Io_GalileoSSI-Voyager_Global_Mosaic_ClrMerge_1km.tif',
-    longitude: { direcao: 'oeste', minima: -180 },
+    longitude: { direcao: 'leste', minima: -180 },
     nota: 'mosaico global Galileo SSI + Voyager, 1 km/pixel, com a cor do Galileo mesclada sobre o mosaico em tons de cinza',
   },
   {
     corpo: 'europa', papel: 'albedo', fonte: 'usgs', procedencia: 'imagem',
     arquivo: 'europa', origem: 'Europa_Voyager_GalileoSSI_global_mosaic_500m.tif',
-    longitude: { direcao: 'oeste', minima: 0 },
-    nota: 'mosaico global Voyager + Galileo SSI, 500 m/pixel, em tons de cinza — a cor do Galileo não cobre o globo inteiro',
+    longitude: { direcao: 'leste', minima: 0 },
+    preencher: true,
+    nota: 'mosaico global Voyager + Galileo SSI, 500 m/pixel, em tons de cinza — a cor do Galileo não cobre o globo inteiro; as partes que nenhuma sonda fotografou estão pintadas com a cor média da lua',
   },
   {
     corpo: 'ganimedes', papel: 'albedo', fonte: 'usgs', procedencia: 'imagem',
     arquivo: 'ganymede', origem: 'Ganymede_Voyager_GalileoSSI_Global_ClrMosaic_1435m.tif',
     longitude: { direcao: 'leste', minima: 0 },
-    nota: 'mosaico global colorido Voyager + Galileo SSI, 1.435 m/pixel',
+    preencher: true,
+    nota: 'mosaico global colorido Voyager + Galileo SSI, 1.435 m/pixel; as partes que nenhuma sonda fotografou estão pintadas com a cor média da lua',
   },
   {
     corpo: 'calisto', papel: 'albedo', fonte: 'usgs', procedencia: 'imagem',
     arquivo: 'callisto', origem: 'Callisto_Voyager_GalileoSSI_global_mosaic_1km.tif',
-    longitude: { direcao: 'oeste', minima: 0 },
-    nota: 'mosaico global Voyager + Galileo SSI, 1 km/pixel, em tons de cinza',
+    longitude: { direcao: 'leste', minima: 0 },
+    preencher: true,
+    nota: 'mosaico global Voyager + Galileo SSI, 1 km/pixel, em tons de cinza; as partes que nenhuma sonda fotografou estão pintadas com a cor média da lua',
   },
   {
     corpo: 'encelado', papel: 'albedo', fonte: 'usgs', procedencia: 'imagem',
     arquivo: 'enceladus', origem: 'Enceladus_Cassini_mosaic_global_110m.tif',
-    longitude: { direcao: 'oeste', minima: -180 },
-    nota: 'mosaico global Cassini ISS, 110 m/pixel',
+    longitude: { direcao: 'leste', minima: -180 },
+    preencher: true,
+    nota: 'mosaico global Cassini ISS, 110 m/pixel; as partes que nenhuma sonda fotografou estão pintadas com a cor média da lua',
   },
 ];
 
@@ -234,15 +239,17 @@ async function reduzir(origem, destino, largura, formato = 'jpeg') {
  * do Solar System Scope: **longitude 0 no MEIO da imagem, crescendo para LESTE
  * a direita**. E o que se ve no mapa da Terra, com o Atlantico no centro.
  *
- * Os mosaicos do USGS nao seguem uma convencao so — cada um declara a sua no
- * rotulo PDS que vem ao lado, e os cinco que este projeto usa nao concordam
- * entre si:
+ * Os mosaicos do USGS nao comecam todos no mesmo meridiano. O rotulo PDS de
+ * quatro deles diz PositiveWest, mas isso e a convencao com que a longitude e
+ * ESCRITA; as amostras da imagem correm para leste nos cinco. Espelhar por causa
+ * do rotulo deixava Io, Europa, Calisto e Encelado invertidos: a cratera Valhalla,
+ * a 56° O, caia em 61° L (`texturasDasLuas.test.ts` mede isso).
  *
- *     Io          PositiveWest, de −180 a +180   → so espelhar
- *     Europa      PositiveWest, de 0 a 360       → espelhar e girar meia volta
- *     Calisto     PositiveWest, de 0 a 360       → espelhar e girar meia volta
- *     Encelado    PositiveWest, de −180 a +180   → so espelhar
- *     Ganimedes   PositiveEast, de 0 a 360       → so girar meia volta
+ *     Io          de −180 a +180   → nada
+ *     Encelado    de −180 a +180   → nada
+ *     Europa      de 0 a 360       → girar meia volta
+ *     Calisto     de 0 a 360       → girar meia volta
+ *     Ganimedes   de 0 a 360       → girar meia volta
  *
  * Ignorar isso nao daria erro nenhum: daria uma lua bonita com os continentes
  * no lugar errado, espelhada, e ninguem notaria ate comparar com uma foto. E
@@ -270,11 +277,12 @@ function transformacaoDaLongitude(longitude) {
  * alguem trocasse o material — e o custo de gravar certo e pago uma vez, aqui,
  * numa ferramenta que roda a mao.
  */
-async function ajustarLongitude(caminho, { espelhar, girar }) {
-  if (!espelhar && girar === 0) return;
+async function ajustarLongitude(caminho, { espelhar, girar }, preencher = false) {
+  if (!espelhar && girar === 0 && !preencher) return;
   const { PNG } = await import('pngjs');
   const png = PNG.sync.read(await readFile(caminho));
   const { width: L, height: A, data } = png;
+  if (preencher) preencherSemDado(data, L, A, 4);
   const saida = Buffer.alloc(data.length);
   const desloca = Math.round(girar * L);
   for (let y = 0; y < A; y++) {
@@ -325,10 +333,10 @@ async function main() {
         // formato sem perda que o `pngjs` deste projeto ja sabe ler, e
         // reescrever JPEG duas vezes empilharia artefato de compressao sobre
         // artefato.
-        if (ajuste.espelhar || ajuste.girar !== 0) {
+        if (ajuste.espelhar || ajuste.girar !== 0 || mapa.preencher) {
           const temporario = `${alvo}.png`;
           await reduzir(cache, temporario, n.largura, 'png');
-          await ajustarLongitude(temporario, ajuste);
+          await ajustarLongitude(temporario, ajuste, mapa.preencher);
           await reduzir(temporario, alvo, n.largura);
           await rm(temporario);
         } else {
@@ -356,7 +364,7 @@ async function main() {
         ? {
             longitude_da_fonte: `${mapa.longitude.direcao === 'oeste' ? 'positiva para oeste' : 'positiva para leste'}, de ${mapa.longitude.minima}° a ${mapa.longitude.minima + 360}°`,
             nota_da_projecao:
-              'a imagem entregue foi espelhada e/ou girada para a convenção do programa: longitude 0 no meio, crescendo para leste',
+              'as amostras correm para leste; a imagem entregue foi girada, quando preciso, para a convenção do programa: longitude 0 no meio, crescendo para leste',
           }
         : {}),
     });
