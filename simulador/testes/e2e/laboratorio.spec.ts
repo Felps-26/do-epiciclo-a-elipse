@@ -139,3 +139,19 @@ test('Esc fecha a lâmina e o painel lateral volta', async ({ page }) => {
   await expect(page.locator('.lab')).toHaveCount(0);
   await expect(page.locator('.lateral')).toBeVisible();
 });
+
+test('o laboratório abre do estado inicial com no máximo 2 cliques', async ({ page }) => {
+  await abrir(page);
+  await expect(page.getByRole('banner')).toBeVisible();
+  // Um clique, sem corpo escolhido: abre com a Terra.
+  await page.getByRole('button', { name: 'Epiciclos de Fourier' }).click();
+  await expect(page.locator('.lab')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.lab')).toHaveCount(0);
+
+  // Dois cliques: escolher Marte na lista e pedir os epiciclos dele.
+  await page.getByRole('option', { name: /^Marte/ }).click();
+  await page.getByRole('button', { name: 'Epiciclos deste corpo' }).first().click();
+  await expect(page.locator('.lab')).toBeVisible();
+  await expect(page.locator('.lab__grafico')).toHaveAttribute('aria-label', /Marte/);
+});

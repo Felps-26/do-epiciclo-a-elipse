@@ -104,6 +104,19 @@ export function Lateral({ corpos, leitura, criados }: Props): JSX.Element {
 
         <ListaDeCorpos corpos={corpos} luas={e.luas} />
 
+        {/* O laboratorio e o centro do artigo: fica a um clique, e nao no fim
+            de uma gaveta. Sem corpo com orbita escolhido, abre com a Terra. */}
+        <div class="lateral__botoes lateral__laboratorio">
+          <Botao
+            onClick={() => {
+              if (leitura?.tipo !== 'orbita') despachar({ tipo: 'selecionar', chave: 'terra' });
+              despachar({ tipo: 'abrir-tela', tela: 'laboratorio' });
+            }}
+          >
+            {leitura?.tipo === 'orbita' ? BOTOES.epiciclosDesteCorpo : BOTOES.epiciclos}
+          </Botao>
+        </div>
+
         <div class="lateral__botoes">
           <Botao onClick={() => despachar({ tipo: 'abrir-tela', tela: 'tabela-de-dados' })}>
             Ver como tabela

@@ -164,6 +164,11 @@ export function Ficha({ leitura, criados }: Props): JSX.Element {
         >
           {e.acompanhado === leitura.chave ? 'Soltar' : 'Acompanhar'}
         </Botao>
+        {leitura.tipo === 'orbita' ? (
+          <Botao onClick={() => despachar({ tipo: 'abrir-tela', tela: 'laboratorio' })}>
+            {BOTOES.epiciclosDesteCorpo}
+          </Botao>
+        ) : null}
       </div>
 
       {!aberta ? null : (

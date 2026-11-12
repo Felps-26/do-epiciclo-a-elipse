@@ -79,6 +79,8 @@ export const BOTOES = {
   fecharFicha: 'Fechar a ficha inteira',
   atividades: 'Atividades',
   laboratorio: 'Explorar a matemática',
+  epiciclosDesteCorpo: 'Epiciclos deste corpo',
+  epiciclos: 'Epiciclos de Fourier',
   fechar: 'Fechar',
   entendi: 'Entendi',
   pular: 'Pular orientação',
