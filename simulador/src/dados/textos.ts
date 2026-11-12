@@ -277,16 +277,17 @@ export const HONESTIDADE = {
       'instante desenhado, e não o último passo calculado.\n\n' +
       'As luas não são integradas junto com os planetas. A posição delas vem de um modelo de ' +
       'órbita aproximado, com os elementos médios do JPL, e não da efeméride. Elas aparecem na ' +
-      'tela, recebem luz e projetam sombra, e não puxam nada — inclusive não puxam o planeta que ' +
-      'orbitam.\n\n' +
+      'tela e recebem luz, e não puxam nada — inclusive não puxam o planeta que orbitam.\n\n' +
+      'Nenhum corpo projeta sombra sobre outro: uma lua que passa na frente de Júpiter não deixa ' +
+      'mancha no disco, e uma lua atrás do planeta continua acesa. A única sombra entre corpos ' +
+      'é a dos anéis de Saturno sobre o planeta e a do planeta sobre os anéis. Por isso a tela ' +
+      'não mostra eclipses.\n\n' +
       'O erro disso foi medido, contra a efeméride do JPL, num intervalo de vinte anos que o ' +
       'modelo nunca viu ao ser construído: vai de 456 km em Deimos a 52.636 km em Tritão. Ele ' +
       'não cresce com o tempo — é um desvio limitado, feito dos empurrões periódicos que um ' +
       'modelo de duas massas não tem. A Lua da Terra é a exceção: ela sai de uma série com os ' +
       '120 termos principais da teoria lunar (Meeus, capítulo 47), que acompanha esses ' +
-      'empurrões; com os elementos médios ela errava 15.293 km. A sombra que a Lua projeta ' +
-      'sobre a Terra é consequência geométrica da iluminação, e com esse erro ela não serve para ' +
-      'prever um eclipse.\n\n' +
+      'empurrões; com os elementos médios ela errava 15.293 km.\n\n' +
 
       'O lado noturno não é preto. Ele recebe 14% da luz do meio-dia, e é a mesma luz, com ' +
       'um mínimo — não uma segunda lâmpada. Sem isso, aproximar-se de um planeta pelo lado ' +

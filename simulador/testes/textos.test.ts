@@ -182,3 +182,11 @@ describe('fichas', () => {
     }
   });
 });
+
+describe('sombras (#35)', () => {
+  it('a Ajuda não diz que as luas projetam sombra, porque nenhum corpo projeta em outro', () => {
+    const tudo = Object.values(HONESTIDADE).map((b) => b.texto).join('\n');
+    expect(tudo).not.toMatch(/projetam sombra|sombra que a Lua projeta/);
+    expect(tudo).toContain('Nenhum corpo projeta sombra sobre outro');
+  });
+});
