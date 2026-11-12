@@ -73,6 +73,14 @@ export function ControlesDaCamera(): JSX.Element {
         </Botao>
         <Botao onClick={() => despachar({ tipo: 'vista-superior' })}>Alinhar ao plano (T)</Botao>
       </div>
+
+      {/* De perto a camera chega de lado, com o terminador a vista. A fase cheia
+          continua a um clique. */}
+      {e.modo === 'perto' || e.acompanhado ? (
+        <div class="painel__linha">
+          <Botao onClick={() => despachar({ tipo: 'lado-iluminado' })}>Lado iluminado</Botao>
+        </div>
+      ) : null}
     </section>
   );
 }

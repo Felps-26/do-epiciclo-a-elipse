@@ -73,3 +73,38 @@ export function enquadrar(
     }
   }
 }
+
+/** Angulo Sol-corpo-camera ao chegar perto: o terminador fica a vista. */
+export const FASE_DE_CHEGADA_GRAUS = 75;
+/** Fase do "Lado iluminado": quase cheia, sem pôr a camera na reta do Sol. */
+export const FASE_DO_LADO_ILUMINADO_GRAUS = 30;
+export const ELEVACAO_DE_CHEGADA = 0.2;
+
+/**
+ * O azimute que poe a camera, na elevacao dada, a `faseGraus` do Sol vista do corpo.
+ * Ha dois, um de cada lado da direcao do Sol; fica o mais perto do azimute atual,
+ * para o voo girar o menos possivel. Chegar pelo lado do Sol mostrava o disco em fase
+ * cheia, e o terminador, que a penumbra foi feita para mostrar, ficava fora de vista.
+ */
+export function azimuteParaFase(
+  alvo: readonly [number, number, number],
+  sol: readonly [number, number, number],
+  azimuteAtual: number,
+  elevacao: number,
+  faseGraus: number,
+): number {
+  const dx = sol[0] - alvo[0];
+  const dy = sol[1] - alvo[1];
+  const dz = sol[2] - alvo[2];
+  const azSol = Math.atan2(dy, dx);
+  const elSol = Math.atan2(dz, Math.hypot(dx, dy));
+  // cos(fase) = cos(el) cos(elSol) cos(delta) + sen(el) sen(elSol)
+  const c =
+    (Math.cos((faseGraus * Math.PI) / 180) - Math.sin(elevacao) * Math.sin(elSol)) /
+    (Math.cos(elevacao) * Math.cos(elSol));
+  const delta = Math.acos(Math.min(1, Math.max(-1, c)));
+  const distancia = (a: number): number => Math.abs(Math.atan2(Math.sin(a - azimuteAtual), Math.cos(a - azimuteAtual)));
+  const a1 = azSol + delta;
+  const a2 = azSol - delta;
+  return distancia(a1) <= distancia(a2) ? a1 : a2;
+}

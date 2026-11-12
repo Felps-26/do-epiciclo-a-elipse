@@ -33,6 +33,7 @@ export type Efeito =
   | { tipo: 'deslocar-camera'; fracaoX: number; fracaoY: number }
   | { tipo: 'ajustar-zoom'; fator: number; ancora?: readonly [number, number] }
   | { tipo: 'vista-superior' }
+  | { tipo: 'lado-iluminado' }
   /**
    * Pede ou devolve a tela cheia do navegador. O reducer e puro e nao ve o DOM, e
    * `requestFullscreen` precisa rodar no mesmo turno do gesto da pessoa, senao o
@@ -152,6 +153,10 @@ export function aplicar(ui: EstadoUi, acao: Acao, ctx: Contexto): Resultado {
         texto: e.vista === 'ortografica' ? 'Vista de cima, sem perspectiva.' : 'Vista em perspectiva.',
       });
       efeitos.push({ tipo: 'salvar-preferencias' });
+      break;
+
+    case 'lado-iluminado':
+      efeitos.push({ tipo: 'lado-iluminado' });
       break;
 
     case 'vista-superior':

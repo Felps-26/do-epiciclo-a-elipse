@@ -233,3 +233,26 @@ describe('tamanho honesto', () => {
     expect(ampliacao(RAIO_TERRA_UA, fatorDeProjecao(45, 647) / (31.5), false)).toBeGreaterThan(1);
   });
 });
+
+describe('chegar perto com o terminador à vista (B4)', () => {
+  it('o azimute escolhido dá o ângulo de fase pedido, de qualquer lado', async () => {
+    const { azimuteParaFase } = await import('@cena/camera/enquadramento.ts');
+    const { criarCamera, posicaoDaCamera } = await import('@cena/camera/cameraOrbital.ts');
+    const casos: [[number, number, number], [number, number, number], number][] = [
+      [[1, 0, 0], [0, 0, 0], 0],
+      [[-0.3, 0.95, 0.01], [0.004, -0.002, 0], 2.5],
+      [[5.1, -1.2, -0.1], [0, 0, 0], -1],
+      [[0.2, -9.5, 0.4], [0.001, 0.003, 0], Math.PI],
+    ];
+    for (const [alvo, sol, atual] of casos) {
+      for (const fase of [30, 60, 75, 90]) {
+        const az = azimuteParaFase(alvo, sol, atual, 0.2, fase);
+        const cam = posicaoDaCamera(criarCamera({ pivo: alvo, raio: 1e-4, azimute: az, elevacao: 0.2 }));
+        const u = [sol[0] - alvo[0], sol[1] - alvo[1], sol[2] - alvo[2]];
+        const v = [cam[0] - alvo[0], cam[1] - alvo[1], cam[2] - alvo[2]];
+        const cos = (u[0]! * v[0]! + u[1]! * v[1]! + u[2]! * v[2]!) / (Math.hypot(...u) * Math.hypot(...v));
+        expect(Math.acos(cos) * (180 / Math.PI), `fase ${fase} em ${alvo.join(',')}`).toBeCloseTo(fase, 6);
+      }
+    }
+  });
+});

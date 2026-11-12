@@ -73,6 +73,8 @@ export type Acao =
   | { tipo: 'trocar-modo'; modo: Modo }
   | { tipo: 'alternar-vista' }
   | { tipo: 'vista-superior' }
+  /** Poe a camera do lado do Sol, com o corpo quase em fase cheia. */
+  | { tipo: 'lado-iluminado' }
   | { tipo: 'ajustar-zoom'; fator: number; ancora?: readonly [number, number] }
   | { tipo: 'orbitar-camera'; azimute: number; elevacao: number }
   /**
@@ -170,7 +172,7 @@ export type TipoDeAcao = Acao['tipo'];
  */
 export const TIPOS_DE_ACAO = [
   'alternar-pausa', 'mudar-velocidade', 'avancar-passo', 'voltar-ao-inicio',
-  'trocar-modo', 'alternar-vista', 'vista-superior', 'ajustar-zoom',
+  'trocar-modo', 'alternar-vista', 'vista-superior', 'lado-iluminado', 'ajustar-zoom',
   'orbitar-camera', 'deslocar-camera', 'acompanhar',
   'selecionar', 'comparar-com', 'mudar-comparacao', 'inverter-comparacao',
   'alternar-opcao', 'definir-escala-visual', 'definir-luas', 'ciclar-luas',

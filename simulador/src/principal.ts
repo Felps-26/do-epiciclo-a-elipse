@@ -50,7 +50,13 @@ import {
   posicaoDaCamera,
 } from './cena/camera/cameraOrbital.ts';
 import { avancarTransicao, iniciarTransicao, type Transicao } from './cena/camera/transicao.ts';
-import { enquadrar } from './cena/camera/enquadramento.ts';
+import {
+  ELEVACAO_DE_CHEGADA,
+  FASE_DE_CHEGADA_GRAUS,
+  FASE_DO_LADO_ILUMINADO_GRAUS,
+  azimuteParaFase,
+  enquadrar,
+} from './cena/camera/enquadramento.ts';
 import { comprimirPonto, comprimirRaio } from './cena/escala/escalaVisual.ts';
 import { ELEVACAO_MAXIMA } from './cena/camera/cameraOrbital.ts';
 import type { AnaliseDoSolNaTela, DadosTecnicos, LeituraDeCorpo } from './contratos/instantaneo.ts';
@@ -763,7 +769,29 @@ aoEfeito((efeito) => {
       break;
     case 'enquadrar': {
       const destino = enquadrar(efeito.modo, posicaoDoSol(), dadosDoAlvo(efeito.alvo), emMaquete());
-      transicao = iniciarTransicao(destino.raio, camera.azimute, camera.elevacao);
+      if (efeito.modo === 'perto' && efeito.alvo && efeito.alvo !== 'sol') {
+        const azimute = azimuteParaFase(
+          destino.pivo,
+          posicaoDoSol(),
+          camera.azimute,
+          ELEVACAO_DE_CHEGADA,
+          FASE_DE_CHEGADA_GRAUS,
+        );
+        transicao = iniciarTransicao(destino.raio, azimute, ELEVACAO_DE_CHEGADA);
+      } else {
+        transicao = iniciarTransicao(destino.raio, camera.azimute, camera.elevacao);
+      }
+      break;
+    }
+    case 'lado-iluminado': {
+      const azimute = azimuteParaFase(
+        camera.pivo,
+        posicaoDoSol(),
+        camera.azimute,
+        ELEVACAO_DE_CHEGADA,
+        FASE_DO_LADO_ILUMINADO_GRAUS,
+      );
+      transicao = iniciarTransicao(camera.raio, azimute, ELEVACAO_DE_CHEGADA);
       break;
     }
     case 'capturar-tela':
