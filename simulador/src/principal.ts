@@ -546,11 +546,10 @@ const laco = criarLaco({
     // Os rotulos sao recalculados a ~30 Hz: a ancoragem acompanha o quadro
     // (o `transform` de cada placa), mas resolver a colocacao sessenta vezes
     // por segundo nao muda nada que se enxergue.
-    if (cena && estadoUi.opcoes.rotulos && quadroDeRotulo++ % 2 === 0) {
-      rotulos = calcularRotulos(estadoUi);
-    } else if (!estadoUi.opcoes.rotulos && rotulos.length > 0) {
-      rotulos = [];
-      desvioDosRotulos.clear();
+    // Sem os nomes, sobra o anel do corpo acompanhado, que nao e nome.
+    if (cena && quadroDeRotulo++ % 2 === 0) {
+      const todos = calcularRotulos(estadoUi);
+      rotulos = estadoUi.opcoes.rotulos ? todos : todos.filter((r) => r.papel === 'acompanhado');
     }
 
     // Ancoragem por quadro. A colocacao acima decide o lado de cada nome, e a 30 Hz

@@ -2,7 +2,7 @@
 
 Sete dimensões foram varridas em paralelo, e cada achado foi depois atacado por um segundo revisor que tentou refutá-lo lendo o código e os testes. Dos 40 achados, 35 resistiram à refutação. Esta lista guarda o resumo de cada um: título, gravidade, arquivo, estado e o efeito visível. O estado vem do rastreador original e pode estar atrasado em relação ao `CONTRATO.md`, que registra como corrigidos vários itens daqui marcados como abertos.
 
-Estado em 12/11/2026: 23 corrigidos; 1 aberto visto na tela (1 média); 14 abertos por leitura de código (10 média, 1 baixa, 3 sem gravidade registrada); 2 abertos não testados (#6, #36; 1 alta, 1 sem gravidade registrada).
+Estado em 12/11/2026: 24 corrigidos; 1 aberto visto na tela (1 média); 13 abertos por leitura de código (10 média, 1 baixa, 2 sem gravidade registrada); 2 abertos não testados (#6, #36; 1 alta, 1 sem gravidade registrada).
 
 "Por leitura de código" quer dizer que o defeito foi encontrado no código, mas não foi observado na tela na triagem de 06/11/2026; por isso o número real de defeitos visíveis pode ser menor.
 
@@ -49,4 +49,4 @@ Um achado refutado não deve ser reaberto sem ler o motivo da refutação.
 | 37 | Com o foco pleno o teto de rótulos cai para 1 e as luas que enchem a tela ficam sem nome |  |  | aberto (por leitura de código em 06/11/2026) | Duplo clique em Júpiter: as quatro galileanas sobem grandes e separadas na tela e nenhuma delas tem nome — sobra só a placa 'Júpiter'. |
 | 38 | Nenhuma dourada fotografa uma lua com textura: os cinco mosaicos do USGS entraram sem nenhuma imagem que os fiscalize |  |  | aberto (por leitura de código em 06/11/2026) | As únicas douradas que contêm Io, Europa, Ganimedes, Calisto e Encélado são jupiter-e-as-galileanas e saturno-e-os-aneis, e ali cada lua é um pontinho: medido nas imagens, Calisto sai com 9,8 px de diâmetro, Europa com 10,5 e… |
 | 39 | O fundo da Via Láctea fica preso no nível 2K, com o 8K entregue e nunca usado |  |  | corrigido (12/11/2026, testes/cena/fluxoDeCor.test.ts) | O panorama da Via Láctea fica visivelmente borrado e com os pixels alongados quando o campo de visão fecha — no modo imersivo e em qualquer aproximação, a faixa da galáxia vira manchas macias sem estrela nenhuma resolvida,… |
-| 40 | Desligar "Nomes dos corpos" apaga o anel tracejado do corpo acompanhado |  |  | aberto (por leitura de código em 06/11/2026) | Com a opcao desligada, a cena perde a UNICA marca de qual corpo a camera esta seguindo: o anel tracejado desaparece junto com os nomes. |
+| 40 | Desligar "Nomes dos corpos" apaga o anel tracejado do corpo acompanhado |  |  | corrigido (12/11/2026, testes/camada.test.ts) | Com a opcao desligada, a cena perde a UNICA marca de qual corpo a camera esta seguindo: o anel tracejado desaparece junto com os nomes. |

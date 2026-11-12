@@ -78,4 +78,10 @@ describe('a camada de rotulos', () => {
       expect(no.style.transform).toBe('translate(1px, 2px)');
     }
   });
+
+  it('sem os nomes, o anel do corpo acompanhado continua (#40)', () => {
+    const arvore = nos(CamadaDeRotulos({ rotulos: ROTULOS, comNomes: false }));
+    expect(arvore.filter((n) => n.props['data-anel'] === 'marte').length).toBe(1);
+    expect(arvore.filter((n) => n.props['data-rotulo'] !== undefined).length).toBe(0);
+  });
 });

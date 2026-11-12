@@ -38,7 +38,17 @@ function nascerEm(transform: string) {
   };
 }
 
-export function CamadaDeRotulos({ rotulos }: { rotulos: readonly RotuloColocado[] }): JSX.Element {
+/**
+ * `comNomes` falso deixa so o anel do acompanhado: ele e a unica marca de qual corpo
+ * a camera segue, e nao e um nome.
+ */
+export function CamadaDeRotulos({
+  rotulos,
+  comNomes = true,
+}: {
+  rotulos: readonly RotuloColocado[];
+  comNomes?: boolean;
+}): JSX.Element {
   return (
     <div class="rotulos" aria-hidden="true">
       {/* O anel do corpo acompanhado. TRACEJADO, e nao de outra cor: sobre uma
@@ -62,7 +72,7 @@ export function CamadaDeRotulos({ rotulos }: { rotulos: readonly RotuloColocado[
             />
           );
         })}
-      {rotulos.map((r) =>
+      {(comNomes ? rotulos : []).map((r) =>
         r.forma === 'ponto' ? (
           <span
             key={r.chave}
