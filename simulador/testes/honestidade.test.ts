@@ -291,7 +291,7 @@ const AMARRAS: Amarra[] = [
   },
   {
     bloco: 'naoInclui',
-    afirma: /A relatividade geral também não/,
+    afirma: /A relatividade geral fica de fora na precisão padrão/,
     exige: [
       {
         // O corpo do yoshida4, ate o `};` que o fecha, nao pode chamar a correcao.
@@ -306,6 +306,11 @@ const AMARRAS: Amarra[] = [
         arquivo: 'src/nucleo/integrador.ts',
         contem: /export const PADRAO = yoshida4;/,
         porque: 'a correcao pos-newtoniana e opcional; o integrador do programa tem de ser o sem ela',
+      },
+      {
+        arquivo: 'src/nucleo/integrador.ts',
+        contem: /alta: \{ integrador: yoshida4Relativistico, passoDias: PASSO_CURTO_DIAS \}/,
+        porque: 'a frase promete que a precisao alta inclui o termo e encurta o passo',
       },
     ],
   },

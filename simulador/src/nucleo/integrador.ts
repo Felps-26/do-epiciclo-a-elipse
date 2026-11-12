@@ -127,6 +127,18 @@ export const yoshida4Relativistico: Integrador = {
 export const INTEGRADORES: Record<string, Integrador> = { yoshida4, leapfrog, yoshida4Relativistico };
 export const PADRAO = yoshida4;
 
+export type Precisao = 'padrao' | 'alta';
+
+/**
+ * Os dois modos que a interface oferece. O alto custa quatro vezes mais passos
+ * por dia simulado e leva Mercurio de cerca de 14.000 km para menos de 100 km
+ * de erro em dez anos contra o JPL; o teto de velocidade cai na mesma proporcao.
+ */
+export const PRECISOES: Record<Precisao, { integrador: Integrador; passoDias: number }> = {
+  padrao: { integrador: yoshida4, passoDias: PASSO_PADRAO_DIAS },
+  alta: { integrador: yoshida4Relativistico, passoDias: PASSO_CURTO_DIAS },
+};
+
 /** Os pesos, expostos so para o teste que os confere contra a formula. */
 export const PESOS_YOSHIDA = PESOS;
 

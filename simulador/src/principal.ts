@@ -35,7 +35,7 @@ import { distancia as distanciaEscrita } from './interface/formato.ts';
 import { criarSistemaVivo, type Recusa } from './app/sistemaVivo.ts';
 import { LUAS } from './dados/luas.ts';
 import { posicaoDesenhada } from './app/posicaoDesenhada.ts';
-import { PASSO_CURTO_DIAS } from './nucleo/integrador.ts';
+import { PASSO_CURTO_DIAS, PRECISOES } from './nucleo/integrador.ts';
 import { ENCONTROS, RECUSAS } from './dados/textos.ts';
 import { criarCena, type Cena } from './cena/cena.ts';
 import {
@@ -157,6 +157,8 @@ let tDiasAnterior = 0;
 let dtDeTempoSimulado = 0;
 let atrasado = false;
 let encontro: string | null = null;
+/** O passo curto pedido pelo sandbox sobrevive a voltar da precisao alta para a padrao. */
+let passoCurtoPedido = false;
 let larguraPx = 800;
 let alturaPx = 600;
 let rotulos: RotuloColocado[] = [];
@@ -817,8 +819,16 @@ aoEfeito((efeito) => {
       break;
 
     case 'usar-passo-curto':
+      passoCurtoPedido = true;
       laco.simulador.dtDias = PASSO_CURTO_DIAS;
       break;
+
+    case 'definir-precisao': {
+      const p = PRECISOES[efeito.precisao];
+      laco.simulador.integrador = p.integrador;
+      laco.simulador.dtDias = efeito.precisao === 'padrao' && passoCurtoPedido ? PASSO_CURTO_DIAS : p.passoDias;
+      break;
+    }
     default:
       break;
   }

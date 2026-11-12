@@ -19,6 +19,7 @@ import type {
   Vista,
 } from '../contratos/ids.ts';
 import type { Predefinicao } from '../contratos/sandbox.ts';
+import type { Precisao } from '../nucleo/integrador.ts';
 
 export type { EscalaVisual, Modo, ModoDeUso, VisibilidadeDasLuas, Vista };
 export type { Predefinicao };
@@ -138,6 +139,7 @@ export type Acao =
   | { tipo: 'desfazer' }
   | { tipo: 'restaurar-sistema' }
   | { tipo: 'usar-passo-curto' }
+  | { tipo: 'definir-precisao'; precisao: Precisao }
   /**
    * Resultado de uma mutacao, vindo de quem mexeu no sistema. `principal.ts` chama
    * `sistemaVivo`, recebe o veredito e despacha isto. O reducer e puro e nunca ve
@@ -176,6 +178,7 @@ export const TIPOS_DE_ACAO = [
   'abrir-tela', 'mostrar-dica', 'fechar',
   'trocar-modo-de-uso', 'escolher-predefinicao', 'mirar-colocacao', 'definir-velocidade',
   'criar-corpo', 'recusar-criacao', 'apagar-corpo', 'desfazer', 'restaurar-sistema', 'usar-passo-curto',
+  'definir-precisao',
   'sistema-mudou',
   'capturar-tela', 'avisar',
 ] as const satisfies readonly TipoDeAcao[];

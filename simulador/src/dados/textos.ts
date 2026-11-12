@@ -353,8 +353,10 @@ export const HONESTIDADE = {
       'massa; isso é outro programa. Quando um corpo criado passa perto de outro, a física encurta ' +
       'o passo para 0,125 dia até ele se afastar, e a tela avisa. Corpos criados sem massa ' +
       'atravessam uns aos outros.\n\n' +
-      'A relatividade geral também não. O efeito maior seria girar lentamente a órbita de ' +
-      'Mercúrio, 43 segundos de arco por século.\n\n' +
+      'A relatividade geral fica de fora na precisão padrão. O efeito maior seria girar ' +
+      'lentamente a órbita de Mercúrio, 43 segundos de arco por século. Com os dados técnicos ' +
+      'ligados dá para escolher a precisão alta, que inclui esse termo e usa um passo quatro ' +
+      'vezes menor.\n\n' +
       'Por isso os resultados se afastam devagar das medidas do JPL. Comparando com a efeméride ' +
       'de referência, o desvio fica abaixo de 0,5% da distância ao Sol ao longo de cem anos para ' +
       'frente ou para trás — Mercúrio é o caso mais difícil, com 0,45%. É uma simulação para ' +
@@ -388,6 +390,17 @@ export const ESCALA_FICHA =
   'maquete.\n\n' +
   'O desenho é que tem licenças, e cada uma aparece escrita na tela quando está ligada: o ' +
   'aumento dos corpos, a compressão das distâncias no modo maquete, e a exposição automática.';
+
+/** O seletor de precisao, que aparece com os dados tecnicos ligados. */
+export const PRECISAO = {
+  rotulo: 'Precisão da física',
+  opcoes: { padrao: 'Padrão', alta: 'Alta' },
+  ajuda:
+    'Padrão: passo de meio dia, sem relatividade; Mercúrio se afasta uns 14.000 km do JPL em dez ' +
+    'anos. Alta: passo de um oitavo de dia e o termo da relatividade geral; o mesmo desvio cai ' +
+    'para menos de 100 km, e o tempo corre no máximo a um quarto da velocidade.',
+  rodape: 'Precisão alta: passo de 0,125 dia, com relatividade; a velocidade máxima do tempo caiu para um quarto',
+} as const;
 
 export const RODAPE = {
   ampliado: 'Corpos desenhados maiores que o tamanho real',

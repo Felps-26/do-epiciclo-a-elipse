@@ -19,7 +19,7 @@ import { distancia } from '../formato.ts';
 import { despachar, ui } from '../estado.ts';
 import { CamadaDeRotulos } from '../../rotulos/camada.tsx';
 import type { RotuloColocado } from '../../rotulos/posicionador.ts';
-import { RODAPE } from '../../dados/textos.ts';
+import { PRECISAO, RODAPE } from '../../dados/textos.ts';
 import { PASSO_PADRAO_DIAS } from '../../nucleo/integrador.ts';
 import type { DadosTecnicos } from '../../contratos/instantaneo.ts';
 
@@ -171,7 +171,11 @@ export function Visor({
           baixo vazava pelo de cima e os dois ficavam ilegíveis.
           Numa coluna, cada um empurra o seguinte para baixo. */}
       <div class="visor__avisosDoTopo">
-        {passoDias !== PASSO_PADRAO_DIAS ? (
+        {e.precisao === 'alta' ? (
+          <p class="visor__passo" role="status">
+            {PRECISAO.rodape}
+          </p>
+        ) : passoDias !== PASSO_PADRAO_DIAS ? (
           <p class="visor__passo" role="status">
             {RODAPE.passoCurto}
           </p>

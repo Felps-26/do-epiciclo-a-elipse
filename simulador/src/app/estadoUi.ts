@@ -18,6 +18,7 @@ import type {
   Vista,
 } from './acoes.ts';
 import type { IdCorpo } from '../contratos/ids.ts';
+import type { Precisao } from '../nucleo/integrador.ts';
 
 export interface EstadoUi {
   pausado: boolean;
@@ -54,6 +55,8 @@ export interface EstadoUi {
     recusa: { texto: string; passoCurtoResolve: boolean } | null;
   };
   opcoes: Record<Opcao, boolean>;
+  /** Fica fora das preferencias, como o passo curto: e escolha da sessao. */
+  precisao: Precisao;
 }
 
 export const ESTADO_INICIAL: EstadoUi = {
@@ -88,6 +91,7 @@ export const ESTADO_INICIAL: EstadoUi = {
     tecnico: false,
     reduzirAnimacao: false,
   },
+  precisao: 'padrao',
 };
 
 /**

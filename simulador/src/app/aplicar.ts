@@ -20,6 +20,7 @@ import type { EstadoUi } from './estadoUi.ts';
 import { ESTADO_INICIAL } from './estadoUi.ts';
 import type { IdCorpo } from '../contratos/ids.ts';
 import type { Predefinicao } from '../contratos/sandbox.ts';
+import type { Precisao } from '../nucleo/integrador.ts';
 import { receitaDe } from '../dados/predefinicoes.ts';
 import { mudarVelocidade } from '../nucleo/relogio.ts';
 
@@ -56,7 +57,8 @@ export type Efeito =
   | { tipo: 'apagar-corpo'; chave: IdCorpo }
   | { tipo: 'desfazer' }
   | { tipo: 'restaurar-sistema' }
-  | { tipo: 'usar-passo-curto' };
+  | { tipo: 'usar-passo-curto' }
+  | { tipo: 'definir-precisao'; precisao: Precisao };
 
 export interface Contexto {
   /** Chaves dos corpos, na ordem do catalogo. Usada para ciclar a comparacao. */
@@ -437,6 +439,21 @@ export function aplicar(ui: EstadoUi, acao: Acao, ctx: Contexto): Resultado {
       e.selecionado = null;
       e.acompanhado = null;
       e.comparando = null;
+      break;
+
+    case 'definir-precisao':
+      if (e.precisao === acao.precisao) break;
+      e.precisao = acao.precisao;
+      efeitos.push({ tipo: 'definir-precisao', precisao: acao.precisao });
+      // Mesmo corte do passo curto: o teto medido cai a um quarto.
+      if (acao.precisao === 'alta') e.diasPorSegundo = Math.min(e.diasPorSegundo, ctx.tetoDiasPorSegundo / 4);
+      efeitos.push({
+        tipo: 'confirmar',
+        texto:
+          acao.precisao === 'alta'
+            ? 'Precisão alta: passo de um oitavo de dia, com relatividade.'
+            : 'Precisão padrão: passo de meio dia, sem relatividade.',
+      });
       break;
 
     case 'usar-passo-curto':

@@ -50,7 +50,8 @@ import { despachar, ui } from '../estado.ts';
 import type { LeituraDeCorpo } from '../../contratos/instantaneo.ts';
 import type { VisibilidadeDasLuas } from '../../contratos/ids.ts';
 import { PainelDeCriacao } from '../sandbox/PainelDeCriacao.tsx';
-import { AJUDA_OPCOES, BOTOES, LUAS_NA_TELA, OPCOES } from '../../dados/textos.ts';
+import { AJUDA_OPCOES, BOTOES, LUAS_NA_TELA, OPCOES, PRECISAO } from '../../dados/textos.ts';
+import type { Precisao } from '../../nucleo/integrador.ts';
 import type { Opcao } from '../../app/acoes.ts';
 
 interface Props {
@@ -69,6 +70,11 @@ const ESTADOS_DAS_LUAS: readonly { valor: VisibilidadeDasLuas; texto: string }[]
 const DO_DESENHO = ['orbitas', 'trilhas', 'rotulos', 'aneisDeDistancia', 'estrelas'] as const;
 /** Sobre quem lê, e não sobre a cena. */
 const DA_LEITURA = ['textoMaior', 'reduzirAnimacao', 'tecnico'] as const satisfies readonly Opcao[];
+
+const PRECISOES: readonly { valor: Precisao; texto: string }[] = [
+  { valor: 'padrao', texto: PRECISAO.opcoes.padrao },
+  { valor: 'alta', texto: PRECISAO.opcoes.alta },
+];
 
 export function Lateral({ corpos, leitura, criados }: Props): JSX.Element {
   const e = ui.value;
@@ -164,6 +170,17 @@ export function Lateral({ corpos, leitura, criados }: Props): JSX.Element {
               onAlternar={() => despachar({ tipo: 'alternar-opcao', opcao: o })}
             />
           ))}
+          {e.opcoes.tecnico ? (
+            <div class="lateral__precisao">
+              <GrupoSegmentado
+                rotulo={PRECISAO.rotulo}
+                opcoes={PRECISOES}
+                valor={e.precisao}
+                onEscolher={(v) => despachar({ tipo: 'definir-precisao', precisao: v })}
+              />
+              <p class="lateral__dica">{PRECISAO.ajuda}</p>
+            </div>
+          ) : null}
         </PainelRecolhivel>
 
         <PainelRecolhivel
