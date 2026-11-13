@@ -1,0 +1,141 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   A lista de corpos, em dois niveis
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* UMA coluna, e nao duas.
+   A lista era uma grade de duas colunas, que cabia nove corpos em cinco linhas.
+   Com as luas aninhadas embaixo do planeta, duas colunas nao tem como aninhar:
+   o grupo de Jupiter comecaria no meio de uma linha e acabaria no meio de outra,
+   e a indentacao — que e o que diz "estas quatro pertencem a esse" — nao teria
+   para onde apontar. Uma coluna custa altura, e a altura tem rolagem propria
+   logo abaixo. */
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  /* Rolagem propria: sem ela, com um grupo aberto a ficha do corpo escolhido
+     cairia abaixo da dobra exatamente no momento em que se escolhe o corpo —
+     e a lateral rolaria para longe da lista que se esta usando. O teto em
+     `vh` e nao em `rem` de proposito: com "Texto maior" a lista cresce junto
+     com o texto e comeria a ficha inteira. */
+  max-height: 46vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 0.15rem;
+}
+
+.lista__ramo {
+  display: contents;
+}
+
+.lista__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  cursor: pointer;
+  /* A borda so aparece quando ela significa algo. Antes todos os itens tinham
+     borda, e com trinta linhas isso vira uma grade de caixas em que o item
+     escolhido nao se destaca: ele tem a mesma borda dos outros, so de outra cor.
+     Sem borda de repouso, quem tem borda tem um papel. */
+  transition: background 120ms ease, border-color 120ms ease;
+}
+:root[data-reduzir-animacao='sim'] .lista__item {
+  transition: none;
+}
+.lista__item:hover {
+  background: var(--painel-alto);
+}
+
+/* O item escolhido: fundo, barra a esquerda E a letra "A" desenhada. Tres
+   sinais para a mesma informacao, porque nenhum deles pode ser so a cor. */
+.lista__item--a {
+  background: var(--painel-alto);
+  border-color: var(--acento);
+}
+.lista__item--a::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 0.35rem;
+  bottom: 0.35rem;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--acento);
+}
+.lista__item--b {
+  border-style: dashed;
+  border-color: var(--separador);
+}
+/* O acompanhado ganha o anel tracejado, o mesmo desenho que ele tem na cena.
+   Repetir a forma nos dois lugares e o que liga a linha da lista ao corpo
+   desenhado sem depender de a pessoa reparar na cor. */
+.lista__item--acompanhado {
+  outline: 1px dashed var(--separador);
+  outline-offset: 1px;
+}
+
+.lista__nome {
+  flex: 1;
+  font-size: 0.92rem;
+  /* Nome longo nao empurra as marcas para fora da linha. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lista__marca {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--texto-apagado);
+  flex: none;
+}
+.lista__marca--anel {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+/* O grupo de luas: recuo mais uma linha vertical que liga as filhas ao pai.
+   A linha e `--grade`, que e grafico e nao texto, e ela e redundante: o rotulo
+   acessivel de cada lua ja diz "lua", e o grupo tem `aria-label` escrito com a
+   contagem. Quem nao enxerga a linha nao perde nada. */
+.lista__grupo {
+  margin: 0.1rem 0 0.25rem 0.85rem;
+  padding-left: 0.7rem;
+  border-left: 1px solid var(--grade);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.lista__item--lua {
+  min-height: 2.2rem;
+  padding-block: 0.15rem;
+}
+.lista__item--lua .lista__nome {
+  font-size: 0.86rem;
+  color: var(--texto-fraco);
+}
+/* O nome da lua escolhida volta a cor cheia: ele passou a ser o assunto. */
+.lista__item--lua.lista__item--a .lista__nome {
+  color: var(--texto);
+}
+.lista__item--lua .ponto {
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-left: 0.1rem;
+}
+
+/* A contagem de luas na linha do planeta. `aria-hidden`, porque o rotulo
+   acessivel do item ja a diz por extenso — repetir daria "Júpiter, 4 luas,
+   4 luas". */
+.lista__contagem {
+  flex: none;
+  font-size: 0.74rem;
+  color: var(--texto-fraco);
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--grade);
+  border-radius: 999px;
+}

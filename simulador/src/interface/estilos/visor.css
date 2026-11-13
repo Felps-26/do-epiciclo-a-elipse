@@ -1,0 +1,127 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Visor
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.visor {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+.visor__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* A faixa de avisos do topo: uma coluna, centrada, com os três avisos em
+   fluxo normal dentro dela. Ver `Visor.tsx`. */
+.visor__avisosDoTopo {
+  position: absolute;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  /* Nada aqui rouba clique da cena: os avisos são leitura, e o único botão
+     dentro deles — "Voltar ao Sistema Solar" — reacende o ponteiro sozinho. */
+  pointer-events: none;
+  max-width: min(90%, 44rem);
+}
+.visor__avisosDoTopo .botao {
+  pointer-events: auto;
+}
+
+.visor__leitura {
+  position: absolute;
+  left: var(--gutter, 16px);
+  bottom: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  color: var(--texto-fraco);
+  font-size: 0.82rem;
+  pointer-events: none;
+}
+.visor__etiqueta {
+  color: var(--aviso);
+}
+
+/* O passo curto: mesma faixa do distintivo de sistema modificado, logo abaixo
+   dele. Os dois sao estados do programa, e nao leituras da cena. */
+.visor__passo {
+  margin: 0;
+  max-width: 34rem;
+  padding: 0.3rem 0.8rem;
+  text-align: center;
+  color: var(--aviso);
+  font-size: 0.82rem;
+  background: color-mix(in srgb, var(--sobreposicao) 82%, transparent);
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+/* O painel tecnico fica no canto de cima, a esquerda: e o unico lugar do
+   visor sem botao nem rotulo de corpo, e assim ele nao disputa espaco com a
+   regua de escala do rodape. `pointer-events: none` porque ele e leitura pura
+   — deixar um <dl> capturar clique tiraria o arrasto da camera de uma faixa
+   inteira da tela sem nada em troca. */
+.tecnico {
+  position: absolute;
+  top: 0.75rem;
+  left: var(--gutter, 16px);
+  margin: 0;
+  padding: 0.5rem 0.7rem;
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.15rem 0.8rem;
+  background: rgb(10 12 20 / 0.72);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.tecnico > div {
+  display: contents;
+}
+.tecnico dt {
+  color: var(--texto-fraco);
+}
+.tecnico dd {
+  margin: 0;
+  text-align: right;
+  color: var(--texto);
+}
+.visor__alerta {
+  margin: 0;
+  padding: 0.4rem 0.8rem;
+  background: var(--painel-alto);
+  color: var(--aviso);
+  border-radius: 8px;
+  font-size: 0.88rem;
+}
+.avisos {
+  position: absolute;
+  right: var(--gutter, 16px);
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-width: 24rem;
+  /* Leitura: o arrasto e o duplo clique da camera atravessam. */
+  pointer-events: none;
+}
+.avisos .botao {
+  pointer-events: auto;
+}
+.avisos__item {
+  margin: 0;
+  padding: 0.45rem 0.7rem;
+  background: var(--painel-alto);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  font-size: 0.88rem;
+}

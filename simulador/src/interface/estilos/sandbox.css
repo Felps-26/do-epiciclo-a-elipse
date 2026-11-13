@@ -1,0 +1,142 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Sandbox
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.criar {
+  margin-bottom: 1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--borda);
+}
+.criar__tipos {
+  display: grid;
+  gap: 0.3rem;
+  margin-bottom: 0.9rem;
+}
+/* Cada tipo é um botão com NOME E DESCRIÇÃO escritos. Uma fila de ícones
+   exigiria conhecer a convenção; "Gigante gasoso — do tamanho de Júpiter" não
+   exige nada. */
+.criar__tipo {
+  display: grid;
+  gap: 0.1rem;
+  text-align: left;
+  padding: 0.45rem 0.6rem;
+  background: var(--painel-alto);
+  color: var(--texto);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  font: inherit;
+  cursor: pointer;
+}
+.criar__tipo--ativo {
+  border-color: var(--acento);
+  /* A barra à esquerda é forma, e não só cor: quem não distingue o azul
+     continua vendo qual está escolhido. */
+  box-shadow: inset 3px 0 0 var(--acento);
+}
+.criar__nome {
+  font-weight: 500;
+}
+.criar__descricao {
+  color: var(--texto-fraco);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+.criar__mira {
+  margin: 0 0 0.9rem;
+  color: var(--acento);
+  font-size: 0.9rem;
+}
+.criar__campo {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+.criar__campo input[type='range'] {
+  width: 100%;
+  accent-color: var(--acento);
+}
+.criar__marcas {
+  display: flex;
+  justify-content: space-between;
+  color: var(--texto-apagado);
+  font-size: 0.74rem;
+}
+.criar__lista {
+  list-style: none;
+  margin: 0 0 0.6rem;
+  padding: 0;
+  font-size: 0.9rem;
+}
+.criar__lista li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.2rem 0;
+}
+
+/* No ALTO da cena, e não no rodapé.
+   Em baixo ele disputava espaço com os três botões da cena: sobrepunha-os o
+   bastante para o navegador recusar o clique no próprio botão de voltar — um
+   aviso com saída, e a saída inalcançável. */
+.visor__modificado {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: calc(100% - 2rem);
+  padding: 0.4rem 0.5rem 0.4rem 0.8rem;
+  background: rgb(10 12 20 / 0.86);
+  border: 1px solid var(--aviso);
+  border-radius: 10px;
+  color: var(--aviso);
+  font-size: 0.88rem;
+}
+
+/* A recusa fica ao lado do botão que a provocou, e carrega a saída junto.
+   Âmbar e com borda: ela não é um erro do programa, é um limite do cálculo, e
+   a diferença aparece na cor. */
+.criar__recusa {
+  margin: 0.6rem 0;
+  padding: 0.6rem 0.7rem;
+  background: rgb(255 196 92 / 0.08);
+  border: 1px solid var(--aviso);
+  border-radius: 8px;
+  font-size: 0.88rem;
+}
+.criar__recusa p {
+  margin: 0 0 0.5rem;
+  color: var(--texto);
+  line-height: 1.5;
+}
+
+/* O anel do corpo acompanhado, e os distintivos A e B.
+   TRACEJADO, e não de outra cor: sobre uma cena que vai do preto ao branco um
+   contorno que só muda de cor some na metade dos fundos. O tracejado sobrevive
+   aos dois, e é a mesma disciplina do "✓" desenhado no alternador. */
+.rotulos__anel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 2px dashed var(--acento);
+  border-radius: 50%;
+  opacity: 0.9;
+  will-change: transform;
+}
+.rotulos__marca {
+  margin-left: 0.3rem;
+  padding: 0 0.22rem;
+  border-radius: 3px;
+  background: var(--texto);
+  color: var(--sobreposicao);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+/* O distintivo do acompanhado é o mesmo anel em miniatura, e não uma letra:
+   "A" e "B" são escolhas, e acompanhar é outra coisa. */
+.rotulos__marca--acompanhado {
+  background: none;
+  color: var(--acento);
+  font-size: 0.86rem;
+  padding: 0;
+}

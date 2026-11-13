@@ -1,0 +1,101 @@
+/**
+ * Tokens do tema, herdados de src/ui/tema.py.
+ *
+ * As cores tem nome de PAPEL, nao de aparencia: trocar o tema e trocar os valores aqui, sem
+ * cacar "aquele azul" em quinze arquivos. Todos os pares que a interface de fato usa passam
+ * pelo teste de contraste da WCAG 2.2 — 4,5:1 para texto, 3:1 para grafico —, e o build falha
+ * em qualquer par abaixo disso.
+ *
+ * --escala-texto e o unico botao da acessibilidade de tamanho: tudo mede em rem, entao mexer
+ * nele reescala fonte, alvo de toque e espacamento de uma vez. E ainda herda o zoom do navegador.
+ */
+:root {
+  --fundo: #0c0e16;
+  --painel: #121520;
+  --painel-alto: #1a1e2c;
+  --sobreposicao: #06080e;
+
+  --texto: #e8eaf0;
+  --texto-fraco: #989fb2;
+  --texto-apagado: #788cb4;
+
+  --borda: #3a4258;
+  --separador: #788cb4;
+  --grade: #282e40;
+  --caixa: #6c7692;
+  --marca-ligada: #253147;
+
+  --acento: #7caeff;
+  --foco: #8cbeff;
+  --aviso: #ffc45c;
+  --sucesso: #78d6a0;
+
+  --escala-texto: 1;
+  font-size: calc(17px * var(--escala-texto));
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  /* O programa ocupa a janela e NAO rola: quem rola sao as regioes de dentro,
+     a lateral e o corpo dos modais. Sem isto, focar um controle que esteja
+     fora da area visivel da lateral rolava a PAGINA — e a cena saia da tela
+     por 737 px, medido com "Texto maior" ligado e "Mais opcoes" aberto. */
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: 'Inter Variable', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* O anel de foco aparece no uso por teclado e some no clique. Em pygame isto era um clone
+   escrito a mao; no DOM e a especificacao. */
+:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.construcao {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: max(2rem, 8vh) 1rem;
+}
+
+.construcao__etapa {
+  margin: 0 0 0.25rem;
+  color: var(--texto-apagado);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.construcao h1 {
+  margin: 0 0 1rem;
+  font-size: 1.9rem;
+  font-weight: 600;
+}
+
+.construcao p + p {
+  margin-top: 1rem;
+  color: var(--texto-fraco);
+}

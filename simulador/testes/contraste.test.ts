@@ -100,7 +100,7 @@ describe('cores derivadas', () => {
 });
 
 /**
- * O `base.css` e o `tema.ts` tem de dizer a MESMA cor.
+ * O `estilos/tokens.css` e o `tema.ts` tem de dizer a MESMA cor.
  *
  * O teste acima confere contraste entre valores de `TEMA`. Quem desenha a tela
  * e o CSS, com `--fundo`, `--acento` e companhia escritos a mao no `:root`. As
@@ -110,7 +110,7 @@ describe('cores derivadas', () => {
  * este projeto ja pagou caro — um teste sobre um objeto que ninguem le.
  */
 describe('as cores do CSS', () => {
-  const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'src/interface/base.css'), 'utf8');
+  const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'src/interface/estilos/tokens.css'), 'utf8');
   const declaradas = new Map<string, string>();
   for (const m of css.matchAll(/^\s*(--[a-z-]+):\s*(#[0-9a-f]{6});/gim)) {
     declaradas.set(m[1]!, m[2]!.toLowerCase());

@@ -1,0 +1,69 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Rótulos sobre a cena
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.rotulos {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.rotulos__placa,
+.rotulos__ponto {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+/* A placa é opaca a 0,80 — medido: com a cena mais clara possível atrás
+   (o Sol centrado, com bloom no máximo) o texto ainda dá 8,85:1. O mínimo
+   real é 0,63; a folga é por robustez, não por necessidade. */
+.rotulos__placa {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.12rem 0.4rem;
+  background: rgb(12 14 22 / 0.8);
+  border-radius: 5px;
+  color: var(--texto);
+  font-size: 0.82rem;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+/* Atrás de um corpo: contorno TRACEJADO, e nunca opacidade reduzida —
+   baixar a opacidade destruiria o contraste garantido. */
+.rotulos__placa--atras {
+  border: 1px dashed var(--borda);
+  padding: calc(0.12rem - 1px) calc(0.4rem - 1px);
+}
+
+.rotulos__barra {
+  width: 2px;
+  height: 0.8em;
+  border-radius: 1px;
+}
+
+.rotulos__placa--grupo {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.rotulos__linha {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  background: rgb(200 210 230 / 0.55);
+  transform-origin: 0 50%;
+  will-change: transform;
+}
+
+.rotulos__ponto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}

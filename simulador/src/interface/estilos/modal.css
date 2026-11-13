@@ -1,0 +1,122 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Modal
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.modal {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  max-width: min(42rem, 92vw);
+  max-height: 86vh;
+  color: var(--texto);
+}
+.modal::backdrop {
+  background: rgb(6 8 14 / 0.72);
+}
+.modal__cartao {
+  display: flex;
+  flex-direction: column;
+  max-height: 86vh;
+  background: var(--painel);
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+  padding: 1.2rem;
+}
+.modal__titulo {
+  margin: 0 0 0.6rem;
+  font-size: 1.3rem;
+}
+.modal__corpo {
+  overflow-y: auto;
+  padding-right: 0.3rem;
+}
+.modal__acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.nota {
+  color: var(--texto-fraco);
+  font-size: 0.9rem;
+}
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.tabela th,
+.tabela td {
+  text-align: left;
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--borda);
+}
+.tabela td {
+  text-align: right;
+  color: var(--texto-fraco);
+}
+.tabela thead th {
+  color: var(--texto-apagado);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* A primeira coluna e `<th scope="row">`: e o nome da linha, nao um dado.
+   Mantê-la alinhada a esquerda e com o peso do cabecalho e o que permite ler a
+   tabela por linha sem depender de cor. */
+.tabela tbody th {
+  font-weight: 500;
+  color: var(--texto);
+}
+
+/* O modal e prosa: sem espaco entre paragrafos, os blocos de honestidade
+   viram um bloco unico e o motivo de estarem separados se perde. */
+.modal__corpo h3 {
+  margin: 1.3rem 0 0.4rem;
+  font-size: 1.02rem;
+}
+.modal__corpo > :first-child,
+.modal__corpo section:first-of-type h3 {
+  margin-top: 0;
+}
+.modal__corpo p {
+  margin: 0 0 0.7rem;
+  line-height: 1.55;
+}
+.modal__corpo .tabela,
+.modal__corpo .ficha__dados {
+  margin-bottom: 0.9rem;
+}
+
+/* De onde vem cada dado. `<dl>` e nao lista: e termo e definicao. */
+.fontes {
+  margin: 0;
+  font-size: 0.9rem;
+}
+.fontes > div + div {
+  margin-top: 0.6rem;
+}
+.fontes dt {
+  font-weight: 500;
+}
+.fontes dd {
+  margin: 0.1rem 0 0;
+  color: var(--texto-fraco);
+}
+
+/* A procedencia de cada mapa de textura. O `<b>` carrega o papel do mapa —
+   albedo, nuvens, anel — e o resto diz se aquilo e fotografia ou desenho. */
+.procedencia {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.9rem;
+  color: var(--texto-fraco);
+}
+.procedencia li + li {
+  margin-top: 0.3rem;
+}
+.procedencia b {
+  color: var(--texto);
+  font-weight: 500;
+}

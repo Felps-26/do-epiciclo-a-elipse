@@ -1,0 +1,70 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   A ficha, na lateral
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.ficha {
+  margin-top: 0.9rem;
+  padding: 0.8rem;
+  background: var(--painel-alto);
+  border-radius: 10px;
+}
+.ficha__nome {
+  margin: 0 0 0.15rem;
+  font-size: 1.1rem;
+}
+.ficha__frase {
+  margin: 0 0 0.6rem;
+  color: var(--texto-fraco);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+.ficha__dados {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.2rem 1rem;
+  margin: 0;
+  font-size: 0.9rem;
+}
+.ficha__dados dt {
+  color: var(--texto-fraco);
+}
+.ficha__dados dd {
+  margin: 0;
+  text-align: right;
+}
+
+/* A ficha inteira, que era um modal.
+   O separador de cima e o que diz "daqui para baixo e o que a caixa mostrava":
+   sem ele os sete blocos parecem continuacao das tres linhas de medida, e as
+   tres linhas de medida sao as que mudam enquanto o tempo corre. */
+.ficha__inteira {
+  margin-top: 0.9rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--borda);
+}
+.ficha__secao,
+.ficha__inteira h3 {
+  margin: 1rem 0 0.35rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--texto-apagado);
+}
+.ficha__secao {
+  margin: 0.9rem 0 0.2rem;
+}
+.ficha__inteira h3:first-child {
+  margin-top: 0;
+}
+.ficha__inteira p {
+  margin: 0.35rem 0;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+.ficha--inteira {
+  /* Com a ficha aberta ela e o assunto da lateral, e a lista cede altura. */
+  margin-bottom: 1rem;
+}
+.lateral:has(.ficha--inteira) .lista {
+  max-height: 22vh;
+}

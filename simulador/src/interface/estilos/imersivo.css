@@ -1,0 +1,92 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Modo imersivo
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* A cena ja ocupa `flex: 1`; sem barra e sem lateral ela fica com a janela
+   inteira sem nenhuma regra nova. O que esta classe faz e dar ao visor um
+   contorno de onde pousar a tira. */
+.corpo--imersivo {
+  position: relative;
+}
+
+/* Os avisos descem para baixo do botao de sair.
+   Os dois moram no canto de cima a direita, e no modo imersivo colidiam — a
+   primeira coisa que se ve ao entrar e um aviso, quando o navegador recusa a
+   tela cheia, e ele caía exatamente sobre a unica saida escrita do modo. */
+.corpo--imersivo .avisos {
+  top: 4.4rem;
+}
+
+/* O rodape normal do visor recolhe, porque a tira do modo o SUBSTITUI. Sem
+   isto os dois desenhavam um sobre o outro no mesmo canto: as etiquetas de
+   licenca por cima da regua de escala, ilegiveis as duas, e os tres botoes do
+   visor atras da tira de teclas.
+   Nada se perde em silencio: as licencas estao na tira, com o mesmo texto, e
+   os tres botoes voltam ao sair do modo — que a tira ensina como fazer. */
+.corpo--imersivo .visor__leitura {
+  display: none;
+}
+
+.imersivo {
+  position: absolute;
+  inset: 0;
+  /* A camada e furada: o arrasto da camera precisa atravessar tudo que nao seja
+     controle. Cada peca de dentro reativa o ponteiro por conta propria. */
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.imersivo__saida {
+  align-self: flex-end;
+  margin: 0.75rem var(--gutter, 16px) 0;
+  pointer-events: auto;
+}
+
+.imersivo__tira {
+  align-self: center;
+  margin-bottom: 3.2rem;
+  max-width: 44rem;
+  padding: 0.55rem 1rem;
+  text-align: center;
+  /* `--sobreposicao` com alfa: a tira precisa ser legivel sobre um planeta
+     iluminado E sobre o vazio preto. `color-mix` mantem o token como fonte da
+     cor, em vez de espalhar um sexto valor hexadecimal pelo arquivo. */
+  background: color-mix(in srgb, var(--sobreposicao) 82%, transparent);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  pointer-events: auto;
+}
+.imersivo__teclas {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--texto-fraco);
+}
+.imersivo__velocidade {
+  margin: 0.25rem 0 0;
+  font-size: 0.82rem;
+  color: var(--texto-apagado);
+}
+.imersivo kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0.05em 0.35em;
+  font: inherit;
+  font-size: 0.92em;
+  text-align: center;
+  color: var(--texto);
+  background: var(--painel-alto);
+  border: 1px solid var(--borda);
+  border-radius: 5px;
+}
+
+.imersivo__licencas {
+  position: absolute;
+  left: var(--gutter, 16px);
+  bottom: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+}

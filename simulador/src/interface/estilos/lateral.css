@@ -1,0 +1,97 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Lateral
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.lateral {
+  /* `min(..., 100vw)` NAO e zelo: a 320 px — a largura minima que o criterio
+     1.4.10 da WCAG 2.2 exige — 20rem valem 340 px, e como sobreposicao ancorada
+     a direita o painel comecava em x = −20 px, com a borda esquerda cortada
+     fora da tela. `html { overflow: hidden }` escondia o sintoma: nao havia
+     rolagem horizontal porque a rolagem estava proibida, e o conteudo cortado
+     simplesmente nao existia para quem estivesse naquela largura.
+     Com o limite, a 320 px o painel ocupa a tela inteira, que e o que uma
+     sobreposicao deve fazer quando nao cabe ao lado. */
+  flex: 0 0 min(var(--largura-lateral, 20rem), 100vw);
+  width: min(var(--largura-lateral, 20rem), 100vw);
+  overflow-y: auto;
+  /* A rolagem para aqui, em vez de continuar na pagina quando chega ao fim. */
+  overscroll-behavior: contain;
+  padding: 1rem var(--gutter, 16px) 3rem;
+  background: var(--painel);
+  border-left: 1px solid var(--borda);
+}
+/* ── Os blocos do painel ────────────────────────────────────────────────────
+   Cada bloco responde a UMA pergunta e leva um titulo escrito. O separador
+   entre eles e uma linha em `--borda`, que e declarada decorativa: o que
+   divide os assuntos e o titulo, e nao a linha. */
+.painel__bloco {
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--borda);
+}
+.painel__bloco:last-of-type {
+  border-bottom: 0;
+}
+.painel__titulo,
+.lateral__titulo {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto-apagado);
+}
+/* Os controles de uma linha repartem o espaco e QUEBRAM quando nao cabem: a
+   320 px o painel ocupa a tela inteira, e dois botoes lado a lado ali ficariam
+   com meia palavra cada. */
+.painel__linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+.painel__linha > .botao {
+  flex: 1 1 auto;
+}
+.painel__linha > .segmentado {
+  flex: 1 1 auto;
+}
+
+/* As tres gavetas sao UM bloco na tela — uma pilha de titulos fechados — e por
+   isso moram num inviolucro so. Ver `Lateral.tsx`. */
+.lateral__gavetas {
+  margin-top: 0.5rem;
+}
+
+.lateral__cabecalho {
+  margin: 0 0 0.5rem;
+}
+.lateral__luas {
+  margin-top: 0.45rem;
+}
+/* O grupo de tres estados das luas ocupa a largura toda da lateral e reparte
+   igual: assim "Só elas" nao fica menor que "Sem" e a fila nao pula de lugar
+   quando o rotulo ativo muda de largura. */
+.lateral__luas .segmentado {
+  width: 100%;
+}
+.lateral__luas .segmentado__item {
+  flex: 1;
+  padding-inline: 0.4rem;
+  font-size: 0.86rem;
+}
+.lateral__dica {
+  margin: 0.4rem 0 0;
+  color: var(--texto-fraco);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+.lateral__botoes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.8rem;
+}
+.lateral__vazio {
+  color: var(--texto-fraco);
+  font-size: 0.9rem;
+}

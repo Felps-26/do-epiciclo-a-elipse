@@ -1,0 +1,103 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Estrutura
+   ══════════════════════════════════════════════════════════════════════════ */
+
+#raiz {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.corpo {
+  display: flex;
+  /* **Piso de 55vh, e nao `min-height: 0`.**
+     A barra envolve em varias linhas quando a janela estreita, e sem piso ela
+     comia a tela inteira: medido, 502 px de barra numa janela de 600 px de
+     altura a 320 px de largura com "Texto maior" — nove linhas empilhadas,
+     sobrando 98 px para a simulacao; a 400 px de altura sobrava ZERO e o canvas
+     desaparecia. O programa ficava sem programa nos tamanhos que a propria
+     documentacao promete atender.
+     Ninguem viu porque `layout.test.ts` media `src/interface/layout.ts`, um
+     modulo que o programa nunca importou. */
+  /* **Base ZERO, e nao `auto`.** Com base `auto` a altura de `.corpo` saía do
+     conteudo, e o conteudo e um `<canvas>`, cujo tamanho intrinseco sao os
+     atributos `width`/`height` que o proprio programa escreve depois de medir
+     a caixa. Isso fechava um laco: o canvas media 722, o atributo empurrava
+     `.corpo` para 738, a barra cedia de 97,5 para 82 — e a CENA SUBIA 15,5 px
+     no meio de um gesto. O segundo clique de um duplo clique chegava com `y`
+     15,5 maior sem que o mouse tivesse saido do lugar, contra 4 de folga:
+     nenhum duplo clique na cena funcionava. Com base zero o canvas deixa de
+     opinar sobre o tamanho de quem o contem, e o piso de 55vh continua
+     valendo — ele e um minimo, nao uma base. */
+  flex: 1 1 0;
+  min-height: 55vh;
+}
+
+.barra {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem var(--gutter, 16px);
+  min-height: var(--altura-barra, 3.5rem);
+  background: var(--painel);
+  border-bottom: 1px solid var(--borda);
+  flex-wrap: wrap;
+  /* O outro lado do piso de `.corpo`: a barra cede, e o que nao couber rola
+     DENTRO dela. Cortar seria esconder controle, e esconder controle e o que
+     este projeto nao faz — a regra e que nada fique inalcancavel. */
+  flex: 0 1 auto;
+  max-height: 45vh;
+  overflow-y: auto;
+  /* **Nunca de lado.** `overflow-y: auto` faz o navegador computar `overflow-x`
+     como `auto` também, e era por ali que os controles escapavam: a barra
+     ganhava uma rolagem horizontal e escondia o botão de acelerar o tempo sem
+     que a PÁGINA rolasse — então o teste de refluxo passava verde. Com
+     `visible` o conteúdo tem de caber, e é o `flex-wrap` dos grupos que faz
+     ele caber. */
+  overflow-x: clip;
+  overscroll-behavior: contain;
+}
+/* **Os grupos QUEBRAM, e podem encolher.**
+   Sem `flex-wrap` e sem `min-width: 0`, um grupo nunca fica menor que o
+   próprio conteúdo: a 320 px o grupo de tempo pedia 44 + 44 + 103 + 155 px e a
+   faixa escorria para fora da janela. A página não rolava de lado — a barra
+   tem `overflow-y: auto`, o que faz `overflow-x` computar `auto` —, então o
+   corte não aparecia no teste de refluxo: o que acontecia era a BARRA rolando
+   por dentro, com o botão de acelerar o tempo e a data escondidos atrás de uma
+   rolagem que ninguém procura numa barra de ferramentas. */
+.barra__grupo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+/* A data desceu da lateral para a faixa de tempo. `white-space: nowrap` e o
+   que impede "1 de janeiro de 2026" de quebrar em duas linhas e crescer a
+   barra — e uma barra que muda de altura move a cena inteira, que foi o
+   defeito que `e2e/layout.spec.ts` passou a vigiar. */
+/* A data desceu da lateral para a faixa de tempo. `white-space: nowrap` impede
+   "1 de janeiro de 2026" de quebrar em duas linhas e crescer a barra — e uma
+   barra que muda de altura move a cena inteira, que foi o defeito que
+   `e2e/layout.spec.ts` passou a vigiar. Mas `nowrap` sozinho também a impedia
+   de ENCOLHER, e numa janela estreita ela empurrava o resto para fora: daí o
+   `min-width: 0` com `text-overflow`, que a deixa ceder espaço cortando o
+   próprio texto em vez de cortar o botão do vizinho. */
+.barra__data {
+  margin: 0 0 0 0.35rem;
+  font-size: 0.95rem;
+  color: var(--texto-fraco);
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.barra__grupo--direita {
+  margin-left: auto;
+}
+.barra__velocidade {
+  min-width: 11ch;
+  text-align: center;
+  color: var(--texto-fraco);
+  font-size: 0.92rem;
+}

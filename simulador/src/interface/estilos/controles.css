@@ -1,0 +1,165 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Controles
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.botao {
+  font: inherit;
+  color: var(--texto);
+  background: var(--painel-alto);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  /* 44px de alvo minimo, que e o criterio 2.5.8 da WCAG 2.2. */
+  min-height: 2.6rem;
+  min-width: 2.6rem;
+  padding: 0.35rem 0.9rem;
+  cursor: pointer;
+}
+.botao:hover:not(:disabled) {
+  border-color: var(--separador);
+}
+.botao:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.botao--primario {
+  background: var(--acento);
+  color: var(--fundo);
+  border-color: var(--acento);
+  font-weight: 600;
+}
+/* Estado ativo nunca e so cor: ha a barra sublinhada E o aria-pressed. */
+.botao--ativo {
+  box-shadow: inset 0 -3px 0 var(--acento);
+}
+
+/* O trilho, e nao a moldura.
+   A borda externa em `--borda` fazia cada grupo virar um caixote com o mesmo
+   peso visual da cena. O que um segmentado precisa mostrar e ONDE esta a
+   marca, e para isso basta o trilho recuado com a pilula preenchida em cima —
+   a forma carrega a informacao, e a borda nao carregava nenhuma. */
+.segmentado {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--grade);
+  border-radius: 10px;
+}
+.segmentado__item {
+  font: inherit;
+  color: var(--texto-fraco);
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  min-height: 2.6rem;
+  padding: 0.35rem 0.9rem;
+  cursor: pointer;
+}
+.segmentado__item:hover:not(.segmentado__item--ativo) {
+  color: var(--texto);
+}
+/* Marcado NUNCA e so cor: a pilula preenchida e a barra em `--acento` sao duas
+   formas, e `aria-checked` e a terceira. */
+.segmentado__item--ativo {
+  color: var(--texto);
+  background: var(--painel-alto);
+  box-shadow: inset 0 -3px 0 var(--acento);
+}
+
+.alternador {
+  /* `position: relative` NAO e decoracao: o <input> de verdade e absoluto e
+     invisivel, e sem um ancestral posicionado o bloco que o contem vira o
+     documento inteiro. Focar um deles por teclado mandava o navegador rolar
+     ate a posicao dele no documento. */
+  position: relative;
+  border-radius: 8px;
+}
+/* **O alvo e a LINHA, e nao a caixinha.**
+   `.alternador` nunca teve `min-height`, e a regra de 44 px que `.botao`
+   obedece desde sempre nunca chegou ate aqui: o alvo confortavel era um
+   quadrado de 1,35rem. Agora a linha inteira tem 2,75rem e e ela que responde
+   ao ponteiro — o que tambem resolve o criterio 2.5.8 sem aumentar a caixa,
+   que nao precisa crescer para ser vista. */
+.alternador__linha {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.75rem;
+  padding: 0.35rem 0.5rem;
+  margin: 0 -0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.alternador__linha:hover,
+.alternador:focus-within .alternador__linha {
+  background: var(--painel-alto);
+}
+.alternador input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+/* Em repouso a caixa usa `--caixa`: entre o `--grade` (1,35:1, a caixa sumia e a
+   opcao desligada nao parecia controle) e o `--separador`, que fazia vinte
+   retangulos claros competirem com a cena. 3:1 e o minimo de um controle. */
+.alternador__caixa {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 1px solid var(--caixa);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--acento);
+  font-size: 0.95rem;
+  line-height: 1;
+}
+.alternador input:checked + .alternador__caixa {
+  border-color: var(--acento);
+  background: var(--marca-ligada);
+}
+.alternador input:focus-visible + .alternador__caixa {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
+}
+.alternador__texto {
+  display: flex;
+  flex-direction: column;
+}
+/* A ajuda e irma do rotulo, e nao filha: ver `controles.tsx`. O recuo alinha
+   com o texto, passando por fora da caixa. */
+.alternador__ajuda {
+  margin: -0.15rem 0 0.35rem;
+  padding-left: calc(1.35rem + 0.6rem);
+  color: var(--texto-fraco);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.ponto {
+  flex: 0 0 auto;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+}
+
+.recolhivel {
+  border-top: 1px solid var(--borda);
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+}
+.recolhivel__titulo {
+  cursor: pointer;
+  padding: 0.5rem 0;
+  font-weight: 600;
+}
+.recolhivel__secao {
+  margin: 1rem 0 0.25rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto-apagado);
+}

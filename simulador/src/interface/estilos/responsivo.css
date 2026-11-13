@@ -1,0 +1,56 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Responsivo — abaixo do ponto de quebra a lateral SOBREPOE, nao some
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 999px) {
+  .lateral {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 20;
+    box-shadow: -8px 0 24px rgb(0 0 0 / 0.5);
+  }
+  .corpo {
+    position: relative;
+  }
+}
+
+/* WCAG 2.2, criterio 1.4.10 (Reflow): tem de funcionar a 320 px sem rolagem
+   horizontal. A lista de dois em dois vira uma coluna so. */
+@media (max-width: 420px) {
+  .lista {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* O alternavel "Reduzir animação" faz o mesmo que a preferencia do sistema,
+   para quem quer so neste programa. */
+:root[data-reduzir-animacao='sim'] *,
+:root[data-reduzir-animacao='sim'] *::before {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+}
+
+.seletor-ab {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.seletor-ab__lado h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+.seletor-ab__botoes {
+  display: flex;
+  gap: 0.4rem;
+}
+.dicas {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
