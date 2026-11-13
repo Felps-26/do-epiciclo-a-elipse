@@ -37,3 +37,53 @@ export function preencherSemDado(data, L, A, canais) {
     data[i * canais + 2] = media[2];
   }
 }
+
+/**
+ * Gira (e espelha, se pedido) a imagem em longitude, no lugar. `girar` e fracao da
+ * volta: 0,5 leva o meridiano da borda para o meio.
+ */
+export function ajustarLongitude(data, L, A, canais, { espelhar, girar }) {
+  if (!espelhar && girar === 0) return data;
+  const saida = Buffer.alloc(data.length);
+  const desloca = Math.round(girar * L);
+  for (let y = 0; y < A; y++) {
+    for (let x = 0; x < L; x++) {
+      const origem = espelhar ? L - 1 - x : x;
+      const destino = (x + desloca) % L;
+      data.copy(saida, canais * (y * L + destino), canais * (y * L + origem), canais * (y * L + origem + 1));
+    }
+  }
+  return saida;
+}
+
+/**
+ * Um nivel de textura: reduz a fonte (TIFF, JPEG ou PNG) para `largura` no lado
+ * maior, sem ampliar, ajusta a longitude, pinta os buracos e grava JPEG a 82. Tudo em
+ * memoria, sem PNG intermediario: reescrever JPEG duas vezes empilharia artefato.
+ *
+ * Era o `sips` do macOS, e so no Mac dava para regenerar as texturas.
+ */
+export async function gerarNivel(origem, destino, largura, { ajuste = { espelhar: false, girar: 0 }, preencher = false } = {}) {
+  const { default: sharp } = await import('sharp');
+  sharp.cache(false);
+  const reduzida = sharp(origem, { limitInputPixels: false }).resize({
+    width: largura,
+    height: largura,
+    fit: 'inside',
+    withoutEnlargement: true,
+  });
+  if (!ajuste.espelhar && ajuste.girar === 0 && !preencher) {
+    await reduzida.jpeg({ quality: 82 }).toFile(destino);
+    return;
+  }
+  const { data, info } = await reduzida.removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  if (preencher) preencherSemDado(data, info.width, info.height, info.channels);
+  const ajustada = ajustarLongitude(data, info.width, info.height, info.channels, ajuste);
+  await sharp(ajustada, { raw: info }).jpeg({ quality: 82 }).toFile(destino);
+}
+
+/** A largura em pixels de um arquivo. */
+export async function larguraDe(caminho) {
+  const { default: sharp } = await import('sharp');
+  return (await sharp(caminho, { limitInputPixels: false }).metadata()).width ?? 0;
+}

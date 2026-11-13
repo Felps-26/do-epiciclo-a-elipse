@@ -18,7 +18,7 @@
  * nao ha o que ver neles.
  *
  * Por que 4K e o nivel maximo entregue. O 4K e gerado aqui, reduzindo o 8K
- * com o `sips` que ja vem no macOS. Entregar o 8K tambem levaria a pasta a
+ * com o `sharp` (em qualquer sistema). Entregar o 8K tambem levaria a pasta a
  * ~104 MB, e o ganho e nenhum dentro do alcance de camera que este programa
  * tem: a aproximacao maxima e orbita baixa, de 100 a 3.000 km. Em Marte, um
  * texel de 4K vale 5,2 km; a 3.000 km de altitude cada pixel da tela cobre
@@ -29,14 +29,11 @@
  * Licenca. Texturas por Solar System Scope (solarsystemscope.com), sob
  * CC BY 4.0. O credito e obrigatorio e aparece no bloco de fontes do programa.
  */
-import { mkdir, writeFile, readFile, access, rm, stat } from 'node:fs/promises';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
+import { mkdir, writeFile, readFile, access, stat } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { preencherSemDado } from './mosaicos.mjs';
+import { gerarNivel, larguraDe } from './mosaicos.mjs';
 
-const executar = promisify(execFile);
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CACHE = join(RAIZ, '.cache-texturas');
 const DESTINO = join(RAIZ, 'publico', 'texturas');
@@ -51,7 +48,7 @@ const DESTINO = join(RAIZ, 'publico', 'texturas');
  *
  * Os mosaicos do USGS Astrogeology sao produto do governo dos EUA e estao em
  * dominio publico. Eles vem em GeoTIFF cilindrico simples, que e exatamente a
- * projecao que a esfera do programa espera, e o `sips` converte.
+ * projecao que a esfera do programa espera, e o `sharp` converte.
  */
 const FONTES = {
   sss: {
@@ -169,7 +166,7 @@ const MAPAS = [
 /**
  * Os niveis entregues, e por que o 8K so existe as vezes.
  *
- * O 2K e o 4K sao gerados sempre, inclusive quando a fonte e menor: o `sips`
+ * O 2K e o 4K sao gerados sempre, inclusive quando a fonte e menor: a reducao
  * nao amplia, entao o arquivo no `4k/` de Urano e um 2048 com outro nome. Isso
  * e de proposito — o carregador pode pedir qualquer nivel de qualquer mapa sem
  * ter de saber quais existem.
@@ -186,13 +183,6 @@ const NIVEIS = [
   { nome: '4k', largura: 4096 },
   ...(COM_8K ? [{ nome: '8k', largura: 8192, exigeFonteDoTamanho: true }] : []),
 ];
-
-/** A largura em pixels de um arquivo, pelo `sips`. */
-async function larguraDe(caminho) {
-  const { stdout } = await executar('/usr/bin/sips', ['-g', 'pixelWidth', caminho]);
-  const m = /pixelWidth:\s*(\d+)/.exec(stdout);
-  return m ? Number(m[1]) : 0;
-}
 
 async function existe(caminho) {
   try {
@@ -213,21 +203,6 @@ async function baixar(nomeNoCache, url) {
   if (!tipo.startsWith('image/')) throw new Error(`${url} nao e imagem (${tipo})`);
   await writeFile(destino, dados);
   return destino;
-}
-
-/**
- * Reduz com o `sips`, que ja vem no macOS. Qualidade 82: o borrao some antes
- * do peso.
- *
- * `--setProperty format jpeg` e explicito porque as fontes do USGS chegam em
- * GeoTIFF: sem ele, o `sips` guardaria um TIFF com extensao `.jpg`, e o
- * navegador recusaria o arquivo sem dizer por que.
- */
-async function reduzir(origem, destino, largura, formato = 'jpeg') {
-  await executar('/usr/bin/sips', [
-    '-s', 'format', formato,
-    '-Z', String(largura), '--setProperty', 'formatOptions', '82', '-o', destino, origem,
-  ]);
 }
 
 /**
@@ -268,34 +243,6 @@ function transformacaoDaLongitude(longitude) {
   return { espelhar: oeste, girar: ((a % 1) + 1) % 1 };
 }
 
-/**
- * Aplica espelho e giro na imagem, e nao na textura.
- *
- * Daria para fazer isto em tempo de execucao, com `repeat.x = -1` e
- * `offset.x`, e seria menos codigo. Mas ai a convencao de cada mapa viraria
- * estado do renderizador, que e onde ela seria esquecida na primeira vez que
- * alguem trocasse o material — e o custo de gravar certo e pago uma vez, aqui,
- * numa ferramenta que roda a mao.
- */
-async function ajustarLongitude(caminho, { espelhar, girar }, preencher = false) {
-  if (!espelhar && girar === 0 && !preencher) return;
-  const { PNG } = await import('pngjs');
-  const png = PNG.sync.read(await readFile(caminho));
-  const { width: L, height: A, data } = png;
-  if (preencher) preencherSemDado(data, L, A, 4);
-  const saida = Buffer.alloc(data.length);
-  const desloca = Math.round(girar * L);
-  for (let y = 0; y < A; y++) {
-    for (let x = 0; x < L; x++) {
-      const origem = espelhar ? L - 1 - x : x;
-      const destino = (x + desloca) % L;
-      data.copy(saida, 4 * (y * L + destino), 4 * (y * L + origem), 4 * (y * L + origem) + 4);
-    }
-  }
-  png.data = saida;
-  await writeFile(caminho, PNG.sync.write(png));
-}
-
 async function main() {
   await mkdir(CACHE, { recursive: true });
   for (const n of NIVEIS) await mkdir(join(DESTINO, n.nome), { recursive: true });
@@ -328,20 +275,7 @@ async function main() {
       for (const n of NIVEIS) {
         if (n.exigeFonteDoTamanho && larguraDaFonte < n.largura) continue;
         const alvo = join(DESTINO, n.nome, `${mapa.arquivo}.jpg`);
-        // Sem ajuste de longitude, um passo so: TIFF/JPEG -> JPEG.
-        // Com ajuste, tres: o PNG intermediario existe porque e o unico
-        // formato sem perda que o `pngjs` deste projeto ja sabe ler, e
-        // reescrever JPEG duas vezes empilharia artefato de compressao sobre
-        // artefato.
-        if (ajuste.espelhar || ajuste.girar !== 0 || mapa.preencher) {
-          const temporario = `${alvo}.png`;
-          await reduzir(cache, temporario, n.largura, 'png');
-          await ajustarLongitude(temporario, ajuste, mapa.preencher);
-          await reduzir(temporario, alvo, n.largura);
-          await rm(temporario);
-        } else {
-          await reduzir(cache, alvo, n.largura);
-        }
+        await gerarNivel(cache, alvo, n.largura, { ajuste, preencher: Boolean(mapa.preencher) });
         niveis[n.nome] = `texturas/${n.nome}/${mapa.arquivo}.jpg`;
       }
     }
