@@ -6,7 +6,7 @@
  * era a lista lateral, e a única forma de aproximar era o centro da tela.
  */
 import { expect, test, type Page } from '@playwright/test';
-import { abrir } from './preparar.ts';
+import { abrir, assentar, doisQuadros } from './preparar.ts';
 
 const selecionado = (p: Page): Promise<string | null> =>
   p.evaluate(() => document.querySelector('.lista__item--a')?.getAttribute('data-chave') ?? null);
@@ -93,11 +93,18 @@ test('não se clica no que está atrás de outro corpo', async ({ page }) => {
   // A cena de partida não tem oclusão nenhuma com esta proporção de canvas, e
   // é por isso que o tempo ANDA aqui: um passo de cada vez, pausado, até algum
   // corpo passar atrás de outro. Medido, acontece em menos de cem passos — na
-  // prática Mercúrio passa atrás do disco desenhado do Sol.
+  // prática Mercúrio passa atrás do disco desenhado do Sol, com a câmera de lado.
+  // Rasante ao plano: o disco do Sol tem no máximo 40% da distância desenhada de
+  // Mercúrio (o brilho não pode engolir os internos), e só de lado Mercúrio passa
+  // atrás dele.
+  await page.evaluate(() => {
+    window.__camera!.elevacao = 0.02;
+  });
+  await doisQuadros(page);
   let atras = await procurar();
   for (let k = 0; atras === null && k < 20; k++) {
     for (let i = 0; i < 10; i++) await page.keyboard.press('.');
-    await page.waitForTimeout(60);
+    await doisQuadros(page);
     atras = await procurar();
   }
   expect(atras, 'nenhum corpo passou atrás de outro em 200 passos: a cena mudou')
@@ -115,7 +122,7 @@ test('duplo clique acompanha o corpo', async ({ page }) => {
   const caixa = (await page.locator('canvas').boundingBox())!;
   const onde = (await naTela(page, 'marte'))!;
   await page.mouse.dblclick(caixa.x + onde.x, caixa.y + onde.y);
-  await page.waitForTimeout(800);
+  await assentar(page);
   expect(await selecionado(page)).toBe('marte');
   await expect(page.getByRole('button', { name: 'Soltar', exact: true })).toBeVisible();
 });

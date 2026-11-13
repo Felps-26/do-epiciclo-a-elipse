@@ -18,7 +18,7 @@
  * um teto que zera a rotação troca um defeito por outro.
  */
 import { expect, test, type Page } from '@playwright/test';
-import { abrir } from './preparar.ts';
+import { abrir, assentar } from './preparar.ts';
 
 /**
  * Para onde aponta um PONTO DA SUPERFÍCIE, depois da orientação desenhada.
@@ -71,7 +71,7 @@ test.beforeEach(async ({ page }) => {
   await page.waitForFunction(() => window.__camera !== undefined);
 });
 
-test('no topo da escada de tempo, de perto, a superfície não vira serrilha', async ({
+test('no topo da escada de tempo, de perto, a superfície não vira serrilha @gpu', async ({
   page,
 }) => {
   // A escada até o TOPO, que é onde o defeito é maior. Ela chega a 20 anos por
@@ -90,7 +90,7 @@ test('no topo da escada de tempo, de perto, a superfície não vira serrilha', a
 
   await page.getByRole('option', { name: /^Marte/ }).click();
   await page.keyboard.press('4');
-  await page.waitForTimeout(1400);
+  await assentar(page);
 
   const raioPx = await page.evaluate(
     () => (window.__projecoes?.() ?? []).find((x) => x.chave === 'marte')?.raioPx ?? 0,
@@ -120,9 +120,9 @@ test('no topo da escada de tempo, de perto, a superfície não vira serrilha', a
   expect(grausPorQuadro, 'o planeta parou de girar').toBeGreaterThan(0);
 });
 
-test('de longe, o giro é o de sempre: o teto não toca em corpo pequeno', async ({ page }) => {
+test('de longe, o giro é o de sempre: o teto não toca em corpo pequeno @gpu', async ({ page }) => {
   for (let k = 0; k < 12; k++) await page.keyboard.press(']');
-  await page.waitForTimeout(1200);
+  await assentar(page);
 
   const raioPx = await page.evaluate(
     () => (window.__projecoes?.() ?? []).find((x) => x.chave === 'jupiter')?.raioPx ?? 0,

@@ -89,7 +89,7 @@ async function chegarPerto(pagina: Page, nome: RegExp): Promise<void> {
   await pagina.getByRole('option', { name: nome }).click();
   await pagina.keyboard.press('4');
   await pagina.waitForTimeout(900);
-  await pagina.waitForFunction(() => window.__assentou?.() === true, undefined, { timeout: 15000 });
+  await pagina.waitForFunction(() => window.__assentou?.() === true, undefined, { timeout: 90_000 });
 }
 
 const CORPOS = [
@@ -188,7 +188,7 @@ test('a sombra do anel lê o mesmo mapa que o anel desenha', async ({ page }) =>
    */
   await page.getByRole('option', { name: /^Saturno/ }).click();
   await page.keyboard.press('4');
-  await page.waitForFunction(() => window.__assentou?.() === true, undefined, { timeout: 20000 });
+  await page.waitForFunction(() => window.__assentou?.() === true, undefined, { timeout: 90_000 });
 
   const largura = await page.evaluate(() => window.__larguraDoMapaDaSombra?.() ?? 0);
   expect(largura, 'a sombra do anel ficou presa no marcador de 1×1').toBeGreaterThan(1);

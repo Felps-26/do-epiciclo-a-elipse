@@ -293,7 +293,7 @@ test('a medida de pixel concorda com o cálculo da paleta', async ({ page }) => 
     .toBeGreaterThanOrEqual(previsto.minimo);
 });
 
-test('as placas acompanham a câmera POR QUADRO, e não a cada publicação', async ({ page }) => {
+test('as placas acompanham a câmera POR QUADRO, e não a cada publicação @gpu', async ({ page }) => {
   // Dois comentários afirmavam que "a ancoragem acompanha o quadro", mas o único
   // caminho dos rótulos até o DOM era a publicação do estado, a 8 Hz: os nomes andavam
   // aos saltos de 125 ms enquanto a cena corria a 60. Medir isso pede um giro contínuo.
@@ -375,7 +375,9 @@ test('abaixo do ponto de quebra, nenhum nome é desenhado ATRÁS do painel', asy
   // foi exatamente isso que aconteceu quando tentei reproduzir o defeito pelo
   // resultado. O retângulo que o posicionador recebe, esse, é diferente
   // sempre: 8 px contra 320.
-  const obstaculos = await page.evaluate(() => window.__obstaculosDosRotulos?.() ?? []);
+  // A régua e os avisos também são obstáculos (#27); aqui interessa o do painel.
+  const todos = await page.evaluate(() => window.__obstaculosDosRotulos?.() ?? []);
+  const obstaculos = todos.filter((o) => Math.abs(o.largura - painel!.width) < 40 && o.altura > 200);
   expect(obstaculos.length, 'o painel não entrou como obstáculo nenhum').toBe(1);
   expect(
     obstaculos[0]!.largura,
@@ -413,19 +415,24 @@ test('com a câmera padrão, todo nome fica a menos de 12 px do corpo ou ganha l
   expect(longe).toEqual([]);
 });
 
-test('a régua do rodapé e os avisos entram na lista de obstáculos dos nomes (#27)', async ({ page }) => {
-  await page.keyboard.press('4');
-  await expect(page.locator('.avisos__item').first()).toBeVisible();
-  await page.waitForTimeout(400);
-  const { obstaculos, pecas } = await page.evaluate(() => {
-    const c = document.querySelector('canvas')!.getBoundingClientRect();
-    const rel = (sel: string) => {
-      const r = document.querySelector(sel)!.getBoundingClientRect();
-      return { x: r.left - c.left, y: r.top - c.top };
-    };
-    return { obstaculos: window.__obstaculosDosRotulos?.() ?? [], pecas: [rel('.visor__leitura'), rel('.avisos__item')] };
-  });
-  for (const p of pecas) {
-    expect(obstaculos.some((o) => Math.abs(o.x - p.x) < 1 && Math.abs(o.y - p.y) < 1), JSON.stringify(p)).toBe(true);
-  }
+test('a régua do rodapé e o painel técnico entram na lista de obstáculos dos nomes (#27)', async ({ page }) => {
+  // O painel técnico fica parado no canto de cima; os avisos passam pelo mesmo
+  // seletor, mas somem sozinhos antes de uma colocação lenta os alcançar.
+  await page.locator('summary', { hasText: 'Leitura' }).click();
+  await page.getByRole('checkbox', { name: /Mostrar dados técnicos/ }).check();
+  await expect(page.locator('.tecnico')).toBeVisible();
+  const descobertas = () =>
+    page.evaluate(() => {
+      const c = document.querySelector('canvas')!.getBoundingClientRect();
+      const obstaculos = window.__obstaculosDosRotulos?.() ?? [];
+      return ['.visor__leitura', '.tecnico'].filter((sel) => {
+        const el = document.querySelector(sel);
+        if (!el) return true;
+        const r = el.getBoundingClientRect();
+        const x = r.left - c.left + r.width / 2;
+        const y = r.top - c.top + r.height / 2;
+        return !obstaculos.some((o) => x >= o.x && x <= o.x + o.largura && y >= o.y && y <= o.y + o.altura);
+      });
+    });
+  await expect.poll(descobertas, { timeout: 15_000, intervals: [200] }).toEqual([]);
 });

@@ -71,7 +71,7 @@ test('Esc sai do modo — mas só depois de não haver caixa para fechar', async
   await expect(page.getByRole('banner')).toBeVisible();
 });
 
-test('W A S D movem o pivô, e as direções opostas se desfazem', async ({ page }) => {
+test('W A S D movem o pivô, e as direções opostas se desfazem @gpu', async ({ page }) => {
   await page.getByRole('radio', { name: 'Voar' }).click();
   const partida = await camera(page);
 
@@ -140,7 +140,7 @@ test('a tira diz quais teclas restaram e a que velocidade se voa', async ({ page
   await expect(tira).toContainText(/voando a .* UA por segundo/);
 });
 
-test('aproximar desacelera o voo, e o número escrito acompanha', async ({ page }) => {
+test('aproximar desacelera o voo, e o número escrito acompanha @gpu', async ({ page }) => {
   await page.getByRole('radio', { name: 'Voar' }).click();
   const tira = page.locator('.imersivo__velocidade');
   const ler = async (): Promise<number> => {

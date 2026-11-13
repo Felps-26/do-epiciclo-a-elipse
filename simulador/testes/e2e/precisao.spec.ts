@@ -15,7 +15,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
-import { abrir } from './preparar.ts';
+import { abrir, doisQuadros } from './preparar.ts';
 
 const UA_KM = 149597870.7;
 const RAIO_MARTE_KM = 3389.5;
@@ -31,7 +31,7 @@ async function fixarEmMarte(pagina: Page): Promise<void> {
   // ficha do corpo, e duas portas para a mesma sala custam uma escolha a cada
   // vez. A ação é a mesma, e agora fica junto do nome do corpo.
   await pagina.getByRole('button', { name: 'Acompanhar', exact: true }).click();
-  await pagina.waitForTimeout(600); // a transicao tem prazo fixo de 0,45 s
+  await assentar(pagina); // a transicao tem prazo fixo de 0,45 s
 }
 
 async function distancia(pagina: Page, raioUa: number): Promise<void> {
@@ -49,7 +49,7 @@ async function distancia(pagina: Page, raioUa: number): Promise<void> {
  * pixels trocando quando era a exposicao ainda em movimento.
  */
 async function assentar(pagina: Page): Promise<void> {
-  await pagina.waitForFunction(() => window.__assentou?.() === true, undefined, { timeout: 15000 });
+  await pagina.waitForFunction(() => window.__assentou?.() === true, undefined, { timeout: 90_000 });
   await pagina.waitForTimeout(80);
 }
 
@@ -204,6 +204,8 @@ test('superficie e casca a 1,003 R nao disputam pixels, em seis escalas', async 
 });
 
 test('a descida de 31,5 UA ate 1 km e continua, sem salto de tamanho', async ({ page }) => {
+  // A 1 km de Marte entra o mapa de 8K, que em renderizacao por software leva minutos.
+  test.setTimeout(360_000);
   await prepararMarte(page);
 
   // Mede o RAIO APARENTE — raio desenhado dividido pela distancia —, e nao
@@ -220,7 +222,7 @@ test('a descida de 31,5 UA ate 1 km e continua, sem salto de tamanho', async ({ 
       window.__camera!.raio = r;
       window.__ladoIluminado?.();
     }, raio);
-    await page.waitForTimeout(60);
+    await doisQuadros(page);
     aparentes.push(await page.evaluate(() => window.__raioAparente?.('marte') ?? 0));
   }
 

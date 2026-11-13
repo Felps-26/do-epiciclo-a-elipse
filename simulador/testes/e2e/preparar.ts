@@ -41,3 +41,20 @@ export async function abrir(
   });
   await pagina.goto(caminho);
 }
+
+/**
+ * Espera a cena parar de mudar: transicao de camera, texturas chegando e exposicao
+ * andando. Com renderizacao por software um tempo fixo nao basta; `__assentou`
+ * responde pelo estado, e nao pelo relogio.
+ */
+export async function assentar(pagina: Page, folgaMs = 300): Promise<void> {
+  await pagina.waitForTimeout(150);
+  await pagina.waitForFunction(() => window.__assentou?.() === true, undefined, { timeout: 90_000 });
+  await pagina.waitForTimeout(folgaMs);
+}
+
+
+/** Espera dois quadros desenhados: entre eles o laço do programa rodou ao menos uma vez. */
+export async function doisQuadros(pagina: Page): Promise<void> {
+  await pagina.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
+}

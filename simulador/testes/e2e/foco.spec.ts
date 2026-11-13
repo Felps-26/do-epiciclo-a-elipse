@@ -14,7 +14,7 @@
  * disfarcado de escalar.
  */
 import { expect, test, type Page } from '@playwright/test';
-import { abrir } from './preparar.ts';
+import { abrir, assentar } from './preparar.ts';
 
 const UA_KM = 149597870.7;
 
@@ -68,7 +68,7 @@ test('duplo clique num planeta leva a camera a tres raios dele', async ({ page }
   expect(onde, 'Júpiter não está na tela').not.toBeNull();
 
   await page.mouse.dblclick(caixa.x + onde!.x, caixa.y + onde!.y);
-  await page.waitForTimeout(900);
+  await assentar(page);
 
   // Tres raios de Júpiter: o enquadramento 'perto' ja existia, o que faltava
   // era um gesto que levasse ate ele.
@@ -92,7 +92,7 @@ test('o voo ate uma LUA vai ate a lua, e nao ate o Sol', async ({ page }) => {
     await page.waitForTimeout(40);
     caminho.push((await camera(page)).pivo);
   }
-  await page.waitForTimeout(700);
+  await assentar(page);
   const fim = (await camera(page)).pivo;
 
   const dist = (p: number[]): number =>
@@ -118,7 +118,7 @@ test('as fitas dos outros corpos somem ao chegar perto, e VOLTAM ao afastar', as
   expect(longe.orbitaVisivel).toBe(true);
 
   await irAte(page, /^Marte/);
-  await page.waitForTimeout(900);
+  await assentar(page);
 
   const perto = await fita(page, 'saturno');
   expect(perto.opacidadeDaOrbita, 'de perto, a órbita de Saturno deveria sumir').toBe(0);
@@ -138,7 +138,7 @@ test('as fitas dos outros corpos somem ao chegar perto, e VOLTAM ao afastar', as
 
 test('o rastro do corpo em foco NAO some — e ele que mostra o movimento', async ({ page }) => {
   await irAte(page, /^Marte/);
-  await page.waitForTimeout(900);
+  await assentar(page);
 
   const doFoco = await fita(page, 'marte');
   const deOutro = await fita(page, 'saturno');
@@ -163,7 +163,7 @@ test('o esmaecimento MULTIPLICA: nao liga o que foi desligado', async ({ page })
     .toBe(false);
 
   await irAte(page, /^Marte/);
-  await page.waitForTimeout(900);
+  await assentar(page);
   await page.evaluate(() => {
     window.__camera!.raio = 31.5;
   });
@@ -189,7 +189,7 @@ test('a roda do mouse continua viva DURANTE o voo', async ({ page }) => {
   expect(depoisDaRoda, 'a roda não afastou nada').toBeGreaterThan(perto);
 
   // E o prazo fixo da transicao nao volta para reivindicar o raio depois.
-  await page.waitForTimeout(600);
+  await assentar(page);
   expect((await camera(page)).raio, 'a transição sobrescreveu a roda')
     .toBeCloseTo(depoisDaRoda, 9);
 });

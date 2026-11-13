@@ -28,8 +28,9 @@ jobs:
       - run: npm run unidade
 
   # Ponta a ponta só no Ubuntu: o SwiftShader desenha igual em qualquer máquina, e as
-  # imagens de referência foram gravadas com ele. O teste marcado @lento (percorre
-  # todas as dicas pelo teclado) fica de fora; ele roda à mão.
+  # imagens de referência foram gravadas com ele. Ficam de fora o @lento (percorre
+  # todas as dicas pelo teclado) e os @gpu, que medem o que acontece por quadro
+  # (giro, voo, placas) e precisam de uma placa de vídeo de verdade; rodam à mão.
   ponta-a-ponta:
     runs-on: ubuntu-latest
     timeout-minutes: 180
@@ -46,7 +47,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run build
-      - run: npx playwright test --grep-invert @lento
+      - run: npx playwright test --grep-invert "@lento|@gpu"
       - if: failure()
         uses: actions/upload-artifact@v4
         with:

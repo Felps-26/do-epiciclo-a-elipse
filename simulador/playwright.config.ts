@@ -12,6 +12,11 @@ export default defineConfig({
   testDir: './testes/e2e',
   fullyParallel: false,
   workers: 1,
+  // Com SwiftShader um quadro leva centenas de milissegundos, e uma transicao de
+  // camera de 0,45 s leva varios segundos de relogio. Os testes esperam a cena
+  // assentar (`assentar` em preparar.ts), e o teto de cada um cobre isso.
+  timeout: 120_000,
+  expect: { timeout: 15_000 },
   reporter: [['list']],
   use: {
     baseURL: ORIGEM,
@@ -19,6 +24,14 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: [
+    // `NAVEGADORES=todos` acrescenta o Edge e o Firefox, so na spec de fumaca. O CI
+    // fica no Chromium com SwiftShader, que e onde as imagens de referencia valem.
+    ...(process.env['NAVEGADORES'] === 'todos'
+      ? [
+          { name: 'msedge', testMatch: /fumaca/, use: { ...devices['Desktop Edge'], channel: 'msedge' } },
+          { name: 'firefox', testMatch: /fumaca/, use: { ...devices['Desktop Firefox'] } },
+        ]
+      : []),
     {
       name: 'chromium',
       use: {

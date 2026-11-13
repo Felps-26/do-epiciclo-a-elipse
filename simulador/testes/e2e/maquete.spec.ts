@@ -11,7 +11,7 @@
  * mais e o mesmo defeito que declarar licenca a menos.
  */
 import { expect, test, type Page } from '@playwright/test';
-import { abrir } from './preparar.ts';
+import { abrir, assentar } from './preparar.ts';
 
 
 async function ligarMaquete(pagina: Page): Promise<void> {
@@ -20,7 +20,7 @@ async function ligarMaquete(pagina: Page): Promise<void> {
   await alternador.focus();
   await pagina.keyboard.press(' ');
   await expect(alternador).toBeChecked();
-  await pagina.waitForTimeout(250);
+  await assentar(pagina);
 }
 
 const naCena = (pagina: Page, chave: string): Promise<{ r: number } | null> =>
@@ -120,7 +120,7 @@ test('ligar a compressão reenquadra, em vez de deixar o sistema virar um ponto'
   const raio = (): Promise<number> => page.evaluate(() => window.__camera!.raio);
   const antes = await raio();
   await ligarMaquete(page);
-  await page.waitForTimeout(700); // a transição de câmera tem prazo fixo
+  await assentar(page); // a transição de câmera tem prazo fixo
   const depois = await raio();
   expect(antes).toBeCloseTo(31.5, 1);
   expect(depois, `${antes} → ${depois}`).toBeLessThan(antes / 3);
@@ -147,7 +147,7 @@ test('desligar volta tudo ao lugar', async ({ page }) => {
   const alternador = page.getByRole('checkbox', { name: /Modo maquete/ });
   await alternador.focus();
   await page.keyboard.press(' ');
-  await page.waitForTimeout(250);
+  await assentar(page);
   expect((await naCena(page, 'jupiter'))!.r).toBeCloseTo(antes, 4);
   await expect(page.locator('.visor__leitura')).toContainText('largura visível');
 });
