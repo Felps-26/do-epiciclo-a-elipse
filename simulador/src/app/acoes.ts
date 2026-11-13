@@ -66,6 +66,8 @@ export type Gaveta = 'cena' | 'leitura' | 'destinos';
 export type Acao =
   // -- tempo ----------------------------------------------------------------
   | { tipo: 'alternar-pausa' }
+  /** Troca o sentido do tempo: o integrador e reversivel, e voltar e so andar com passo negativo. */
+  | { tipo: 'inverter-tempo' }
   | { tipo: 'mudar-velocidade'; passo?: -1 | 1; valor?: number }
   | { tipo: 'avancar-passo'; sentido?: -1 | 1 }
   | { tipo: 'voltar-ao-inicio' }
@@ -171,7 +173,7 @@ export type TipoDeAcao = Acao['tipo'];
  * tem produtor. `acoes.test.ts` falha se um tipo estiver na uniao e nao aqui.
  */
 export const TIPOS_DE_ACAO = [
-  'alternar-pausa', 'mudar-velocidade', 'avancar-passo', 'voltar-ao-inicio',
+  'alternar-pausa', 'inverter-tempo', 'mudar-velocidade', 'avancar-passo', 'voltar-ao-inicio',
   'trocar-modo', 'alternar-vista', 'vista-superior', 'lado-iluminado', 'ajustar-zoom',
   'orbitar-camera', 'deslocar-camera', 'acompanhar',
   'selecionar', 'comparar-com', 'mudar-comparacao', 'inverter-comparacao',

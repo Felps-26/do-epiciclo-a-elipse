@@ -101,9 +101,11 @@ export function colisaoPrevista(e: EstadoSistema, vigia: Vigia, dtDias: number):
       const ax = e.pos[3 * i]! - e.pos[3 * j]!;
       const ay = e.pos[3 * i + 1]! - e.pos[3 * j + 1]!;
       const az = e.pos[3 * i + 2]! - e.pos[3 * j + 2]!;
-      const wx = e.vel[3 * i]! - e.vel[3 * j]!;
-      const wy = e.vel[3 * i + 1]! - e.vel[3 * j + 1]!;
-      const wz = e.vel[3 * i + 2]! - e.vel[3 * j + 2]!;
+      // Com o tempo andando para tras, o corpo percorre a reta ao contrario.
+      const s = dtDias < 0 ? -1 : 1;
+      const wx = s * (e.vel[3 * i]! - e.vel[3 * j]!);
+      const wy = s * (e.vel[3 * i + 1]! - e.vel[3 * j + 1]!);
+      const wz = s * (e.vel[3 * i + 2]! - e.vel[3 * j + 2]!);
       const w2 = wx * wx + wy * wy + wz * wz;
       if (!(w2 > 0)) continue;
       const t = Math.min(Math.abs(dtDias), Math.max(0, -(ax * wx + ay * wy + az * wz) / w2));

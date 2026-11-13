@@ -72,6 +72,7 @@ export function BarraSuperior({ data, noTeto, noPiso }: Props): JSX.Element {
         {/* aria-live off: quem muda a velocidade ja recebe a confirmacao pela
             regiao propria; anunciar aqui tambem duplicaria. */}
         <span class="barra__velocidade" aria-live="off">
+          {e.sentido === -1 ? 'para trás, ' : ''}
           {velocidadePorExtenso(e.diasPorSegundo)}
         </span>
         <Botao
@@ -80,6 +81,9 @@ export function BarraSuperior({ data, noTeto, noPiso }: Props): JSX.Element {
           rotulo="Aumentar a velocidade do tempo"
         >
           +
+        </Botao>
+        <Botao onClick={() => despachar({ tipo: 'inverter-tempo' })} ativo={e.sentido === -1}>
+          {e.sentido === -1 ? BOTOES.paraAFrente : BOTOES.paraTras}
         </Botao>
         {/* A data desceu da lateral para cá: ela é a leitura do mesmo relógio
             que os botões ao lado operam, e estar a meia tela deles era herança

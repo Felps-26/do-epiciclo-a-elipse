@@ -119,7 +119,7 @@ export function criarLaco({ catalogo, lerUi, aoQuadro, vigia, aoColidir }: Opcoe
     const ui = lerUi();
     const relatorio = ui.pausado
       ? { passos: 0, atrasado: false, encontro: instantaneo.encontro, colisoes: [] }
-      : simulador.avancar(dtRealS, ui.diasPorSegundo);
+      : simulador.avancar(dtRealS, ui.sentido * ui.diasPorSegundo);
     for (const c of relatorio.colisoes ?? []) aoColidir?.(c);
 
     const e = simulador.estado;

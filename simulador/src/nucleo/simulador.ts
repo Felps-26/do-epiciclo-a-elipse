@@ -81,6 +81,8 @@ export class Simulador {
   private rascunho: Rascunho;
   /** Fracao de passo que sobrou do quadro anterior. */
   private residuo = 0;
+  /** O residuo e de um sentido so: trocar de sentido o zera. */
+  private sentido: 1 | -1 = 1;
 
   constructor(estado: EstadoSistema, opcoes: OpcoesSimulador = {}) {
     this.estado = estado;
@@ -109,10 +111,19 @@ export class Simulador {
     this.rascunho = ajustarRascunho(this.rascunho, this.estado.capacidade);
   }
 
-  /** Avanca o tempo simulado correspondente a `dtRealS` segundos reais. */
+  /**
+   * Avanca o tempo simulado correspondente a `dtRealS` segundos reais. Velocidade
+   * negativa anda para tras: o integrador e reversivel, e o passo vai com sinal.
+   */
   avancar(dtRealS: number, diasPorSegundo: number): RelatorioPasso {
-    const pedidos = Math.max(0, dtRealS) * diasPorSegundo;
-    if (pedidos <= 0) return { ...PARADO };
+    const comSinal = Math.max(0, dtRealS) * diasPorSegundo;
+    if (comSinal === 0 || !Number.isFinite(comSinal)) return { ...PARADO };
+    const sentido: 1 | -1 = comSinal < 0 ? -1 : 1;
+    if (sentido !== this.sentido) {
+      this.sentido = sentido;
+      this.residuo = 0;
+    }
+    const pedidos = Math.abs(comSinal);
 
     // O residuo guarda a fracao de passo nao usada, para que velocidades
     // abaixo de um passo por quadro avancem suavemente em vez de ficarem
@@ -127,9 +138,9 @@ export class Simulador {
 
     const t0 = this.cronometro();
     for (let k = 0; k < passos; k++) {
-      this.integrador.passo(this.estado, this.dtDias, this.rascunho);
+      this.integrador.passo(this.estado, sentido * this.dtDias, this.rascunho);
     }
-    this.estado.tDias += passos * this.dtDias;
+    this.estado.tDias += sentido * passos * this.dtDias;
     const msGastos = this.cronometro() - t0;
 
     if (atrasado) {
@@ -154,11 +165,11 @@ export class Simulador {
 
     const t0 = this.cronometro();
     while (passos < this.passosMaxPorQuadro && this.residuo - dados >= passoDe()) {
-      const dt = passoDe();
+      const dt = this.sentido * passoDe();
       const e = this.estado;
       let prevista = colisaoPrevista(e, vigia, dt);
       while (prevista) {
-        colisoes.push({ corpo: prevista.corpo, alvo: prevista.alvo, tDias: e.tDias + prevista.emDias });
+        colisoes.push({ corpo: prevista.corpo, alvo: prevista.alvo, tDias: e.tDias + Math.sign(dt) * prevista.emDias });
         removerCorpo(e, prevista.corpo);
         prevista = colisaoPrevista(e, vigia, dt);
       }
@@ -170,7 +181,7 @@ export class Simulador {
       this.antes.set(e.pos.subarray(0, 3 * e.n));
       this.integrador.passo(e, dt, this.rascunho);
       e.tDias += dt;
-      dados += dt;
+      dados += Math.abs(dt);
       passos++;
 
       // Sem fusao de massa: o corpo criado sai, e o alvo segue como estava.

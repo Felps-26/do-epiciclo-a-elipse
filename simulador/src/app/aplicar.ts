@@ -92,6 +92,14 @@ export function aplicar(ui: EstadoUi, acao: Acao, ctx: Contexto): Resultado {
       efeitos.push({ tipo: 'confirmar', texto: e.pausado ? 'Pausado.' : 'O tempo voltou a correr.' });
       break;
 
+    case 'inverter-tempo':
+      e.sentido = e.sentido === 1 ? -1 : 1;
+      efeitos.push({
+        tipo: 'confirmar',
+        texto: e.sentido === -1 ? 'O tempo agora anda para trás.' : 'O tempo voltou a andar para a frente.',
+      });
+      break;
+
     case 'mudar-velocidade': {
       const antes = e.diasPorSegundo;
       e.diasPorSegundo =

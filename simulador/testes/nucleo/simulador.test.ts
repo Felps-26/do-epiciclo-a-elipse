@@ -94,3 +94,27 @@ describe('orcamento e descarte', () => {
     expect(b.diasPorSegundoMaximo).toBe(8400);
   });
 });
+
+describe('o tempo para trás', () => {
+  it('avançar 10 anos e voltar 10 anos devolve as posições a menos de 1e-9 UA', () => {
+    const { estado } = novo();
+    const inicio = Float64Array.from(estado.pos.subarray(0, 3 * estado.n));
+    const sim = new Simulador(estado, { passosMaxPorQuadro: 10_000 });
+    // 3652,5 dias em quadros de 1/60 s a 365,25 dias por segundo: 600 quadros.
+    for (let q = 0; q < 600; q++) sim.avancar(1 / 60, 365.25);
+    expect(estado.tDias).toBe(3652.5);
+    for (let q = 0; q < 600; q++) sim.avancar(1 / 60, -365.25);
+    expect(estado.tDias).toBe(0);
+    let pior = 0;
+    for (let k = 0; k < inicio.length; k++) pior = Math.max(pior, Math.abs(estado.pos[k]! - inicio[k]!));
+    expect(pior).toBeLessThan(1e-9);
+  });
+
+  it('trocar de sentido zera o resíduo do outro sentido', () => {
+    const { estado } = novo();
+    const sim = new Simulador(estado);
+    sim.avancar(1 / 60, 20); // 0,333 dia: nenhum passo, sobra resíduo
+    sim.avancar(1 / 60, -20);
+    expect(estado.tDias).toBe(0);
+  });
+});

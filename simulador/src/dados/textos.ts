@@ -81,6 +81,8 @@ export const BOTOES = {
   laboratorio: 'Explorar a matemática',
   epiciclosDesteCorpo: 'Epiciclos deste corpo',
   epiciclos: 'Epiciclos de Fourier',
+  paraTras: 'Voltar no tempo',
+  paraAFrente: 'Seguir em frente',
   fechar: 'Fechar',
   entendi: 'Entendi',
   pular: 'Pular orientação',

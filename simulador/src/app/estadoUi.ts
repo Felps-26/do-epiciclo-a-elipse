@@ -22,6 +22,8 @@ import type { Precisao } from '../nucleo/integrador.ts';
 
 export interface EstadoUi {
   pausado: boolean;
+  /** 1 para a frente, −1 para tras. Fica fora das preferencias: e escolha da sessao. */
+  sentido: 1 | -1;
   diasPorSegundo: number;
   modo: Modo;
   vista: Vista;
@@ -61,6 +63,7 @@ export interface EstadoUi {
 
 export const ESTADO_INICIAL: EstadoUi = {
   pausado: false,
+  sentido: 1,
   diasPorSegundo: 30,
   modo: 'sistema',
   vista: 'perspectiva',
