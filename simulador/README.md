@@ -87,7 +87,7 @@ O erro de posição é medido em cinco datas (±1, ±10 e ±100 anos), não em v
 
 O nível 8K levou `publico/texturas/` de 36 MB para 150 MB, e `dist/` para 164 MB. A estimativa na hora da decisão era 60 MB a mais; o real foi 114 MB. Cinco mapas (Lua, Mercúrio, Vênus, nuvens da Terra e Marte) respondem por metade disso. Para uma pasta menor, basta tirar o nível 8K em `ferramentas/baixar_texturas.mjs`. Baixar a qualidade do JPEG de 82 para 60 economiza só um quarto, na camada em que o detalhe é o que importa.
 
-As texturas são regeneradas em qualquer sistema com `node ferramentas/baixar_texturas.mjs` (com `--8k` para o nível 8K); a redução usa o `sharp`, e não mais o `sips` do macOS. As 2K continuam no git: sem elas, quem clona o repositório precisaria baixar uns 400 MB de fontes antes de abrir o programa.
+As texturas são regeneradas em qualquer sistema com `node ferramentas/baixar_texturas.mjs` (com `--8k` para o nível 8K); a redução usa o `sharp`, e não mais o `sips` do macOS. As 2K continuam no git: sem elas, quem clona o repositório precisaria baixar todas as fontes, que somam centenas de megabytes, antes de abrir o programa.
 
 ## O que falta
 
