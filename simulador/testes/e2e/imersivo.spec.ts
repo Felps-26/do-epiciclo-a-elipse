@@ -13,7 +13,7 @@
  *      dentro dele, `W`, `A`, `S`, `D`, `Q` e `E` são do voo e de mais ninguém.
  */
 import { expect, test, type Page } from '@playwright/test';
-import { abrir } from './preparar.ts';
+import { abrir, doisQuadros } from './preparar.ts';
 
 const camera = (p: Page): Promise<{ pivo: number[]; raio: number; azimute: number }> =>
   p.evaluate(() => ({
@@ -30,6 +30,9 @@ async function voarPor(p: Page, tecla: string, ms: number): Promise<number> {
   const antes = await camera(p);
   await p.keyboard.down(tecla);
   await p.waitForTimeout(ms);
+  // Com SwiftShader um quadro passa de 0,35 s: sem isto a tecla subia antes de o
+  // laço vê-la descida, e o voo media zero.
+  await doisQuadros(p);
   await p.keyboard.up(tecla);
   await p.waitForTimeout(120);
   return distancia((await camera(p)).pivo, antes.pivo);

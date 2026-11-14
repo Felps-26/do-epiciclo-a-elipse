@@ -27,7 +27,7 @@ async function abrirPausado(page: Page): Promise<void> {
   await expect(page.getByRole('banner')).toBeVisible();
   await page.waitForFunction(() => window.__camera !== undefined);
   await page.getByRole('button', { name: 'Pausar' }).click();
-  await page.waitForTimeout(1500);
+  await assentar(page);
 }
 
 test('abre com imagem, e registra o backend', async ({ page }, info) => {
@@ -58,8 +58,19 @@ test('abre o laboratório de Fourier', async ({ page }) => {
 test('cria um corpo no sandbox', async ({ page }) => {
   await abrirPausado(page);
   await page.getByRole('radio', { name: 'Criar', exact: true }).click();
-  const caixa = (await page.locator('canvas').boundingBox())!;
-  await page.mouse.click(caixa.x + caixa.width / 2 + 160, caixa.y + caixa.height / 2);
+  // Um ponto em que o próprio canvas recebe o clique: uma placa de rótulo por cima
+  // dele engole o clique, e onde as placas caem depende do quadro.
+  const ponto = await page.evaluate(() => {
+    const r = document.querySelector('canvas')!.getBoundingClientRect();
+    for (const [dx, dy] of [[160, 0], [160, 60], [-160, 60], [0, 140], [-160, -60], [220, -120]]) {
+      const x = r.left + r.width / 2 + dx!;
+      const y = r.top + r.height / 2 + dy!;
+      if (document.elementFromPoint(x, y)?.tagName === 'CANVAS') return { x, y };
+    }
+    return null;
+  });
+  expect(ponto, 'nenhum ponto livre sobre o canvas').not.toBeNull();
+  await page.mouse.click(ponto!.x, ponto!.y);
   await page.getByRole('button', { name: /Criar asteroide/ }).click();
   await expect(page.getByRole('option', { name: /Asteroide 1/ })).toBeVisible();
 });
