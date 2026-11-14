@@ -2,7 +2,7 @@
 
 Sete dimensões foram varridas em paralelo, e cada achado foi depois atacado por um segundo revisor que tentou refutá-lo lendo o código e os testes. Dos 40 achados, 35 resistiram à refutação. Esta lista guarda o resumo de cada um: título, gravidade, arquivo, estado e o efeito visível. O estado vem do rastreador original e pode estar atrasado em relação ao `CONTRATO.md`, que registra como corrigidos vários itens daqui marcados como abertos.
 
-Estado em 14/11/2026: os 40 achados estão corrigidos. Os de gravidade alta e média foram conferidos na tela por teste de ponta a ponta ou pelas imagens de referência; os que o teste só alcança por leitura de código estão marcados como tal na coluna de estado.
+Estado em 14/11/2026: os 40 achados estão corrigidos. A coluna de estado diz onde está o teste de cada um: os que apontam para `testes/e2e/` foram conferidos na tela; os demais, por teste de unidade sobre a função que decide o que se desenha.
 
 "Por leitura de código" quer dizer que o defeito foi encontrado no código, mas não foi observado na tela na triagem de 06/11/2026; por isso o número real de defeitos visíveis pode ser menor.
 
