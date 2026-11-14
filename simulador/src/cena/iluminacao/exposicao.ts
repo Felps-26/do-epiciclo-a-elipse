@@ -26,3 +26,8 @@ export function exposicaoQuerida(dSujeitoUa: number): number {
 export function suavizarExposicao(atual: number, alvo: number): number {
   return Math.abs(alvo - atual) < alvo * 0.002 ? alvo : atual + (alvo - atual) * 0.08;
 }
+
+/** Parada de verdade, e nao perto do alvo: perto, o proximo quadro ainda muda a imagem. */
+export function exposicaoAssentou(atual: number, alvo: number): boolean {
+  return atual === alvo;
+}

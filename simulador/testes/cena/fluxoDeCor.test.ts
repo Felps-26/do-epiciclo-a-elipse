@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { Texture } from 'three';
 import { Texturas, espacoDeCor, nivelDoFundo } from '@cena/texturas/carregador.ts';
-import { EXPOSICAO_MAXIMA, exposicaoQuerida, suavizarExposicao } from '@cena/iluminacao/exposicao.ts';
+import { EXPOSICAO_MAXIMA, exposicaoAssentou, exposicaoQuerida, suavizarExposicao } from '@cena/iluminacao/exposicao.ts';
 import { TEXTURAS } from '@dados/corposVisuais.ts';
 
 describe('espaço de cor por mapa', () => {
@@ -74,5 +74,18 @@ describe('fundo e exposição', () => {
     }
     expect(atual).toBe(904);
     expect(quadros).toBeLessThan(200);
+  });
+
+  it('assentada quer dizer parada: o próximo quadro não mexe mais na exposição', () => {
+    // O "assentou" aceitava 0,3% e o encosto era a 0,2%: entre os dois a cena se dizia
+    // parada e ainda mudava, e o teste de z-fighting no WebGL2 lia isso como disputa.
+    for (const alvo of [1, 0.02, 904, EXPOSICAO_MAXIMA]) {
+      let atual = alvo * 40;
+      for (let q = 0; q < 400; q++) {
+        if (exposicaoAssentou(atual, alvo)) expect(suavizarExposicao(atual, alvo)).toBe(atual);
+        atual = suavizarExposicao(atual, alvo);
+      }
+      expect(exposicaoAssentou(atual, alvo)).toBe(true);
+    }
   });
 });

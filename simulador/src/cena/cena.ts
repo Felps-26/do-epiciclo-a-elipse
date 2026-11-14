@@ -34,7 +34,7 @@ import { aplicarOrigem, distancias } from './origemFlutuante.ts';
 import { fatorDeProjecao, limitesDoSol, raioDesenhadoUa } from './escala/exageroDeTamanho.ts';
 import { montarCoroa, montarCorpo, montarCascaDeProva, type CorpoMontado } from './corpos/fabrica.ts';
 import { Texturas, nivelDoFundo } from './texturas/carregador.ts';
-import { exposicaoQuerida, suavizarExposicao } from './iluminacao/exposicao.ts';
+import { exposicaoAssentou, exposicaoQuerida, suavizarExposicao } from './iluminacao/exposicao.ts';
 import { CORPOS_VISUAIS, OBLIQUIDADE_DA_ECLIPTICA, mapaDe } from '../dados/corposVisuais.ts';
 import { criarComposicao } from './pos/composicao.ts';
 import { criarAneisDeDistancia, criarFitas, criarPrevisao } from './linhas/fitas.ts';
@@ -384,7 +384,7 @@ export function criarCena(
       return (
         texturas.pendentes === 0 &&
         texturas.baixando === 0 &&
-        Math.abs(exposicaoSuave - exposicao) < exposicao * 0.003
+        exposicaoAssentou(exposicaoSuave, exposicao)
       );
     },
 
