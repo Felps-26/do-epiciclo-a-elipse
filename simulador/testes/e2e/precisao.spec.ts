@@ -94,6 +94,28 @@ async function fracaoQueTrocaDeDono(pagina: Page): Promise<number> {
  */
 const CONTRASTE_MINIMO = 15;
 
+/**
+ * A 1 km de altitude a largura visivel e de 4 km e um texel do mapa de 8K tem 2,6 km:
+ * o quadro e o chao de Marte, liso por natureza, e o contraste nao separa imagem de
+ * tela vazia. Ali a guarda pede a cor do chao, que nenhuma tela vazia tem.
+ */
+async function quadroTemOChaoDeMarte(pagina: Page): Promise<boolean> {
+  const { dados } = await lerCanvas(pagina);
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  const n = dados.length / 4;
+  for (let i = 0; i < dados.length; i += 4) {
+    r += dados[i]!;
+    g += dados[i + 1]!;
+    b += dados[i + 2]!;
+  }
+  r /= n;
+  g /= n;
+  b /= n;
+  return r > 40 && r < 235 && r > b + 10 && r > g + 5;
+}
+
 async function contrasteDoQuadro(pagina: Page): Promise<number> {
   const { dados } = await lerCanvas(pagina);
   let min = 255;
@@ -178,6 +200,8 @@ test('a cena sobe sem erro de validacao da GPU', async ({ page }) => {
 });
 
 test('superficie e casca a 1,003 R nao disputam pixels, em seis escalas', async ({ page }) => {
+  // Cada leitura do canvas leva ~15 s com SwiftShader (medido), e são três por escala.
+  test.setTimeout(600_000);
   // De 2 UA ate 1 km de altitude: oito ordens de grandeza.
   const escalas: [string, number][] = [
     ['2 UA', 2],
@@ -195,7 +219,11 @@ test('superficie e casca a 1,003 R nao disputam pixels, em seis escalas', async 
     await page.waitForTimeout(120);
     // Sem esta linha o teste abaixo seria decorativo: uma leitura vazia, ou um
     // canvas de uma cor so, sao estaveis entre quadros e dariam zero.
-    expect(await contrasteDoQuadro(page), `${nome}: o quadro nao tem imagem`).toBeGreaterThan(CONTRASTE_MINIMO);
+    if (nome === '1 km de altitude') {
+      expect(await quadroTemOChaoDeMarte(page), `${nome}: o quadro nao e o chao de Marte`).toBe(true);
+    } else {
+      expect(await contrasteDoQuadro(page), `${nome}: o quadro nao tem imagem`).toBeGreaterThan(CONTRASTE_MINIMO);
+    }
     const trocaram = await fracaoQueTrocaDeDono(page);
     // Limiar ZERO: com a camera parada e a fisica pausada, dois quadros tem de
     // ser bit a bit o mesmo. Qualquer pixel que muda e z-fighting.
@@ -299,6 +327,8 @@ test('o caminho de queda para WebGL2 tambem desenha, e tambem sem z-fighting', a
   // Este caminho NAO seria exercitado por ninguem espontaneamente: o Chromium
   // atual e o Safari 26 ja trazem WebGPU. Sem `?render=webgl2` ele so seria
   // descoberto quebrado na maquina de quem nao tem — que e o pior lugar.
+  // Nove leituras do canvas, de ~15 s cada com SwiftShader (medido).
+  test.setTimeout(400_000);
   await abrir(page, {}, '/?render=webgl2');
   await expect(page.getByRole('banner')).toBeVisible();
   await page.waitForFunction(() => window.__camera !== undefined);
@@ -311,8 +341,8 @@ test('o caminho de queda para WebGL2 tambem desenha, e tambem sem z-fighting', a
     await page.evaluate(() => window.__ladoIluminado?.());
     await page.waitForTimeout(120);
     expect(await fracaoQueTrocaDeDono(page), `WebGL2 a ${raio} UA`).toBe(0);
+    // E desenhou alguma coisa: uma tela de uma cor so passaria no teste de stipple.
+    if (raio < 1e-4) expect(await quadroTemOChaoDeMarte(page), 'WebGL2 a 1 km: o quadro nao e o chao de Marte').toBe(true);
+    else expect(await contrasteDoQuadro(page), `WebGL2 a ${raio} UA: o quadro nao tem imagem`).toBeGreaterThan(CONTRASTE_MINIMO);
   }
-
-  // E desenhou alguma coisa: uma tela de uma cor so passaria no teste de stipple.
-  expect(await contrasteDoQuadro(page), 'o quadro nao tem imagem').toBeGreaterThan(CONTRASTE_MINIMO);
 });

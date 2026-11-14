@@ -281,7 +281,10 @@ test('a orientação de primeira abertura aparece uma vez, e não volta', async 
 
   // Fechar no Esc TAMBEM marca como visto. Reabrir a mesma caixa para quem ja
   // disse que nao quer e a forma mais rapida de ensinar a fechar sem ler.
-  await page.waitForTimeout(600); // a gravacao das preferencias e atrasada
+  // A gravacao das preferencias e atrasada: espera o arquivo, e nao o relogio.
+  await expect
+    .poll(async () => (await (await page.request.get('/preferencias.json')).json()).tutorialVisto, { timeout: 15_000 })
+    .toBe(true);
   await page.reload();
   await expect(page.getByRole('banner')).toBeVisible();
   await page.waitForTimeout(400);

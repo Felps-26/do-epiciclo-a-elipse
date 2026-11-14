@@ -7,7 +7,7 @@
  */
 import { expect, test, type Page } from '@playwright/test';
 import { PNG } from 'pngjs';
-import { abrir } from './preparar.ts';
+import { abrir, assentar } from './preparar.ts';
 
 async function variacaoDoCanvas(page: Page): Promise<number> {
   const png = PNG.sync.read(await page.locator('canvas').screenshot());
@@ -42,7 +42,7 @@ test('chega perto da Terra', async ({ page }) => {
   await abrirPausado(page);
   await page.getByRole('option', { name: /^Terra/ }).click();
   await page.getByRole('button', { name: 'Ver de perto' }).click();
-  await page.waitForTimeout(2500);
+  await assentar(page);
   const raio = await page.evaluate(() => window.__projecoes!().find((p) => p.chave === 'terra')?.raioPx ?? 0);
   expect(raio).toBeGreaterThan(60);
   expect(await variacaoDoCanvas(page)).toBeGreaterThan(30);

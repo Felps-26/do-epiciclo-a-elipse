@@ -31,7 +31,7 @@
  */
 import { expect, test, type Page } from '@playwright/test';
 import { PNG } from 'pngjs';
-import { abrir } from './preparar.ts';
+import { abrir, assentar } from './preparar.ts';
 
 /** Luminância relativa, a mesma fórmula do resto da suíte. */
 function luminancia(r: number, g: number, b: number): number {
@@ -149,26 +149,28 @@ test('de longe, com nada em foco, o programa desenha o que sempre desenhou', asy
   // A outra metade da promessa: o piso é sobre o lado noturno de um corpo que
   // se está olhando, e não uma luz ambiente ligada na cena inteira. Na vista
   // geral os corpos têm poucos pixels e o fundo continua sendo o espaço.
+  await assentar(page);
   const fundo = await page.evaluate(() => {
     const c = document.querySelector('canvas') as HTMLCanvasElement;
     return { largura: c.clientWidth, altura: c.clientHeight };
   });
   const png = PNG.sync.read(await page.locator('canvas').screenshot({ animations: 'disabled' }));
   // Um canto, longe do Sol e de qualquer órbita.
-  let maior = 0;
-  let amostras = 0;
+  const amostras: number[] = [];
   for (let y = 4; y < Math.min(60, png.height); y += 2) {
     for (let x = 4; x < Math.min(60, png.width); x += 2) {
       const i = 4 * (y * png.width + x);
-      maior = Math.max(maior, luminancia(png.data[i]!, png.data[i + 1]!, png.data[i + 2]!));
-      amostras++;
+      amostras.push(luminancia(png.data[i]!, png.data[i + 1]!, png.data[i + 2]!));
     }
   }
-  expect(amostras, 'não há canto para medir').toBeGreaterThan(100);
+  expect(amostras.length, 'não há canto para medir').toBeGreaterThan(100);
   expect(fundo.largura).toBeGreaterThan(200);
   // O céu tem estrelas e a Via Láctea; o que não pode haver é um véu cinza
-  // uniforme por cima de tudo, que é o que uma AmbientLight faria.
-  expect(maior, 'o espaço vazio ficou cinza').toBeLessThan(0.05);
+  // uniforme por cima de tudo, que é o que uma AmbientLight faria. O véu sobe a
+  // MEDIANA; o máximo reprovava por uma estrela de um pixel caída na amostra.
+  amostras.sort((p, q) => p - q);
+  const mediana = amostras[amostras.length >> 1]!;
+  expect(mediana, 'o espaço vazio ficou cinza').toBeLessThan(0.05);
 });
 
 test('a sombra do anel lê o mesmo mapa que o anel desenha', async ({ page }) => {
