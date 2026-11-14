@@ -1,5 +1,5 @@
 /**
- * Doze cenas canônicas, cada backend contra a própria imagem dourada.
+ * Treze cenas canônicas, cada backend contra a própria imagem dourada.
  *
  * Pega a regressão que nenhum outro teste vê: a que não quebra número nenhum e deixa
  * a cena errada. Um `renderOrder` trocado põe o anel na frente do planeta, um sinal
@@ -7,11 +7,14 @@
  * Netuno trinta vezes demais. Tudo isso passa por `precisao.spec.ts`,
  * `contraste.test.ts` e pelo núcleo, e aparece na tela.
  *
- * Cada backend é comparado com a própria dourada, nunca um com o outro. WGSL sobre
- * Metal e GLSL sobre ANGLE divergem em transcendentais e em ordem de redução, e
- * exigir o mesmo pixel dos dois seria exigir o que nenhum promete; um teste vermelho
- * por ruído acaba desligado. A comparação cruzada sai por SSIM, como relatório, e
- * nunca reprova.
+ * Cada backend é comparado com a própria dourada, nunca um com o outro. As douradas
+ * oficiais são as do SwiftShader (`--use-angle=swiftshader`, ver `playwright.config.ts`),
+ * que desenha igual em qualquer máquina e no CI. As antigas, gravadas num Mac com
+ * Metal, viraram conferência manual: não são mais comparadas.
+ *
+ * A medida é o SSIM, e não a contagem de pixels diferentes. Contar pixels tratava um
+ * contorno deslocado meio pixel como mil pixels trocados, e um disco inteiro um tom
+ * mais escuro como zero; o SSIM pesa a estrutura, que é o que uma regressão muda.
  *
  * O plano pedia a comparação numa passada SDR pré-bloom, para apertar a tolerância.
  * Esse gancho não existe: a cena desenha em HDR num alvo só e a composição faz bloom
@@ -29,7 +32,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
-import { abrir } from './preparar.ts';
+import { ssim } from 'ssim.js';
+import { abrir, assentar } from './preparar.ts';
 
 const PASTA = fileURLToPath(new URL('./douradas/', import.meta.url));
 const GRAVAR = process.env['DOURADAS'] === 'gravar';
@@ -42,87 +46,51 @@ const GRAVAR = process.env['DOURADAS'] === 'gravar';
 const MEDIR = process.env['DOURADAS'] === 'medir';
 
 /**
- * Quanto um pixel precisa mudar para contar como mudado.
+ * Perda máxima de cada cena, em `1 − SSIM`, medida com as douradas do SwiftShader.
  *
- * Com 0,12, o ruído entre duas execuções do mesmo build chegava a 0,69% dos pixels, e
- * um Sol desenhado 18% maior mexia em 0,047%: a regressão era quinze vezes menor que
- * o ruído, e nenhum limite único pegava uma sem reprovar a outra.
- *
- * A causa é o antialiasing de linha fina: órbitas e estrelas cobrem meio pixel, que
- * arredonda para um lado ou outro conforme a ordem de redução do driver, e cada um
- * desses pixels muda pouco. Um disco que cresce muda pixels de preto para claro, que
- * é muito. Com 0,35 o ruído do webgpu na visão geral caiu a zero e a mesma regressão
- * do Sol continuou medindo 0,023%.
- */
-const LIMIAR_POR_PIXEL = 0.35;
-
-/**
- * Teto de cada cena, em porcentagem de pixels, medido cena a cena.
- *
- * Um teto único não serve: `saturno-e-os-aneis` tem 0,28% de ruído próprio (anel
- * fino em vista oblíqua, o caso mais hostil que o programa desenha) e `visao-geral`
- * no webgpu tem zero. Um número que coubesse nos dois seria o do pior, e a cena
- * limpa deixaria de fiscalizar.
- *
- * `ruidoMedido` é o pior de três execuções do mesmo build, escrito ao lado do teto
- * para se saber de onde ele veio. O teto é três vezes isso, com piso de 0,01% (setenta
- * pixels em setecentos mil, folga para um artefato isolado).
- *
- * `anel-rasante` é exceção por geometria: um anel de um a dois pixels de espessura
- * visto quase de perfil muda quase inteiro quando a câmera assenta meio pixel
- * diferente (427 pixels de uma vez, num quadro em que três medições davam zero). Não
- * é ruído de driver e repetir a captura não adianta. O teto dela é 0,5%, o que pega o
- * anel sumir, dobrar de espessura ou trocar de lado, e nada além disso.
- *
- * Com a captura ancorada em `tDias = 0`, vinte e três das vinte e quatro cenas dão
- * zero pixel de diferença em três execuções, e o teto caiu para o piso de 0,01%. Antes,
- * as douradas eram fotografadas em datas de simulação diferentes e os tetos mediam o
- * deslocamento dos corpos entre duas fotos. Seguem sem pegar regressão de sub-pixel,
- * que depende do gancho pré-bloom.
- *
- * Para re-medir depois de uma mudança legítima: grave as douradas, rode o arquivo
- * três vezes com `console.log` da fração e recalcule.
+ * `ruidoMedido` é a perda de uma execução do mesmo build contra a mesma dourada; o
+ * teto é três vezes isso, com piso de 0,002. Para re-medir depois de uma mudança
+ * legítima: grave (`DOURADAS=gravar`), rode três vezes com `DOURADAS=medir` e
+ * recalcule.
  */
 const TETOS: Record<string, Record<string, { ruidoMedido: number; teto: number }>> = {
-  // Regravadas depois que a esfera foi consertada: a geometria tinha os polos em ±Y e o
-  // resto do programa trata +Z como polo, e as vinte e quatro imagens travavam esse
-  // erro de noventa graus em vez de acusá-lo. Todas mudaram, inclusive `urano-deitado`,
-  // que existe para pegar eixo errado. O ruído subiu um pouco em algumas cenas, porque
-  // com o polo no lugar há mais detalhe de textura perto do limbo, onde o antialiasing
-  // decide de um jeito ou de outro. Continua medido em três execuções, com teto no
-  // triplo.
+  // Medido em 14/11/2026 contra as douradas gravadas no mesmo dia, uma execução.
+  // Com SwiftShader o navegador não entrega WebGPU, e as duas colunas desenham pelo
+  // caminho WebGL2; a de `webgpu` continua para pegar a escolha de backend errada.
   webgpu: {
-    'anel-rasante': { ruidoMedido: 0.0000, teto: 0.0100 },
-    'jupiter-e-as-galileanas': { ruidoMedido: 0.0000, teto: 0.0100 },
-    'maquete': { ruidoMedido: 0.0005, teto: 0.0100 },
-    'marte-em-orbita-baixa': { ruidoMedido: 0.0000, teto: 0.0100 },
-    'ortografica': { ruidoMedido: 0.0000, teto: 0.0100 },
-    'plano-de-cima': { ruidoMedido: 0.0061, teto: 0.0183 },
-    'saturno-e-os-aneis': { ruidoMedido: 0.0000, teto: 0.0100 },
-    'sol-de-perto': { ruidoMedido: 0.0000, teto: 0.0100 },
-    'tamanho-real': { ruidoMedido: 0.0000, teto: 0.0100 },
-    'terra-e-a-lua': { ruidoMedido: 0.1007, teto: 0.3021 },
-    'urano-deitado': { ruidoMedido: 0.0000, teto: 0.0100 },
-    'visao-geral': { ruidoMedido: 0.0106, teto: 0.0318 },
+    'anel-rasante': { ruidoMedido: 0.00021, teto: 0.00200 },
+    'calisto-com-textura': { ruidoMedido: 0.00015, teto: 0.00200 },
+    'jupiter-e-as-galileanas': { ruidoMedido: 0.00000, teto: 0.00200 },
+    'maquete': { ruidoMedido: 0.00007, teto: 0.00200 },
+    'marte-em-orbita-baixa': { ruidoMedido: 0.00000, teto: 0.00200 },
+    'ortografica': { ruidoMedido: 0.00006, teto: 0.00200 },
+    'plano-de-cima': { ruidoMedido: 0.00010, teto: 0.00200 },
+    'saturno-e-os-aneis': { ruidoMedido: 0.00000, teto: 0.00200 },
+    'sol-de-perto': { ruidoMedido: 0.00000, teto: 0.00200 },
+    'tamanho-real': { ruidoMedido: 0.00045, teto: 0.00200 },
+    'terra-terminador': { ruidoMedido: 0.00000, teto: 0.00200 },
+    'urano-deitado': { ruidoMedido: 0.00000, teto: 0.00200 },
+    'visao-geral': { ruidoMedido: 0.00005, teto: 0.00200 },
   },
   webgl2: {
-    'anel-rasante': { ruidoMedido: 0.0000, teto: 0.0100 },
-    'jupiter-e-as-galileanas': { ruidoMedido: 0.0550, teto: 0.1650 },
-    'maquete': { ruidoMedido: 0.0036, teto: 0.0108 },
-    'marte-em-orbita-baixa': { ruidoMedido: 0.0175, teto: 0.0525 },
-    'ortografica': { ruidoMedido: 0.0000, teto: 0.0100 },
-    'plano-de-cima': { ruidoMedido: 0.0000, teto: 0.0100 },
-    'saturno-e-os-aneis': { ruidoMedido: 0.0000, teto: 0.0100 },
-    'sol-de-perto': { ruidoMedido: 0.0000, teto: 0.0100 },
-    'tamanho-real': { ruidoMedido: 0.0001, teto: 0.0100 },
-    'terra-e-a-lua': { ruidoMedido: 0.0861, teto: 0.2583 },
-    'urano-deitado': { ruidoMedido: 0.0000, teto: 0.0100 },
-    'visao-geral': { ruidoMedido: 0.0000, teto: 0.0100 },
+    'anel-rasante': { ruidoMedido: 0.00002, teto: 0.00200 },
+    'calisto-com-textura': { ruidoMedido: 0.00004, teto: 0.00200 },
+    'jupiter-e-as-galileanas': { ruidoMedido: 0.00001, teto: 0.00200 },
+    'maquete': { ruidoMedido: 0.00024, teto: 0.00200 },
+    'marte-em-orbita-baixa': { ruidoMedido: 0.00000, teto: 0.00200 },
+    'ortografica': { ruidoMedido: 0.00005, teto: 0.00200 },
+    'plano-de-cima': { ruidoMedido: 0.00005, teto: 0.00200 },
+    'saturno-e-os-aneis': { ruidoMedido: 0.00000, teto: 0.00200 },
+    'sol-de-perto': { ruidoMedido: 0.00005, teto: 0.00200 },
+    'tamanho-real': { ruidoMedido: 0.00009, teto: 0.00200 },
+    'terra-terminador': { ruidoMedido: 0.00000, teto: 0.00200 },
+    'urano-deitado': { ruidoMedido: 0.00000, teto: 0.00200 },
+    'visao-geral': { ruidoMedido: 0.00008, teto: 0.00200 },
   },
 };
 
-const tetoDe = (render: string, cena: string): number =>
-  (TETOS[render]?.[cena]?.teto ?? 0.01) / 100;
+const PISO_DA_PERDA = 0.002;
+const tetoDe = (render: string, cena: string): number => TETOS[render]?.[cena]?.teto ?? PISO_DA_PERDA;
 
 /** O tamanho é fixo: uma dourada de outro tamanho não é comparável. */
 const LARGURA = 1000;
@@ -151,9 +119,10 @@ async function junto(
 ): Promise<void> {
   await p.getByRole('option', { name: nome }).click();
   await p.getByRole('button', { name: /^Acompanhar/ }).click();
-  // A transição tem prazo fixo de 0,45 s. Esperar por ela e só então fixar os
-  // ângulos: fixá-los antes seria escrever por cima de uma animação em curso.
-  await p.waitForTimeout(900);
+  // Esperar a transição acabar e só então fixar raio e ângulos: escritos antes, a
+  // transição em curso os sobrescreve. Com renderização por software ela leva
+  // segundos, e os 900 ms fixos de antes deixavam a câmera a 12 UA de Saturno.
+  await assentar(p);
   await p.evaluate(
     ({ r, el, az }) => {
       window.__camera!.raio = r;
@@ -198,13 +167,39 @@ const CENAS: Cena[] = [
   },
   {
     nome: 'anel-rasante',
-    porque: 'o anel quase de perfil: pega o antialiasing por derivada de tela',
-    preparar: async (p) => junto(p, /^Saturno/, 0.004, 0.02),
+    porque: 'o anel a 2° do PRÓPRIO plano, e não da eclíptica: pega o antialiasing por derivada de tela',
+    preparar: async (p) => {
+      await junto(p, /^Saturno/, 0.004, 0.02);
+      // A elevação conta da eclíptica, e o anel de Saturno está inclinado 27° dela:
+      // 0,02 rad de elevação mostrava o anel aberto, mais do que a cena do anel.
+      await p.evaluate(() => {
+        const [x, y, z, w] = window.__orientacaoDe!('saturno')!;
+        // Eixo do corpo: o quatérnio aplicado a (0, 0, 1).
+        const n = [2 * (x * z + w * y), 2 * (y * z - w * x), 1 - 2 * (x * x + y * y)];
+        const az = window.__camera!.azimute;
+        const A = n[0]! * Math.cos(az) + n[1]! * Math.sin(az);
+        const B = n[2]!;
+        const R = Math.hypot(A, B);
+        window.__camera!.elevacao = Math.asin(Math.sin((2 * Math.PI) / 180) / R) - Math.atan2(A, B);
+      });
+    },
   },
   {
-    nome: 'terra-e-a-lua',
-    porque: 'a Terra fora do baricentro, a Lua no lugar, e o terminador com penumbra',
-    preparar: async (p) => junto(p, /^Terra/, 0.004, 0.2),
+    nome: 'terra-terminador',
+    porque: 'a Terra enchendo o quadro com o terminador e a penumbra à vista',
+    preparar: async (p) => {
+      await junto(p, /^Terra/, 0.00025, 0.2);
+      await p.evaluate(() => window.__ladoIluminado!(1.3));
+    },
+  },
+  {
+    nome: 'calisto-com-textura',
+    porque: 'um mosaico do USGS de perto: pega lua espelhada, girada ou com buraco preto',
+    preparar: async (p) => {
+      await p.getByRole('option', { name: /^Júpiter/ }).click();
+      await junto(p, /^Calisto/, 0.00006, 0.2);
+      await p.evaluate(() => window.__ladoIluminado!(0.4));
+    },
   },
   {
     nome: 'jupiter-e-as-galileanas',
@@ -270,7 +265,7 @@ async function retratar(p: Page, cena: Cena, render: string): Promise<PNG> {
   // `assentou` é o que torna a dourada reproduzível: ele diz que nenhuma
   // textura está baixando e que a exposição automática parou de andar. Sem
   // isso, o retrato pega o meio de uma transição e nunca bate duas vezes.
-  await p.waitForFunction(() => window.__assentou?.() === true, undefined, { timeout: 20_000 });
+  await p.waitForFunction(() => window.__assentou?.() === true, undefined, { timeout: 90_000 });
   // Mais 1,2 s depois de `assentou`, e não 0,4. `assentou` aceita a exposição a 0,3% do
   // alvo, folga generosa para "a imagem parou de mudar sozinha" e apertada demais para
   // uma dourada: num planeta que enche a tela, 0,3% de exposição move centenas de
@@ -283,22 +278,22 @@ async function retratar(p: Page, cena: Cena, render: string): Promise<PNG> {
   return PNG.sync.read(bruto);
 }
 
-function comparar(a: PNG, b: PNG): { diferentes: number; total: number; fracao: number; diff: PNG } {
+function comparar(a: PNG, b: PNG): { perda: number; diff: PNG } {
   expect(a.width, 'a dourada tem outro tamanho: regrave').toBe(b.width);
   expect(a.height, 'a dourada tem outro tamanho: regrave').toBe(b.height);
-  const saida = new PNG({ width: a.width, height: a.height });
-  const diferentes = pixelmatch(a.data, b.data, saida.data, a.width, a.height, {
-    threshold: LIMIAR_POR_PIXEL,
-  });
-  const total = a.width * a.height;
-  return { diferentes, total, fracao: diferentes / total, diff: saida };
+  const imagem = (p: PNG) => ({ data: new Uint8ClampedArray(p.data), width: p.width, height: p.height }) as ImageData;
+  const { mssim } = ssim(imagem(a), imagem(b));
+  // A imagem da diferença continua por pixel: é ela que mostra ONDE mudou.
+  const diff = new PNG({ width: a.width, height: a.height });
+  pixelmatch(a.data, b.data, diff.data, a.width, a.height, { threshold: 0.35 });
+  return { perda: 1 - mssim, diff };
 }
 
 for (const render of ['webgpu', 'webgl2']) {
   test.describe(`douradas · ${render}`, () => {
     for (const cena of CENAS) {
       test(`${cena.nome} — ${cena.porque}`, async ({ page }) => {
-        test.setTimeout(90_000);
+        test.setTimeout(240_000);
         const atual = await retratar(page, cena, render);
         const caminho = `${PASTA}${render}/${cena.nome}.png`;
 
@@ -327,12 +322,11 @@ for (const render of ['webgpu', 'webgl2']) {
         // e uma regressão de verdade reprova as duas vezes porque está no código e não no
         // instante.
         const TENTATIVAS = 3;
-        for (let k = 1; !MEDIR && k < TENTATIVAS && melhor.fracao > tetoDe(render, cena.nome); k++) {
+        for (let k = 1; !MEDIR && k < TENTATIVAS && melhor.perda > tetoDe(render, cena.nome); k++) {
           ultimo = await retratar(page, cena, render);
           const outra = comparar(dourada, ultimo);
-          if (outra.fracao < melhor.fracao) melhor = outra;
+          if (outra.perda < melhor.perda) melhor = outra;
         }
-        const { diferentes, total, fracao } = melhor;
         const atualParaAGuarda = ultimo;
 
         // A guarda contra a dourada vazia: se a cena saísse preta, ela bateria
@@ -351,12 +345,12 @@ for (const render of ['webgpu', 'webgl2']) {
 
         const teto = tetoDe(render, cena.nome);
         if (MEDIR) {
-          console.log(`MEDIDA ${render}/${cena.nome} ${(100 * melhor.fracao).toFixed(4)}`);
+          console.log(`MEDIDA ${render}/${cena.nome} ${melhor.perda.toFixed(5)}`);
           // Em modo medir, grava a diferenca sempre que houver QUALQUER pixel
           // trocado — e nao so quando reprova. Uma medicao que so guarda a
           // imagem do caso que estoura o teto nao serve para entender por que o
           // teto e aquele.
-          if (melhor.diferentes > 0) {
+          if (melhor.perda > 0) {
             writeFileSync(`${PASTA}${render}/_diff-${cena.nome}.png`, PNG.sync.write(melhor.diff));
           }
         }
@@ -368,16 +362,15 @@ for (const render of ['webgpu', 'webgl2']) {
         // retângulo de sessenta por dezesseis (um rótulo que trocou de lado).
         // Foram duas hipóteses erradas sobre uma falha destas antes de alguém
         // pensar em olhar onde os pixels estavam.
-        if (melhor.fracao > teto) {
+        if (melhor.perda > teto) {
           const ondeVai = `${PASTA}${render}/_diff-${cena.nome}.png`;
           writeFileSync(ondeVai, PNG.sync.write(melhor.diff));
           test.info().annotations.push({ type: 'diferença', description: ondeVai });
         }
 
         expect(
-          fracao,
-          `${render}/${cena.nome}: ${diferentes} de ${total} pixels (${(100 * fracao).toFixed(4)}%), ` +
-            `teto ${(100 * teto).toFixed(4)}% — melhor de ${TENTATIVAS} capturas`,
+          melhor.perda,
+          `${render}/${cena.nome}: 1 − SSIM = ${melhor.perda.toFixed(5)}, teto ${teto.toFixed(5)} — melhor de ${TENTATIVAS} capturas`,
         ).toBeLessThanOrEqual(teto);
       });
     }

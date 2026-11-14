@@ -15,3 +15,6 @@ dist/
 
 # gerado por ferramentas/baixar_texturas.mjs; o resultado em publico/ e que vai versionado
 .cache-texturas/
+
+# Diferenças geradas pelas douradas quando reprovam.
+testes/e2e/douradas/**/_diff-*.png
