@@ -14,15 +14,9 @@
  *     botao da saida do lado de fora.
  */
 import { expect, test, type Page } from '@playwright/test';
-import { abrir } from './preparar.ts';
+import { abrir, clicarNaCena } from './preparar.ts';
 import { MAXIMO_DE_CORPOS_CRIADOS } from '../../src/nucleo/guardas.ts';
 
-/** Um clique simples no meio do canvas, deslocado por (dx, dy) pixels. */
-async function clicarNaCena(pagina: Page, dx = 0, dy = 0): Promise<void> {
-  const caixa = (await pagina.locator('canvas').boundingBox())!;
-  await pagina.mouse.click(caixa.x + caixa.width / 2 + dx, caixa.y + caixa.height / 2 + dy);
-  await pagina.waitForTimeout(120);
-}
 
 async function entrarEmCriar(pagina: Page): Promise<void> {
   await abrir(pagina);

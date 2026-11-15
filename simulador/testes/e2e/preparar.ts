@@ -58,3 +58,32 @@ export async function assentar(pagina: Page, folgaMs = 300): Promise<void> {
 export async function doisQuadros(pagina: Page): Promise<void> {
   await pagina.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
 }
+
+/**
+ * Clica na cena perto do deslocamento pedido a partir do centro, num ponto em que o
+ * proprio canvas recebe o clique. Uma placa de rotulo por cima dele engole o clique, e
+ * onde as placas caem depende da fonte do sistema: no Linux elas ficam noutro lugar.
+ */
+export async function clicarNaCena(pagina: Page, dx = 0, dy = 0): Promise<void> {
+  const ponto = await pagina.evaluate(
+    ([ox, oy]) => {
+      const r = document.querySelector('canvas')!.getBoundingClientRect();
+      const cx = r.left + r.width / 2 + ox!;
+      const cy = r.top + r.height / 2 + oy!;
+      for (let raio = 0; raio <= 48; raio += 6) {
+        const passos = raio === 0 ? 1 : 16;
+        for (let k = 0; k < passos; k++) {
+          const a = (2 * Math.PI * k) / passos;
+          const x = cx + raio * Math.cos(a);
+          const y = cy + raio * Math.sin(a);
+          if (document.elementFromPoint(x, y)?.tagName === 'CANVAS') return { x, y };
+        }
+      }
+      return null;
+    },
+    [dx, dy],
+  );
+  if (!ponto) throw new Error(`nenhum ponto livre do canvas perto de (${dx}, ${dy})`);
+  await pagina.mouse.click(ponto.x, ponto.y);
+  await pagina.waitForTimeout(120);
+}

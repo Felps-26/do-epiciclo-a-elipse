@@ -7,7 +7,7 @@
  */
 import { expect, test, type Page } from '@playwright/test';
 import { PNG } from 'pngjs';
-import { abrir, assentar } from './preparar.ts';
+import { abrir, assentar, clicarNaCena } from './preparar.ts';
 
 async function variacaoDoCanvas(page: Page): Promise<number> {
   const png = PNG.sync.read(await page.locator('canvas').screenshot());
@@ -58,19 +58,7 @@ test('abre o laboratório de Fourier', async ({ page }) => {
 test('cria um corpo no sandbox', async ({ page }) => {
   await abrirPausado(page);
   await page.getByRole('radio', { name: 'Criar', exact: true }).click();
-  // Um ponto em que o próprio canvas recebe o clique: uma placa de rótulo por cima
-  // dele engole o clique, e onde as placas caem depende do quadro.
-  const ponto = await page.evaluate(() => {
-    const r = document.querySelector('canvas')!.getBoundingClientRect();
-    for (const [dx, dy] of [[160, 0], [160, 60], [-160, 60], [0, 140], [-160, -60], [220, -120]]) {
-      const x = r.left + r.width / 2 + dx!;
-      const y = r.top + r.height / 2 + dy!;
-      if (document.elementFromPoint(x, y)?.tagName === 'CANVAS') return { x, y };
-    }
-    return null;
-  });
-  expect(ponto, 'nenhum ponto livre sobre o canvas').not.toBeNull();
-  await page.mouse.click(ponto!.x, ponto!.y);
+  await clicarNaCena(page, 160, 0);
   await page.getByRole('button', { name: /Criar asteroide/ }).click();
   await expect(page.getByRole('option', { name: /Asteroide 1/ })).toBeVisible();
 });
