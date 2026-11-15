@@ -33,7 +33,7 @@ import { fileURLToPath } from 'node:url';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 import { ssim } from 'ssim.js';
-import { abrir, assentar } from './preparar.ts';
+import { abrir, assentar, doisQuadros } from './preparar.ts';
 
 const PASTA = fileURLToPath(new URL('./douradas/', import.meta.url));
 const GRAVAR = process.env['DOURADAS'] === 'gravar';
@@ -266,14 +266,15 @@ async function retratar(p: Page, cena: Cena, render: string): Promise<PNG> {
   // textura está baixando e que a exposição automática parou de andar. Sem
   // isso, o retrato pega o meio de uma transição e nunca bate duas vezes.
   await p.waitForFunction(() => window.__assentou?.() === true, undefined, { timeout: 90_000 });
-  // Mais 1,2 s depois de `assentou`, e não 0,4. `assentou` aceita a exposição a 0,3% do
-  // alvo, folga generosa para "a imagem parou de mudar sozinha" e apertada demais para
-  // uma dourada: num planeta que enche a tela, 0,3% de exposição move centenas de
-  // pixels através do limiar, e a cena volta diferente sem o código ter mudado. Isso
-  // fazia duas ou três cenas falharem por execução. A suavização é exponencial, então
-  // 1,2 s a mais leva o erro restante muito abaixo de um bit de cor. É espera e não
-  // folga no limite, e por isso não esconde regressão.
+  // `assentou` exige a exposição exatamente no alvo; a espera a mais cobre o quadro em
+  // voo entre o último ajuste e a captura.
   await p.waitForTimeout(1200);
+  // Só o desenho 3D. Rótulos, régua e anel de seleção são HTML por cima do canvas, e o
+  // texto sai diferente em cada sistema operacional: no Linux a perda era 0,017 só por
+  // causa das letras. Eles têm testes próprios. `visibility` herda, e o canvas a
+  // sobrescreve, então ele continua inteiro.
+  await p.addStyleTag({ content: 'body * { visibility: hidden !important; } canvas { visibility: visible !important; }' });
+  await doisQuadros(p);
   const bruto = await p.locator('canvas').screenshot();
   return PNG.sync.read(bruto);
 }

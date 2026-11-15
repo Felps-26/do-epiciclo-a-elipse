@@ -341,6 +341,10 @@ export const HONESTIDADE = {
       'O brilho da cena passa por uma exposição automática, como a de uma câmera fotográfica. ' +
       'Sem ela, Urano e Netuno seriam pixels pretos. O fator aparece escrito sempre que sai de ' +
       'um. A luz que cada corpo recebe continua caindo com o quadrado da distância real.\n\n' +
+      'Em cada ponto, a luz cai também com o ângulo do Sol: rasante perto do terminador, cheia ' +
+      'onde o Sol está a pino. O brilho que volta segue a lei de Lambert nos corpos com ' +
+      'atmosfera e a de Lommel–Seeliger nos de rocha exposta, e é por isso que a Lua cheia não ' +
+      'escurece na borda.\n\n' +
       'Com "Modo maquete" ligado, as distâncias desenhadas deixam de ser proporcionais. A ' +
       'iluminação e a geometria continuam usando as distâncias reais, e as fichas também.',
   },

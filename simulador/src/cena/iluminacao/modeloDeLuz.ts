@@ -2,7 +2,9 @@
  * A luz: uma so, pontual, no Sol.
  *
  * `scene.environment = null` e nenhuma `AmbientLight`. A luz em cada ponto e `N·L`
- * com a penumbra do disco solar e o piso do lado noturno.
+ * com a penumbra do disco solar, o brilho devolvido segue a lei fotometrica do corpo
+ * (`fotometria.ts`, que e a referencia numerica e tem os testes), e por cima vai o
+ * piso do lado noturno.
  *
  * Piso do lado noturno. Este cabecalho dizia que "o lado noturno e preto de
  * verdade", o que continua certo como fisica e estava errado como decisao de
@@ -15,12 +17,15 @@
  * ligado por `honestidade.test.ts`, e `e2e/ladoNoturno.spec.ts` mede os dois lados
  * da regra: a noite aparece e continua sendo noite.
  *
- * Penumbra do terminador. `N·L` cru da uma borda fina demais. O Sol visto da Terra
- * tem 0,53° de diametro, e a penumbra tem a largura desse angulo; sem ela o
- * terminador vira uma navalha.
+ * Penumbra do terminador. O Sol visto da Terra tem 0,53° de diametro, e a borda da
+ * noite e uma penumbra dessa largura. Ate 11/2026 a luz era SO a penumbra,
+ * `smoothstep(−s, s, N·L)`, um degrau: o hemisferio de dia inteiro com o mesmo
+ * brilho e o terminador uma linha dura. Agora e o cosseno, com a penumbra so na faixa
+ * de ±s:
  *
  *     s  = raioDoSol / distanciaAoSol      (meio angulo, em radianos)
- *     nl = smoothstep(−s, s, dot(N, L))
+ *     t  = clamp(N·L, −s, s)
+ *     mu0 = (t + s)² / 4s + max(N·L − s, 0)
  *
  * Sem decaimento automatico. A irradiancia entra por uniforme, calculada na CPU com
  * a distancia real. Com `1/d²` sobre a posicao da cena, o modo maquete (que
@@ -28,7 +33,8 @@
  * que o real, e a compressao alteraria um resultado fisico visivel, que e o que a
  * regra "a escala visual nunca altera a fisica" existe para impedir.
  */
-import { dot, float, mix, normalWorld, positionWorld, smoothstep, uniform, vec3, vec4 } from 'three/tsl';
+import { cameraPosition, dot, float, mix, normalWorld, positionWorld, smoothstep, uniform, vec3, vec4 } from 'three/tsl';
+import type { LeiFotometrica } from './fotometria.ts';
 import type { texture } from 'three/tsl';
 import type Node from 'three/src/nodes/core/Node.js';
 
@@ -86,6 +92,29 @@ export function fatorDeLuz(u: UniformesDeLuz, normal: Node<'vec3'> = normalWorld
   const paraOSol = u.posicaoDoSol.sub(positionWorld).normalize();
   const nl = normal.normalize().dot(paraOSol);
   return smoothstep(u.meioAngulo.negate(), u.meioAngulo, nl);
+}
+
+/**
+ * Cosseno da incidencia com a penumbra do disco solar: `irradianciaComPenumbra` de
+ * `fotometria.ts`, sem desvio de fluxo. E a luz que CHEGA; `fatorDeLuz` continua sendo
+ * a mascara de onde e noite.
+ */
+export function irradianciaDoSol(u: UniformesDeLuz, normal: Node<'vec3'> = normalWorld) {
+  const paraOSol = u.posicaoDoSol.sub(positionWorld).normalize();
+  const x = normal.normalize().dot(paraOSol);
+  const s = u.meioAngulo;
+  const t = x.clamp(s.negate(), s);
+  const rampa = t.add(s).mul(t.add(s)).div(s.mul(4));
+  return rampa.add(x.sub(s).max(float(0)));
+}
+
+/** `brilhoRefletido` de `fotometria.ts`: quanto da luz que chega volta para a camera. */
+export function brilhoDevolvido(lei: LeiFotometrica, mu0: NoFloat, normal: Node<'vec3'> = normalWorld): NoFloat {
+  if (lei === 'lambert') return mu0;
+  // Com a origem flutuante a camera fica perto da origem da cena, mas `cameraPosition`
+  // e o que vale mesmo quando ela sai dali.
+  const mu = normal.normalize().dot(cameraPosition.sub(positionWorld).normalize()).max(float(0));
+  return mu0.mul(2).div(mu0.add(mu).max(float(1e-6)));
 }
 
 /**
@@ -189,6 +218,8 @@ export interface MapasDaSuperficie {
   nuvensColoridas?: boolean;
   /** Quanto o corpo reflete, da ficha da NASA. Modula o brilho do lado de dia. */
   albedoGeometrico: number;
+  /** Lambert para quem tem atmosfera; Lommel–Seeliger para regolito exposto. */
+  lei: LeiFotometrica;
   /** Profundidade optica do anel num raio dado. Ausente em corpo sem anel. */
   tauDoAnel?: (r: NoFloat) => NoFloat;
 }
@@ -200,17 +231,20 @@ export interface MapasDaSuperficie {
  * nuvem nao brilha no escuro, e deixar as luzes de cidade aparecerem atraves dela e
  * um erro visivel.
  *
- * Ha dois fatores de luz. `luz` e o cru, zero na noite, e e o que as luzes de
- * cidade consultam. `luzVisivel` e o que de fato ilumina a superficie, com o piso.
- * Trocar um pelo outro apaga as luzes das cidades ou as faz vazar para o lado de
- * dia.
+ * Ha tres fatores. `mascara` e o degrau da penumbra, zero na noite e um no dia, e e o
+ * que as luzes de cidade consultam: com o cosseno elas acenderiam de dia perto do
+ * terminador. `luz` e o que chega e volta para a camera, sem piso. `luzVisivel` e o
+ * que de fato ilumina a superficie, com o piso.
  */
 export function corDaSuperficie(u: UniformesDeLuz, mapas: MapasDaSuperficie) {
   // A sombra do anel entra na LUZ, e nao na cor: ela nao escurece a
   // superficie, ela impede o Sol de chegar nela.
-  const luz = mapas.tauDoAnel
-    ? fatorDeLuz(u).mul(sombraDoAnelNoCorpo(u, mapas.tauDoAnel))
-    : fatorDeLuz(u);
+  const sombra = mapas.tauDoAnel ? sombraDoAnelNoCorpo(u, mapas.tauDoAnel) : null;
+  // Onde e noite: o degrau da penumbra, que as luzes de cidade consultam.
+  const mascara = sombra ? fatorDeLuz(u).mul(sombra) : fatorDeLuz(u);
+  // Quanto ilumina: cosseno da incidencia, lei do corpo e sombra do anel.
+  const brilho = brilhoDevolvido(mapas.lei, irradianciaDoSol(u));
+  const luz = sombra ? brilho.mul(sombra) : brilho;
   // O piso entra depois da sombra do anel e nao antes, para a faixa que o anel
   // projeta sobre Saturno ser uma sombra com a superficie dentro (como numa fotografia
   // da Cassini) e nao um vazio preto atravessando o planeta.
@@ -225,7 +259,7 @@ export function corDaSuperficie(u: UniformesDeLuz, mapas: MapasDaSuperficie) {
     // dia. A mascara le a luz crua: com a do piso ela nunca chegaria a zero e as
     // cidades acenderiam de dia.
     const noite = mapas.noite.rgb.mul(float(1.4));
-    cor = cor.add(noite.mul(float(1).sub(smoothstep(float(0), float(0.25), luz))));
+    cor = cor.add(noite.mul(float(1).sub(smoothstep(float(0), float(0.25), mascara))));
   }
 
   if (mapas.nuvens) {

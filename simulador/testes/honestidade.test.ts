@@ -27,6 +27,7 @@ import { orientacaoDoCorpo } from '@cena/corpos/orientacao.ts';
 import { limitesDoSol, raioDesenhadoUa } from '@cena/escala/exageroDeTamanho.ts';
 import { comprimirRaio } from '@cena/escala/escalaVisual.ts';
 import { exposicaoQuerida } from '@cena/iluminacao/exposicao.ts';
+import { brilhoRefletido, irradianciaComPenumbra, leiDoCorpo } from '@cena/iluminacao/fotometria.ts';
 import { posicoesDesenhadas } from '@cena/posicoesDesenhadas.ts';
 import { interpolarHermite } from '@nucleo/amostragem.ts';
 import { criarEstado, inserirCorpo } from '@nucleo/estado.ts';
@@ -159,6 +160,21 @@ const AMARRAS: Amarra[] = [
     afirma: /exposição automática/,
     // Saturno a 9,5 UA recebe 1/90 da luz: a cena inteira é multiplicada por 90.
     confere: () => falha(Math.abs(exposicaoQuerida(9.5) - 90.25) < 1e-9, 'a exposição não compensa 1/d²'),
+  },
+  {
+    bloco: 'simplifica',
+    afirma: /a Lua cheia não escurece na borda/,
+    confere: () => {
+      const visual = (chave: string) => CORPOS_VISUAIS[chave]!;
+      if (leiDoCorpo(visual('lua')) !== 'lommelSeeliger') return 'a Lua não usa Lommel–Seeliger';
+      if (leiDoCorpo(visual('terra')) !== 'lambert') return 'a Terra, com atmosfera, não usa Lambert';
+      // Fase zero: incidência igual à emissão em todo o disco, e o brilho não cai.
+      for (const mu of [1, 0.5, 0.1]) {
+        if (Math.abs(brilhoRefletido('lommelSeeliger', mu, mu) - 1) > 1e-12) return 'a Lua cheia escurece na borda';
+      }
+      // E a luz cai com o ângulo do Sol: rasante perto do terminador.
+      return falha(irradianciaComPenumbra(0.1, 0.00465) < irradianciaComPenumbra(0.9, 0.00465) / 5, 'a luz não cai com o ângulo');
+    },
   },
   {
     bloco: 'simplifica',

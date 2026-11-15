@@ -54,6 +54,7 @@ import {
   type NoFloat,
   type UniformesDeLuz,
 } from '../iluminacao/modeloDeLuz.ts';
+import { leiDoCorpo } from '../iluminacao/fotometria.ts';
 import { ESFERA } from './esfera.ts';
 import { nuvensColoridas } from '../texturas/carregador.ts';
 import { orientacaoDoCorpo } from './orientacao.ts';
@@ -192,6 +193,7 @@ export function montarCorpo(chave: string, mapas: MapasDoCorpo, ehOSol: boolean)
         ...(refs['nuvens'] ? { nuvens: refs['nuvens'], nuvensColoridas: nuvensColoridas(visual.chave) } : {}),
         ...(tauDoAnel ? { tauDoAnel } : {}),
         albedoGeometrico: visual.albedoGeometrico,
+        lei: leiDoCorpo(visual),
       });
 
   const malha = new Mesh(GEOMETRIA, material);
