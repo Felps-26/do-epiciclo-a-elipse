@@ -4,6 +4,12 @@ on:
   push:
   pull_request:
 
+# Um push novo no mesmo ramo cancela a execução anterior: a suíte de ponta a ponta
+# leva mais de uma hora, e num repositório privado cada minuto sai da cota da conta.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verificar:
     runs-on: ${{ matrix.os }}
