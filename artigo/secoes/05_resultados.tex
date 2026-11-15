@@ -85,6 +85,8 @@ Depois integramos o sistema de nove corpos de 2026 até $+100$ e $-100$ anos, co
 
 Como a força da \autoref{eq:pn} depende da velocidade, as duas implementações avaliam o termo com uma estimativa da velocidade no meio de cada \emph{kick}; com a velocidade do começo, o erro cairia só com a primeira potência do passo, e não com a quarta.
 
+O programa oferece esse resultado na tela, num modo de precisão alta: passo de 0,125 dia, com o termo. Contra os pontos do Horizons da \autoref{tab:validacao}, Mercúrio fica a 12\,km em um ano, a 64 e 73\,km em $+10$ e $-10$ anos, e a 1\,313 e 903\,km em $+100$ e $-100$ anos, contra 3\,048, 14\,365, 15\,637, 302\,436 e 247\,115\,km no modo padrão. O custo é quatro vezes o do padrão, e o padrão continua sendo o de 0,5 dia, que é o validado na \autoref{tab:validacao}.
+
 \subsection{Escolha do integrador}\label{sec:res-integradores}
 
 \subsubsection{Custo e precisão}
@@ -204,7 +206,7 @@ Considere agora o modelo do \emph{Commentariolus} (\autoref{tab:copernico-raios}
   \legend{(a) Raios em escala logarítmica. (b) A excentricidade implícita em cada epiciclo de Copérnico, comparada com a moderna; as duas estimativas coincidem porque $r_1/r_2 \approx 3$. Fonte: elaborada pelos autores.}
 \end{figure}
 
-Para Marte, Júpiter e Saturno a concordância é boa. Os deferentes reproduzem os semieixos com erro de 0,2\,\% a 3,6\,\%, e os dois epiciclos reproduzem $|c_0|$ e $|c_2|$ com erro de 0,4\,\% a 7,5\,\%. A excentricidade implícita nos raios de Copérnico, $r_1/(1{,}5R)$, fica a menos de 0,005 da moderna nos três casos. Com a mesma métrica usada na \autoref{sec:res-fourier}, o modelo de Copérnico com os números dele erra a posição de Marte em no máximo 0,017\,UA, ou 1,1\,\% do semieixo; o de Júpiter em 0,9\,\%. Em Saturno o erro chega a 3,6\,\%, quase todo vindo do deferente, e não dos epiciclos.
+Para Marte, Júpiter e Saturno a concordância é boa. Os deferentes reproduzem os semieixos com erro de 0,2\,\% a 3,6\,\%, e os dois epiciclos reproduzem $|c_0|$ e $|c_2|$ com erro de 0,4\,\% a 7,4\,\%. A excentricidade implícita nos raios de Copérnico, $r_1/(1{,}5R)$, fica a menos de 0,005 da moderna nos três casos. Com a mesma métrica usada na \autoref{sec:res-fourier}, o modelo de Copérnico com os números dele erra a posição de Marte em no máximo 0,017\,UA, ou 1,1\,\% do semieixo; o de Júpiter em 0,9\,\%. Em Saturno o erro chega a 3,6\,\%, quase todo vindo do deferente, e não dos epiciclos.
 
 Para Mercúrio e Vênus a concordância é pior, e por razões diferentes. Em Mercúrio a excentricidade é grande o bastante para que os termos de segunda ordem, desprezados na \autoref{eq:copernico-fourier}, cheguem a 10--15\,\% dos de primeira; além disso, o modelo de Mercúrio é historicamente o mais complicado da astronomia pré-kepleriana. Em Vênus a órbita é quase circular, e a excentricidade implícita (0,028) é quatro vezes a real; uma hipótese é que os dados de Copérnico para Vênus carreguem a marca da excentricidade da própria órbita da Terra (0,017), da qual um planeta interior é sempre observado. Ela é testada na \autoref{sec:sol-medio}.
 
@@ -268,7 +270,7 @@ A \autoref{fig:kepler-iteracoes} mede o número de iterações de Newton necess�
 
 \subsection{Erro das luas}\label{sec:res-luas}
 
-A \autoref{tab:luas} mostra o erro de posição das treze luas propagadas analiticamente, medido contra o JPL Horizons entre 2020 e 2040, a cada 13 dias. Os parâmetros foram ajustados em dados de 2000 a 2016, de modo que essa janela mede o erro do \emph{modelo} e não o do ajuste. O erro não cresce de forma sistemática: a razão entre o pior erro da segunda e o da primeira metade da janela fica entre 0,97 e 1,07 para seis das treze luas e não passa de 1,7 em nenhuma. Ele vem provavelmente de termos periódicos que um modelo de dois corpos com precessão não contém (por exemplo, as ressonâncias entre as galileanas); não separamos as causas.
+A \autoref{tab:luas} mostra o erro de posição das treze luas, medido contra o JPL Horizons entre 2020 e 2040, a cada 13 dias. Os parâmetros das doze propagadas por Kepler foram ajustados em dados de 2000 a 2016, de modo que essa janela mede o erro do \emph{modelo} e não o do ajuste. A Lua é o caso que a série de \citeonline{meeus1998} resolve: com elementos médios ela errava até 15\,293\,km (4\,\% do semieixo), porque o Sol a perturba mais do que um modelo de duas massas admite; com a série, erra no máximo 20\,km. O erro não cresce de forma sistemática: a razão entre o pior erro da segunda e o da primeira metade da janela fica entre 0,97 e 1,07 para seis das treze luas e não passa de 1,7 em nenhuma. Ele vem provavelmente de termos periódicos que um modelo de dois corpos com precessão não contém (por exemplo, as ressonâncias entre as galileanas); não separamos as causas.
 
 \begin{table}[htb]
   \centering
@@ -279,7 +281,7 @@ A \autoref{tab:luas} mostra o erro de posição das treze luas propagadas analit
     \toprule
     Lua & Planeta & $a$ (km) & Erro máximo (km) & Erro RMS (km) & Máximo / $a$ \\
     \midrule
-    Lua      & Terra   & 384\,400   & 15\,293 & 7\,655  & 4,0\,\% \\
+    Lua      & Terra   & 384\,400   & 20      & 7       & 0,005\,\% \\
     Fobos    & Marte   & 9\,375     & 822     & 375     & 8,8\,\% \\
     Deimos   & Marte   & 23\,457    & 456     & 279     & 1,9\,\% \\
     Io       & Júpiter & 421\,800   & 7\,699  & 3\,943  & 1,8\,\% \\
@@ -294,7 +296,7 @@ A \autoref{tab:luas} mostra o erro de posição das treze luas propagadas analit
     Tritão   & Netuno  & 354\,800   & 52\,636 & 29\,194 & 14,8\,\% \\
     \bottomrule
   \end{tabular}
-  \legend{Fonte: elaborada pelos autores, com \arquivo{ferramentas/conferir\_luas.mjs}.}
+  \legend{A Lua sai da série de \citeonline{meeus1998}; as demais, de Kepler com precessão secular. Fonte: elaborada pelos autores, com \arquivo{ferramentas/conferir\_luas.mjs}.}
 \end{table}
 
 \subsection{Fenômenos que emergem da simulação}
