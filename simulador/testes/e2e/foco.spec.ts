@@ -14,7 +14,7 @@
  * disfarcado de escalar.
  */
 import { expect, test, type Page } from '@playwright/test';
-import { abrir, assentar } from './preparar.ts';
+import { abrir, assentar, doisQuadros } from './preparar.ts';
 
 const UA_KM = 149597870.7;
 
@@ -59,7 +59,7 @@ test.beforeEach(async ({ page }) => {
   // Pausado: a posicao dos corpos deixa de depender de quanto tempo cada
   // asserção levou para chegar.
   await page.getByRole('button', { name: 'Pausar' }).click();
-  await page.waitForTimeout(400);
+  await assentar(page);
 });
 
 test('duplo clique num planeta leva a camera a tres raios dele', async ({ page }) => {
@@ -130,7 +130,7 @@ test('as fitas dos outros corpos somem ao chegar perto, e VOLTAM ao afastar', as
   await page.evaluate(() => {
     window.__camera!.raio = 31.5;
   });
-  await page.waitForTimeout(300);
+  await assentar(page);
   const devolta = await fita(page, 'saturno');
   expect(devolta.opacidadeDaOrbita).toBeCloseTo(OPACIDADE_DA_FITA, 6);
   expect(devolta.orbitaVisivel).toBe(true);
@@ -158,7 +158,7 @@ test('o esmaecimento MULTIPLICA: nao liga o que foi desligado', async ({ page })
   const caixa = page.getByRole('checkbox', { name: /Caminhos previstos/ });
   await caixa.click();
   await expect(caixa).not.toBeChecked();
-  await page.waitForTimeout(200); // a cena aplica a opcao no proximo quadro
+  await doisQuadros(page); // a cena aplica a opcao no proximo quadro
   expect((await fita(page, 'saturno')).orbitaVisivel, 'a órbita deveria estar desligada')
     .toBe(false);
 
@@ -167,7 +167,7 @@ test('o esmaecimento MULTIPLICA: nao liga o que foi desligado', async ({ page })
   await page.evaluate(() => {
     window.__camera!.raio = 31.5;
   });
-  await page.waitForTimeout(300);
+  await assentar(page);
 
   expect((await fita(page, 'saturno')).orbitaVisivel, 'a órbita voltou sozinha depois do foco')
     .toBe(false);

@@ -142,7 +142,10 @@ async function assentar(pagina: Page): Promise<void> {
 test.beforeEach(async ({ page }) => {
   test.setTimeout(180_000);
   await page.setViewportSize({ width: 900, height: 900 });
-  await abrir(page);
+  // A 30 dias por segundo a Lua dá uma volta em menos de um segundo de relógio, e a
+  // fase em que o "Pausar" a pegava era sorteio: com o lado oculto quase todo na
+  // sombra, o gradiente do terminador contava como mar. Quase parado, o instante é fixo.
+  await abrir(page, { diasPorSegundo: 1e-6 });
   await expect(page.getByRole('banner')).toBeVisible();
   await page.waitForFunction(() => window.__camera !== undefined);
   await page.getByRole('button', { name: 'Pausar' }).click();
@@ -150,7 +153,13 @@ test.beforeEach(async ({ page }) => {
   await page.getByRole('radio', { name: 'Só elas' }).click();
   await page.getByRole('option', { name: /^Lua/ }).click();
   await page.keyboard.press('4');
-  await page.waitForFunction(() => window.__assentou?.() === true, undefined, { timeout: 60_000 });
+  // Chegar, e nao so assentar: logo depois da tecla o voo pode nem ter comecado, e um
+  // voo que termina depois de `olharDe` sobrescreve o angulo que o teste escolheu.
+  await page.waitForFunction(
+    () => (window.__camera?.raio ?? 1) < 1e-3 && window.__assentou?.() === true,
+    undefined,
+    { timeout: 90_000 },
+  );
   await page.getByRole('button', { name: 'Esconder painel' }).click();
   await page.waitForTimeout(300);
 });
