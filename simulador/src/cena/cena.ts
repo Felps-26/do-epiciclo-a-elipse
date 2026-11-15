@@ -33,7 +33,7 @@ import { alturaVisivelUa, posicaoDaCamera, type EstadoCamera } from './camera/ca
 import { aplicarOrigem, distancias } from './origemFlutuante.ts';
 import { fatorDeProjecao, limitesDoSol, raioDesenhadoUa } from './escala/exageroDeTamanho.ts';
 import { montarCoroa, montarCorpo, montarCascaDeProva, type CorpoMontado } from './corpos/fabrica.ts';
-import { Texturas, nivelDoFundo } from './texturas/carregador.ts';
+import { Texturas, nivelDoFundo, tetoDaBusca } from './texturas/carregador.ts';
 import { exposicaoAssentou, exposicaoQuerida, suavizarExposicao } from './iluminacao/exposicao.ts';
 import { CORPOS_VISUAIS, OBLIQUIDADE_DA_ECLIPTICA, mapaDe } from '../dados/corposVisuais.ts';
 import { criarComposicao } from './pos/composicao.ts';
@@ -190,7 +190,8 @@ export function criarCena(
   // ser preto de verdade.
   cena.environment = null;
 
-  const texturas = new Texturas(renderizador);
+  const tetoDeTextura = tetoDaBusca(location.search);
+  const texturas = new Texturas(renderizador, undefined, tetoDeTextura);
   /** A coroa do Sol. Criada junto com o corpo dele, logo abaixo. */
   let coroa: Mesh | null = null;
 
@@ -259,26 +260,61 @@ export function criarCena(
   // equatorial do panorama para a ecliptica da cena — sem isso o plano da
   // galaxia apareceria inclinado 23° a mais.
   const viaLactea = mapaDe('ceu', 'viaLactea');
-  const nivelDaViaLactea = viaLactea ? nivelDoFundo(viaLactea.niveis) : null;
-  if (viaLactea && nivelDaViaLactea) {
-    new TextureLoader().load(viaLactea.niveis[nivelDaViaLactea]!, (t) => {
-      t.mapping = EquirectangularReflectionMapping;
-      t.colorSpace = SRGBColorSpace;
-      cena.background = t;
-      cena.backgroundIntensity = 0.32;
-      cena.backgroundRotation = new Euler(-OBLIQUIDADE_DA_ECLIPTICA * (Math.PI / 180), 0, 0);
-    });
-  }
+  const nivelDaViaLactea = viaLactea ? nivelDoFundo(viaLactea.niveis, new Set(), tetoDeTextura) : null;
+  // O ceu chega por fora de `Texturas`, e `assentou` precisa esperar por ele: numa
+  // maquina lenta o panorama de 8K decodificava depois de a cena se dizer parada, e a
+  // imagem mudava inteira por baixo. `ceuNoQuadro` guarda o quadro em que os dois
+  // chegaram; a GPU so recebe o fundo no quadro seguinte.
+  let fundoPendente = Boolean(viaLactea && nivelDaViaLactea);
+  let estrelasPendentes = true;
+  let ceuNoQuadro = Number.POSITIVE_INFINITY;
+  const ceuResolvido = (): void => {
+    if (!fundoPendente && !estrelasPendentes) ceuNoQuadro = quadrosDesenhados;
+  };
+  // Do maior nivel para baixo: num clone so o 2K esta no disco, e o 8K da 404.
+  const fundosFalhos = new Set<string>();
+  const carregarFundo = (): void => {
+    const nivel = viaLactea ? nivelDoFundo(viaLactea.niveis, fundosFalhos, tetoDeTextura) : null;
+    if (!viaLactea || !nivel) {
+      fundoPendente = false;
+      ceuResolvido();
+      return;
+    }
+    const caminho = viaLactea.niveis[nivel]!;
+    new TextureLoader().load(
+      caminho,
+      (t) => {
+        t.mapping = EquirectangularReflectionMapping;
+        t.colorSpace = SRGBColorSpace;
+        cena.background = t;
+        cena.backgroundIntensity = 0.32;
+        cena.backgroundRotation = new Euler(-OBLIQUIDADE_DA_ECLIPTICA * (Math.PI / 180), 0, 0);
+        fundoPendente = false;
+        ceuResolvido();
+      },
+      undefined,
+      () => {
+        fundosFalhos.add(caminho);
+        carregarFundo();
+      },
+    );
+  };
+  if (fundoPendente) carregarFundo();
 
   // O catalogo entra quando chega. Sem ele o programa abre igual, com o
   // panorama da Via Lactea ao fundo e nada mais.
   let estrelas: Estrelas | null = null;
-  void carregarEstrelas().then((e) => {
-    if (!e) return;
-    estrelas = e;
-    e.mostrar(comEstrelas);
-    cena.add(e.pontos);
-  });
+  void carregarEstrelas()
+    .then((e) => {
+      if (!e) return;
+      estrelas = e;
+      e.mostrar(comEstrelas);
+      cena.add(e.pontos);
+    })
+    .finally(() => {
+      estrelasPendentes = false;
+      ceuResolvido();
+    });
 
   /** Ver o cache em `projetar`. */
   let quadrosDesenhados = 0;
@@ -384,6 +420,7 @@ export function criarCena(
       return (
         texturas.pendentes === 0 &&
         texturas.baixando === 0 &&
+        quadrosDesenhados >= ceuNoQuadro + 2 &&
         exposicaoAssentou(exposicaoSuave, exposicao)
       );
     },

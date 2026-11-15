@@ -53,26 +53,48 @@ const DESCE_ACIMA_DE_8K = 12;
 const SOBE_ABAIXO_DE = 20;
 const DESCE_ACIMA_DE = 40;
 
-/** O fundo nao tem distancia: entra no maior nivel que existe. */
-export function nivelDoFundo(niveis: Partial<Record<string, string>>): Nivel | null {
-  return melhorDisponivel('8k', niveis);
+/** O fundo nao tem distancia: entra no maior nivel que existe, que nao falhou e cabe no teto. */
+export function nivelDoFundo(
+  niveis: Partial<Record<string, string>>,
+  falhos: ReadonlySet<string> = new Set(),
+  teto: Nivel = '8k',
+): Nivel | null {
+  return melhorDisponivel(teto, niveis, falhos);
 }
 
 /** Do mais alto para o mais baixo. `melhorDisponivel` desce por esta ordem. */
 const DO_ALTO_PARA_O_BAIXO: readonly Nivel[] = ['8k', '4k', '2k'];
 
+/** O menor dos dois niveis. */
+const limitar = (pedido: Nivel, teto: Nivel): Nivel =>
+  DO_ALTO_PARA_O_BAIXO.indexOf(pedido) >= DO_ALTO_PARA_O_BAIXO.indexOf(teto) ? pedido : teto;
+
+/**
+ * `?texturas=2k` limita tudo ao 2K. As imagens de referencia usam isso: o git so traz o
+ * 2K, e a imagem tem de ser a mesma num clone e numa maquina com o 8K baixado.
+ */
+export function tetoDaBusca(busca: string): Nivel {
+  const pedido = new URLSearchParams(busca).get('texturas');
+  return pedido === '2k' || pedido === '4k' ? pedido : '8k';
+}
+
 /**
  * Nivel mais alto que existe no mapa, comecando pelo pedido e descendo. Devolve
  * `null` quando o mapa nao tem nivel nenhum, o que seria defeito de dados.
+ *
+ * `falhos` sao arquivos que deram erro ao carregar. O git so traz o 2K: num clone, os
+ * de 4K e 8K estao no manifesto e nao no disco.
  */
 export function melhorDisponivel(
   pedido: Nivel,
   disponiveis: Partial<Record<string, string>>,
+  falhos: ReadonlySet<string> = new Set(),
 ): Nivel | null {
   const comeco = DO_ALTO_PARA_O_BAIXO.indexOf(pedido);
   for (let i = comeco; i < DO_ALTO_PARA_O_BAIXO.length; i++) {
     const n = DO_ALTO_PARA_O_BAIXO[i]!;
-    if (disponiveis[n]) return n;
+    const caminho = disponiveis[n];
+    if (caminho && !falhos.has(caminho)) return n;
   }
   return null;
 }
@@ -118,10 +140,13 @@ function corSolida(r: number, g: number, b: number): Texture {
 export class Texturas {
   private readonly entradas = new Map<string, Entrada>();
   private readonly fila: (() => void)[] = [];
+  /** Arquivos que deram erro: nao sao pedidos de novo, e o nivel de baixo assume. */
+  private readonly falhos = new Set<string>();
 
   constructor(
     private readonly renderizador: Pick<WebGPURenderer, 'initTexture'>,
     private readonly carregar: Carregar = carregarDoDisco,
+    private readonly teto: Nivel = '8k',
   ) {}
 
   /** A textura em uso agora. Sempre devolve algo desenhavel. */
@@ -160,7 +185,7 @@ export class Texturas {
     // 8K num mapa que so vai ate 4K, o resolvido e '4k', e se o corpo ja esta em '4k' nao
     // ha o que fazer. A versao anterior desistia quando o nivel pedido nao existia, e
     // Marte chegava a orbita baixa ainda em 2K.
-    const efetivo = melhorDisponivel(nivelPara(distanciaEmRaios, e.nivel), mapa.niveis);
+    const efetivo = melhorDisponivel(limitar(nivelPara(distanciaEmRaios, e.nivel), this.teto), mapa.niveis, this.falhos);
     if (efetivo === null || e.nivel === efetivo || e.carregando === efetivo) return;
     const querido = efetivo;
     const caminho = mapa.niveis[querido]!;
@@ -192,6 +217,9 @@ export class Texturas {
       },
       undefined,
       () => {
+        // Sem isto o mesmo arquivo era pedido de novo a cada quadro, para sempre, e
+        // `baixando` nunca zerava.
+        this.falhos.add(caminho);
         e.carregando = null;
       },
     );

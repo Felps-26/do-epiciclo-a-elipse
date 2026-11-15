@@ -12,11 +12,24 @@
  * servidor.mjs. Hoje nada depende de SharedArrayBuffer; a paridade e para que uma diferenca
  * entre desenvolvimento e entrega nunca apareca so na entrega.
  */
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import preact from '@preact/preset-vite';
+import { existsSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
+import { podarNiveis } from './ferramentas/podarTexturas.ts';
 
 const daPasta = (caminho: string) => fileURLToPath(new URL(caminho, import.meta.url));
+
+/** O manifesto de texturas entra só com os níveis que estão em `publico/`. */
+const podarTexturas = (): Plugin => ({
+  name: 'podar-texturas',
+  enforce: 'pre',
+  transform(codigo, id) {
+    if (!id.replace(/\\/g, '/').endsWith('/src/dados/texturas.json')) return null;
+    const podado = podarNiveis(JSON.parse(codigo), (caminho: string) => existsSync(daPasta(`./publico/${caminho}`)));
+    return { code: JSON.stringify(podado), map: null };
+  },
+});
 
 const CABECALHOS = {
   'Cross-Origin-Opener-Policy': 'same-origin',
@@ -30,7 +43,7 @@ export default defineConfig({
   // porque o carregamento e por demanda: quem decide se busca o 2K ou o 4K e a
   // distancia da camera, em tempo de execucao, e nao o empacotador.
   publicDir: 'publico',
-  plugins: [preact()],
+  plugins: [preact(), podarTexturas()],
   resolve: {
     alias: {
       '@contratos': daPasta('./src/contratos'),

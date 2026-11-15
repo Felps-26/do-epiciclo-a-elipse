@@ -236,7 +236,8 @@ const CENAS: Cena[] = [
 /** Deixa a cena pronta e parada, e devolve o PNG do canvas. */
 async function retratar(p: Page, cena: Cena, render: string): Promise<PNG> {
   await p.setViewportSize({ width: LARGURA + 340, height: ALTURA + 120 });
-  await abrir(p, {}, render === 'webgl2' ? '/?render=webgl2' : '/');
+  // Só o 2K, que é o que o git traz: a imagem tem de ser a mesma num clone.
+  await abrir(p, {}, render === 'webgl2' ? '/?render=webgl2&texturas=2k' : '/?texturas=2k');
   await expect(p.getByRole('banner')).toBeVisible();
   await p.waitForFunction(() => window.__camera !== undefined);
   // Pausar ANTES de mexer na câmera: com o tempo correndo, o instante do
