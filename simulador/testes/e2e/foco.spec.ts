@@ -130,9 +130,11 @@ test('as fitas dos outros corpos somem ao chegar perto, e VOLTAM ao afastar', as
   await page.evaluate(() => {
     window.__camera!.raio = 31.5;
   });
-  await assentar(page);
+  // O estado da fita muda no quadro seguinte, e `assentar` pode responder antes dele:
+  // com nada carregando, a cena já está assentada no instante da escrita.
+  await expect.poll(async () => (await fita(page, 'saturno')).opacidadeDaOrbita, { timeout: 30_000 })
+    .toBeCloseTo(OPACIDADE_DA_FITA, 6);
   const devolta = await fita(page, 'saturno');
-  expect(devolta.opacidadeDaOrbita).toBeCloseTo(OPACIDADE_DA_FITA, 6);
   expect(devolta.orbitaVisivel).toBe(true);
 });
 
@@ -168,6 +170,7 @@ test('o esmaecimento MULTIPLICA: nao liga o que foi desligado', async ({ page })
     window.__camera!.raio = 31.5;
   });
   await assentar(page);
+  await doisQuadros(page);
 
   expect((await fita(page, 'saturno')).orbitaVisivel, 'a órbita voltou sozinha depois do foco')
     .toBe(false);
