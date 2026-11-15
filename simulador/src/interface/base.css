@@ -3,6 +3,9 @@
  * de antes, na mesma ordem: a ordem aqui E a cascata, e trocar duas linhas muda o que
  * vence quando duas regras empatam em especificidade.
  */
+/* A fonte de `tokens.css`, empacotada no build. Sem esta linha o texto caía na fonte
+   do sistema, que muda a largura dos controles de um sistema operacional para outro. */
+@import '@fontsource-variable/inter/index.css';
 @import './estilos/tokens.css';
 @import './estilos/utilitarios.css';
 @import './estilos/estrutura.css';
