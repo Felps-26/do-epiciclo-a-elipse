@@ -44,7 +44,9 @@ interface Linha {
 }
 
 const linhas: Linha[] = [];
-for (const l of contrato.split('\n')) {
+// CRLF tambem: o checkout no Windows converte, e o `\r` sobrando no fim da linha
+// impedia o corte do ultimo pipe, e a tabela saia vazia.
+for (const l of contrato.split(/\r?\n/)) {
   if (!/^\|\s*\d+\s*\|/.test(l)) continue;
   // Corta nos pipes que NAO estao escapados: o titulo do item 24 contem
   // `\|L\|`, o modulo do momento angular, e um split ingenuo o parte em tres.
