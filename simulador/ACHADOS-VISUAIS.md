@@ -4,6 +4,8 @@ Sete dimensões foram varridas em paralelo, e cada achado foi depois atacado por
 
 Estado em 14/11/2026: os 40 achados estão corrigidos. A coluna de estado diz onde está o teste de cada um: os que apontam para `testes/e2e/` foram conferidos na tela; os demais, por teste de unidade sobre a função que decide o que se desenha.
 
+Em 15/11/2026 #19, #20, #21, #23, #24, #29 e #30 foram também conferidos na tela, em imagens do programa construído (Chromium com SwiftShader). Ficam só com teste de unidade #18, que pede uma caixa desmarcada e é medido pelo contraste das cores, e #26, #28 e #31, que acontecem durante o movimento e não aparecem num quadro parado.
+
 "Por leitura de código" quer dizer que o defeito foi encontrado no código, mas não foi observado na tela na triagem de 06/11/2026; por isso o número real de defeitos visíveis pode ser menor.
 
 Um achado refutado não deve ser reaberto sem ler o motivo da refutação.
