@@ -30,7 +30,7 @@ Rascunho completo em LaTeX (abnTeX2), pronto para o Overleaf.
 - Formato: hoje é "trabalho acadêmico" (capa, folha de rosto, capítulos).
   Para virar artigo, ver o comentário no topo de `main.tex`.
 - Espaçamento: está simples; alguns cursos exigem 1,5 (`\OnehalfSpacing`).
-- Seção 5.4 ("Copérnico revisitado") é a parte mais forte e a que mais merece
+- Seção 5.5 ("Copérnico revisitado") é a parte mais forte e a que mais merece
   leitura crítica do professor: depende da leitura das frequências do modelo
   do Commentariolus (frequência zero para o 1º epiciclo), conferida na tradução
   de Rosen (1939, p. 74–75). Em Vênus o mecanismo é outro (p. 81–82).
