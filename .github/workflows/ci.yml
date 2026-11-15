@@ -41,9 +41,9 @@ jobs:
   # todas as dicas pelo teclado) e os @gpu, que medem o que acontece por quadro
   # (giro, voo, placas) e precisam de uma placa de vídeo de verdade; rodam à mão.
   ponta-a-ponta:
-    # Fixo, e não ubuntu-latest: desde 19/10/2026 o rótulo aponta para o 26.04, em que o
-    # desenho por software sai diferente (44 falhas, perdas de SSIM de 0,2 a 0,4). As
-    # imagens foram gravadas e conferidas no 24.04, onde a suíte passa.
+    # Fixo, e não ubuntu-latest: o rótulo muda de versão sozinho (desde 19/10/2026 é o
+    # 26.04), e as imagens de referência foram gravadas e conferidas no 24.04. Trocar de
+    # versão é uma decisão, com as imagens conferidas de novo.
     runs-on: ubuntu-24.04
     # Medido: 2h45 no executor do GitHub, com SwiftShader. 180 deixava pouca folga.
     timeout-minutes: 240
