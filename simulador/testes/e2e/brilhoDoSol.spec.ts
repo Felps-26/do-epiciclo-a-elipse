@@ -4,24 +4,33 @@
  */
 import { expect, test } from '@playwright/test';
 import { PNG } from 'pngjs';
-import { abrir } from './preparar.ts';
+import { abrir, assentar } from './preparar.ts';
 
 test('na câmera padrão, o pixel de Mercúrio não é saturado pelo brilho do Sol', async ({ page }) => {
-  await abrir(page);
+  // Quase parado: a 30 dias por segundo, onde Mercúrio estava na pausa dependia da
+  // velocidade da máquina, e no CI ele aparecia quase atrás do Sol.
+  await abrir(page, { diasPorSegundo: 1e-6 });
   await expect(page.getByRole('banner')).toBeVisible();
   test.setTimeout(90_000);
   await page.waitForFunction(() => window.__projecoes !== undefined);
   await page.getByRole('button', { name: 'Pausar' }).click();
-  await page.waitForFunction(() => window.__assentou?.() === true, undefined, { timeout: 60_000 });
+  await assentar(page);
 
   const alvo = await page.evaluate(() => {
     const p = window.__projecoes!().find((x) => x.chave === 'mercurio')!;
     const sol = window.__projecoes!().find((x) => x.chave === 'sol')!;
     const c = document.querySelector('canvas')!.getBoundingClientRect();
-    return { x: c.left + p.x, y: c.top + p.y, distancia: Math.hypot(p.x - sol.x, p.y - sol.y), raioDoSol: sol.raioPx };
+    const m = window.__posicaoNaCena!('mercurio')!;
+    return {
+      x: c.left + p.x,
+      y: c.top + p.y,
+      // Em 3D e nao na tela: a camera inclinada encurta a distancia projetada conforme o
+      // ponto da orbita, e o limite do B3 (0,4 da distancia de Mercurio) e espacial.
+      dMercurio: Math.hypot(m.x, m.y, m.z),
+      raioDoSol: window.__raioAparente!('sol') * sol.distanciaUa,
+    };
   });
-  // O disco do Sol fica dentro da órbita desenhada de Mercúrio.
-  expect(alvo.raioDoSol).toBeLessThan(alvo.distancia * 0.5);
+  expect(alvo.raioDoSol).toBeLessThanOrEqual(alvo.dMercurio * 0.4 * 1.000001);
 
   const png = PNG.sync.read(await page.screenshot({ clip: { x: alvo.x - 1, y: alvo.y - 1, width: 3, height: 3 } }));
   let maior = 0;

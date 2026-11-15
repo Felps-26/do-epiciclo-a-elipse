@@ -38,7 +38,10 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         // SwiftShader desenha igual em qualquer maquina e no CI, entao as imagens de
         // referencia valem em todo lugar. O Metal do Mac fica para conferencia manual.
-        launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--enable-unsafe-webgpu'] },
+        // Sem `--enable-unsafe-webgpu`: no Linux ela entrega um WebGPU por software cujo
+        // canvas sai vazio na captura, e as referencias foram gravadas pela queda para
+        // WebGL2, que e o que o Windows faz sem placa de video.
+        launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] },
       },
     },
   ],
