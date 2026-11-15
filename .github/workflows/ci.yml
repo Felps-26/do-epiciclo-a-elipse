@@ -39,7 +39,8 @@ jobs:
   # (giro, voo, placas) e precisam de uma placa de vídeo de verdade; rodam à mão.
   ponta-a-ponta:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    # Medido: 2h45 no executor do GitHub, com SwiftShader. 180 deixava pouca folga.
+    timeout-minutes: 240
     defaults:
       run:
         working-directory: simulador
@@ -58,7 +59,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: falhas-e2e
+          # Sem os trace.zip: uma falha subiu 514 MB, acima da cota de armazenamento de
+          # um repositório privado gratuito. O contexto do erro e as diferenças bastam.
           path: |
-            simulador/test-results/
+            simulador/test-results/**/error-context.md
+            simulador/test-results/**/*.png
             simulador/testes/e2e/douradas/**/_diff-*.png
           retention-days: 14
