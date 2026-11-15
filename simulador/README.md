@@ -64,11 +64,11 @@ As specs e o CI rodam no Chromium com SwiftShader (`--use-angle=swiftshader`), q
 
 `NAVEGADORES=todos npx playwright test fumaca` roda a spec de fumaça (abrir, chegar perto, laboratório, sandbox) em outros navegadores.
 
-| Navegador | Desenho | Resultado (14/11/2026, Windows 11) |
+| Navegador | Desenho | Resultado (15/11/2026, Windows 11) |
 |---|---|---|
-| Chromium (Playwright, SwiftShader) | WebGL2, por queda | fumaça e suíte passam |
+| Chromium (Playwright, SwiftShader) | WebGL2, por queda | fumaça e suíte passam (152 testes, sem `@lento` e `@gpu`) |
 | Microsoft Edge (placa de vídeo) | WebGPU | fumaça passa |
-| Firefox | — | não testado: o Playwright precisa baixar o navegador dele |
+| Firefox (Playwright) | WebGL2, por queda | fumaça passa |
 
 ## Erro publicado
 
