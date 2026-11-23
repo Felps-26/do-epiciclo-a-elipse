@@ -37,11 +37,15 @@ const LIMIAR = 1.0;
 const RAIO = 0.55;
 
 export function criarComposicao(renderizador: WebGPURenderer): Composicao {
+  // `?msaa=0` tira o antisserrilhado do alvo. Existe para diagnostico: as fatias de
+  // profundidade carregam a cor de uma passada para a outra, e e esse carregamento
+  // que depende do driver quando o alvo e multiamostrado.
+  const amostras = new URLSearchParams(location.search).get('msaa') === '0' ? 0 : 4;
   function novoAlvo(l: number, a: number): RenderTarget {
     return new RenderTarget(l, a, {
       type: HalfFloatType, // HDR: sem isto o valor 6 do Sol seria cortado em 1
       depthBuffer: true,
-      samples: 4,
+      samples: amostras,
     });
   }
 

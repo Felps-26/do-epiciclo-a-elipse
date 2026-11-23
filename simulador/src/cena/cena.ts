@@ -802,7 +802,11 @@ export function criarCena(
 
       const janelas = ehOrtografica
         ? [janelaOrtografica(maisProximo, maisDistante)]
-        : fatiasDeProfundidade(maisProximo, maisDistante, 2);
+        : // Uma fatia quando ela basta (a visao geral inteira cabe numa razao de 1e5).
+          // Pedia 2 sempre, e uma segunda passada sem necessidade e onde a placa de video
+          // pode perder a cor da primeira: em algumas, o Sol e o lado de tras das orbitas
+          // sumiam na visao geral.
+          fatiasDeProfundidade(maisProximo, maisDistante, 1);
       fatias = janelas.length;
 
       // Todas as fatias escrevem no MESMO alvo HDR; o bloom le o alvo pronto,
@@ -813,15 +817,18 @@ export function criarCena(
         ativa.near = j.near;
         ativa.far = j.far;
         ativa.updateProjectionMatrix();
-        if (k === 0) {
-          renderizador.autoClear = true;
-        } else {
-          renderizador.autoClear = false;
-          renderizador.clearDepth();
-        }
+        // A partir da segunda fatia, a PROPRIA passada limpa a profundidade e carrega a
+        // cor. Era `clearDepth()` avulso, uma passada so de limpeza sobre o alvo com
+        // MSAA, e em algumas placas (WebGPU) ela perdia a cor da fatia de tras: o Sol e
+        // a metade de tras das orbitas sumiam na visao geral.
+        renderizador.autoClear = true;
+        renderizador.autoClearColor = k === 0;
+        renderizador.autoClearDepth = true;
+        renderizador.autoClearStencil = true;
         renderizador.render(cena, ativa);
       }
       renderizador.autoClear = true;
+      renderizador.autoClearColor = true;
       renderizador.setRenderTarget(null);
       composicao.apresentar(exposicaoSuave);
 
