@@ -34,7 +34,22 @@ if not exist "node_modules\" if not exist "dist\" (
 if not exist "dist\" (
   echo Construindo o programa.
   call npm run build || goto :erro
+  goto :abrir
 )
+REM Um dist\ mais velho que o codigo abriria a versao antiga sem aviso. Com as
+REM bibliotecas instaladas, reconstroi; sem elas (a pasta de entrega), so avisa:
+REM instalar sozinho exigiria internet e minutos que quem so quer abrir nao espera.
+node ferramentas\dist_desatualizado.mjs
+if not errorlevel 1 goto :abrir
+if exist "node_modules\" (
+  echo O codigo mudou desde a ultima construcao. Reconstruindo o programa.
+  call npm run build || goto :erro
+) else (
+  echo Aviso: o codigo mudou desde a ultima construcao, e esta copia nao tem as
+  echo bibliotecas para reconstruir. Abrindo a versao que ja estava construida.
+)
+
+:abrir
 node servidor.mjs %*
 goto :fim
 

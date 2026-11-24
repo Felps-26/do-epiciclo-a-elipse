@@ -12,6 +12,17 @@ if (Tem 'node') {
   if (-not (Test-Path 'dist')) {
     Write-Host 'Construindo o programa.'
     npm run build
+  } else {
+    node ferramentas/dist_desatualizado.mjs
+    if ($LASTEXITCODE -ne 0) {
+      if (Test-Path 'node_modules') {
+        Write-Host 'O codigo mudou desde a ultima construcao. Reconstruindo o programa.'
+        npm run build
+      } else {
+        Write-Host 'Aviso: o codigo mudou desde a ultima construcao, e esta copia nao tem as'
+        Write-Host 'bibliotecas para reconstruir. Abrindo a versao que ja estava construida.'
+      }
+    }
   }
   node servidor.mjs @args
   exit $LASTEXITCODE

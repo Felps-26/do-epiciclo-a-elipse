@@ -37,6 +37,15 @@ if tem node; then
   if [[ ! -d dist ]]; then
     echo "Construindo o programa."
     npm run build
+  elif ! node ferramentas/dist_desatualizado.mjs; then
+    # Mesma regra do run.bat: reconstroi se as bibliotecas estao aqui, so avisa se nao.
+    if [[ -d node_modules ]]; then
+      echo "O codigo mudou desde a ultima construcao. Reconstruindo o programa."
+      npm run build
+    else
+      echo "Aviso: o codigo mudou desde a ultima construcao, e esta copia nao tem as"
+      echo "bibliotecas para reconstruir. Abrindo a versao que ja estava construida."
+    fi
   fi
   exec node servidor.mjs "$@"
 fi
