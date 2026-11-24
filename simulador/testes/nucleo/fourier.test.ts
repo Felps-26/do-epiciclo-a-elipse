@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 import {
   TERMOS_MAX,
   cadeiaDeEpiciclos,
+  coeficientesDoTcc,
   convergencia,
   decompor,
   desvio,
@@ -351,5 +352,53 @@ describe('a curva que o laboratorio usa sai do estado da simulacao', () => {
       tDias: 0,
     });
     expect(curvaDoLaboratorio(fuga, 1, 64)).toBeNull();
+  });
+});
+
+describe('a serie na forma do TCC (Farias, 2016, eqs. 20 a 25)', () => {
+  // A mesma serie, escrita como no trabalho de origem: x(t) e y(t) expandidos em
+  // separado, com a_n, b_n (x) e c_n, d_n (y), e de cada harmonico um par de
+  // epiciclos, R_n girando a +n e r_n a -n (eqs. 22 e 23).
+  it('reconstroi a mesma orbita que a forma complexa', () => {
+    for (const e of [0, 0.0934, 0.2056, 0.6]) {
+      const curva = curvaDe(e);
+      const s = decompor(curva);
+      const k = coeficientesDoTcc(s, 6);
+      for (const t of [0, 0.13, 0.5, 0.77]) {
+        let x = k.a[0]!;
+        let y = k.c[0]!;
+        for (let n = 1; n <= 6; n++) {
+          x += k.a[n]! * Math.cos(DOIS_PI * n * t) + k.b[n]! * Math.sin(DOIS_PI * n * t);
+          y += k.c[n]! * Math.cos(DOIS_PI * n * t) + k.d[n]! * Math.sin(DOIS_PI * n * t);
+        }
+        const [xc, yc] = reconstruir(s, t, 6);
+        expect(Math.hypot(x - xc, y - yc), `e=${e} t=${t}`).toBeLessThan(1e-14);
+      }
+    }
+  });
+
+  it('R_n e r_n sao os raios dos epiciclos de +n e -n (eqs. 22 e 23)', () => {
+    const s = decompor(curvaDe(0.2056));
+    const k = coeficientesDoTcc(s, 6);
+    for (let n = 1; n <= 6; n++) {
+      const R = Math.hypot((k.a[n]! + k.d[n]!) / 2, (k.c[n]! - k.b[n]!) / 2);
+      const r = Math.hypot((k.a[n]! - k.d[n]!) / 2, (k.c[n]! + k.b[n]!) / 2);
+      expect(k.R[n]!).toBeCloseTo(R, 14);
+      expect(k.r[n]!).toBeCloseTo(r, 14);
+      expect(k.R[n]!).toBeCloseTo(Math.hypot(s.re[n + s.termosMax]!, s.im[n + s.termosMax]!), 14);
+      expect(k.r[n]!).toBeCloseTo(Math.hypot(s.re[-n + s.termosMax]!, s.im[-n + s.termosMax]!), 14);
+    }
+  });
+
+  it('com o perielio no eixo x, o Sol se desloca so em x: c_0 = 0, como no TCC', () => {
+    const k = coeficientesDoTcc(decompor(curvaDe(0.3)), 4);
+    expect(Math.abs(k.c[0]!)).toBeLessThan(1e-12);
+    expect(k.a[0]!).toBeCloseTo(-1.5 * 0.3, 6);
+  });
+
+  it('a cadeia sai por harmonico: R_1, r_1, R_2, r_2...', () => {
+    const s = decompor(curvaDe(0.2056));
+    const { elos } = cadeiaDeEpiciclos(s, 0.3, 4);
+    expect(elos.map((l) => l.n)).toEqual([1, -1, 2, -2, 3, -3, 4, -4]);
   });
 });

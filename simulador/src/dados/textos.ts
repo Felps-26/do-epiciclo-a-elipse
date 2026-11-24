@@ -440,8 +440,18 @@ export const LABORATORIO = {
     'A linha tracejada é a órbita calculada. A linha cheia é o que os círculos desenham até ' +
     'agora. O ponto amarelo cheio é o Sol, no foco; o vazado é de onde a corrente de círculos ' +
     'parte, e a distância entre os dois é a excentricidade da órbita vista de outro jeito.\n\n' +
-    'Aumente o número de epiciclos e veja o desvio cair. Órbitas mais alongadas precisam de ' +
-    'mais círculos: Vênus fecha com dois, Mercúrio pede bem mais.',
+    'Cada harmônico n acrescenta dois círculos: Rₙ, que gira no sentido da órbita, n vezes ' +
+    'por volta (traço cheio), e rₙ, que gira ao contrário (tracejado). Aumente o número de ' +
+    'harmônicos e veja o desvio cair. Órbitas mais alongadas precisam de mais: Vênus fecha ' +
+    'com poucos, Mercúrio pede bem mais.',
+  comoLerASerie:
+    'É a série do trabalho de Maria Farias (UnB, 2016), de onde este laboratório saiu: x e y ' +
+    'expandidos em separado, e de cada harmônico um par de epiciclos, de raios Rₙ e rₙ. Os ' +
+    'coeficientes são as integrais de Fourier sobre uma volta, calculadas com a órbita ' +
+    'amostrada em 720 instantes igualmente espaçados no tempo, o que para uma curva periódica ' +
+    'e suave dá o valor exato até o arredondamento do computador. a₀ é o deslocamento do Sol ' +
+    'em relação ao centro da série. Com o periélio no eixo x, a órbita é simétrica em ' +
+    'relação a esse eixo, e por isso c₀, bₙ e cₙ saem zero.',
   semOrbita:
     'Este corpo não está numa órbita fechada em torno do Sol, então não há uma volta para ' +
     'decompor. Escolha um dos oito planetas.',

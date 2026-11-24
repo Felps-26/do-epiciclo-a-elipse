@@ -26,6 +26,7 @@ import {
   TERMOS_INICIAL,
   TERMOS_MAX,
   cadeiaDeEpiciclos,
+  coeficientesDoTcc,
   decompor,
   desvio,
   reconstruir,
@@ -113,6 +114,10 @@ export function Laboratorio({ nome, curva }: Props): JSX.Element {
   }
 
   const { excentrico, elos, ponta } = cadeiaDeEpiciclos(serie, fase, termos);
+  const tcc = coeficientesDoTcc(serie, termos);
+  // Em UA, com cinco algarismos: e a escala em que a tabela do TCC se le.
+  const ua = (v: number): string =>
+    Math.abs(v) < 5e-13 ? '0' : v.toPrecision(5).replace('.', ',').replace(/e/, '·10^');
   const kmDe = (ua: number): string =>
     ua * UA_KM >= 1000
       ? `${Math.round(ua * UA_KM).toLocaleString('pt-BR')} km`
@@ -136,7 +141,8 @@ export function Laboratorio({ nome, curva }: Props): JSX.Element {
         viewBox={vista}
         role="img"
         aria-label={
-          `A órbita de ${nome} e a soma de ${termos} ${termos === 1 ? 'epiciclo' : 'epiciclos'}. ` +
+          `A órbita de ${nome} e a série de Fourier com ${termos} ` +
+          `${termos === 1 ? 'harmônico' : 'harmônicos'}, ${2 * termos} epiciclos. ` +
           `O desvio máximo entre as duas é de ${kmDe(erro!.maximoUa)}.`
         }
       >
@@ -152,9 +158,10 @@ export function Laboratorio({ nome, curva }: Props): JSX.Element {
         />
         <path d={caminho(aproximada)} fill="none" stroke="var(--acento)" stroke-width={traco * 1.5} />
 
-        {/* Os circulos da cadeia. */}
+        {/* Os circulos da cadeia, por harmonico: R_n cheio, r_n (que gira ao
+            contrario) tracejado. Informacao nunca so por cor. */}
         {elos.map((elo) => (
-          <g key={elo.n}>
+          <g key={elo.n} data-n={elo.n}>
             <circle
               cx={elo.centro[0]}
               cy={-elo.centro[1]}
@@ -162,6 +169,7 @@ export function Laboratorio({ nome, curva }: Props): JSX.Element {
               fill="none"
               stroke="var(--borda)"
               stroke-width={traco * 0.7}
+              {...(elo.n < 0 ? { 'stroke-dasharray': `${traco * 3} ${traco * 2}` } : {})}
             />
             <line
               x1={elo.centro[0]}
@@ -192,7 +200,7 @@ export function Laboratorio({ nome, curva }: Props): JSX.Element {
       <div class="lab__controles">
         <label class="lab__campo">
           <span>
-            Epiciclos: <b>{termos}</b>
+            Harmônicos (N): <b>{termos}</b> — {2 * termos} epiciclos
           </span>
           <input
             type="range"
@@ -241,6 +249,47 @@ export function Laboratorio({ nome, curva }: Props): JSX.Element {
       </dl>
 
       <p class="nota">{LABORATORIO.comoLer}</p>
+
+      {/* A serie escrita como no TCC de origem (Farias, 2016, eqs. 20, 21, 24 e
+          25), com os coeficientes calculados. */}
+      <section class="lab__serie" aria-label="A série de Fourier da órbita">
+        <h3>A série de Fourier</h3>
+        <p class="lab__formula">
+          x(t) = a₀ + Σ<sub>n=1…{termos}</sub> [aₙ cos(nωt) + bₙ sen(nωt)]
+          <br />
+          y(t) = c₀ + Σ<sub>n=1…{termos}</sub> [cₙ cos(nωt) + dₙ sen(nωt)]
+        </p>
+        <p class="nota">{LABORATORIO.comoLerASerie}</p>
+        <div class="lab__tabela">
+          <table class="tabela">
+            <caption>Coeficientes em UA, com o periélio no eixo x</caption>
+            <thead>
+              <tr>
+                <th scope="col">n</th>
+                <th scope="col">aₙ</th>
+                <th scope="col">bₙ</th>
+                <th scope="col">cₙ</th>
+                <th scope="col">dₙ</th>
+                <th scope="col">Rₙ</th>
+                <th scope="col">rₙ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: termos + 1 }, (_, n) => (
+                <tr key={n}>
+                  <th scope="row">{n}</th>
+                  <td>{ua(tcc.a[n]!)}</td>
+                  <td>{ua(tcc.b[n]!)}</td>
+                  <td>{ua(tcc.c[n]!)}</td>
+                  <td>{ua(tcc.d[n]!)}</td>
+                  <td>{n === 0 ? '—' : ua(tcc.R[n]!)}</td>
+                  <td>{n === 0 ? '—' : ua(tcc.r[n]!)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </aside>
   );
 }

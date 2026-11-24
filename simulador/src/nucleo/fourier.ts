@@ -148,18 +148,68 @@ export interface Cadeia {
    * entre a Terra e o centro do deferente.
    */
   excentrico: [number, number];
-  /** Os elos que giram, do maior para o menor. O primeiro e o deferente. */
+  /** Os elos que giram, por harmonico: R_1, r_1, R_2, r_2... O primeiro e o deferente. */
   elos: Epiciclo[];
   /** A ponta do ultimo elo: a posicao reconstruida. */
   ponta: [number, number];
 }
 
 /**
+ * A serie na forma do TCC de origem (Farias, 2016, eqs. 20 a 25).
+ *
+ * Os mesmos coeficientes, reescritos como a serie real de x(t) e de y(t):
+ *
+ *     x(t) = a0 + Σ [a_n cos(nωt) + b_n sen(nωt)]
+ *     y(t) = c0 + Σ [c_n cos(nωt) + d_n sen(nωt)]
+ *
+ * e de cada harmonico um par de epiciclos: R_n, que gira a +nω, e r_n, que gira a
+ * −nω (eqs. 22 e 23). Com c_n = p + iq e c_−n = u + iv na forma complexa:
+ * a_n = p + u, b_n = v − q, c_n = q + v, d_n = p − u, e entao R_n = |c_n| e
+ * r_n = |c_−n|. Os arrays vao de n = 0 a `termos`; em n = 0, R e r sao zero.
+ */
+export interface CoeficientesDoTcc {
+  a: Float64Array;
+  b: Float64Array;
+  c: Float64Array;
+  d: Float64Array;
+  R: Float64Array;
+  r: Float64Array;
+}
+
+export function coeficientesDoTcc(s: SerieFourier, termos: number): CoeficientesDoTcc {
+  const T = Math.min(Math.max(0, Math.trunc(termos)), s.termosMax);
+  const k: CoeficientesDoTcc = {
+    a: new Float64Array(T + 1),
+    b: new Float64Array(T + 1),
+    c: new Float64Array(T + 1),
+    d: new Float64Array(T + 1),
+    R: new Float64Array(T + 1),
+    r: new Float64Array(T + 1),
+  };
+  k.a[0] = s.re[s.termosMax]!;
+  k.c[0] = s.im[s.termosMax]!;
+  for (let n = 1; n <= T; n++) {
+    const p = s.re[n + s.termosMax]!;
+    const q = s.im[n + s.termosMax]!;
+    const u = s.re[-n + s.termosMax]!;
+    const v = s.im[-n + s.termosMax]!;
+    k.a[n] = p + u;
+    k.b[n] = v - q;
+    k.c[n] = q + v;
+    k.d[n] = p - u;
+    k.R[n] = Math.hypot(p, q);
+    k.r[n] = Math.hypot(u, v);
+  }
+  return k;
+}
+
+/**
  * Cadeia de epiciclos no instante `t`.
  *
- * Ordenada por raio decrescente, como na construcao historica: o deferente
- * primeiro, cada epiciclo montado na ponta do anterior. Numa orbita kepleriana o
- * maior elo e sempre `n = 1`; ate e = 0,9 ele vale 0,55 contra 0,19 do segundo.
+ * Por harmonico, como na serie do TCC (eqs. 24 e 25): R_1, r_1, R_2, r_2... O
+ * deferente R_1 vem primeiro, e cada epiciclo e montado na ponta do anterior. A
+ * ordem nao muda a ponta, porque a soma comuta; muda o desenho, que assim mostra a
+ * serie termo a termo em vez de circulos soltos ordenados por tamanho.
  *
  * A ponta do ultimo elo e a posicao reconstruida, nao uma ilustracao ao lado dela:
  * `fourier.test.ts` exige que as duas coincidam dentro de 1e-14.
@@ -167,12 +217,12 @@ export interface Cadeia {
 export function cadeiaDeEpiciclos(s: SerieFourier, t: number, termos: number): Cadeia {
   const T = Math.min(Math.max(0, Math.trunc(termos)), s.termosMax);
   const elos: { n: number; raio: number }[] = [];
-  for (let n = -T; n <= T; n++) {
-    if (n === 0) continue;
-    const i = n + s.termosMax;
-    elos.push({ n, raio: Math.hypot(s.re[i]!, s.im[i]!) });
+  for (let m = 1; m <= T; m++) {
+    for (const n of [m, -m]) {
+      const i = n + s.termosMax;
+      elos.push({ n, raio: Math.hypot(s.re[i]!, s.im[i]!) });
+    }
   }
-  elos.sort((a, b) => b.raio - a.raio || a.n - b.n);
 
   const excentrico: [number, number] = [s.re[s.termosMax]!, s.im[s.termosMax]!];
   let cx = excentrico[0];

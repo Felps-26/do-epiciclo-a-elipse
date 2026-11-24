@@ -67,6 +67,47 @@
   gap: 0.5rem;
 }
 
+/* A serie escrita e a tabela de coeficientes. A tabela rola sozinha na
+   horizontal: sete colunas de cinco algarismos nao cabem em 28rem, e quebrar
+   um numero em duas linhas e pior do que rolar. */
+.lab__serie {
+  margin-top: 1.1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--borda);
+}
+.lab__serie h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+.lab__formula {
+  margin: 0 0 0.6rem;
+  font-family: 'Cambria Math', 'STIX Two Math', serif;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+.lab__tabela {
+  overflow-x: auto;
+}
+.lab__tabela .tabela {
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* Sem caixa alta: R_n e r_n sao coeficientes diferentes, e a caixa alta da
+   tabela comum os tornaria a mesma letra. */
+.lab__tabela thead th {
+  text-transform: none;
+  font-family: 'Cambria Math', 'STIX Two Math', serif;
+  font-size: 0.9rem;
+}
+.lab__tabela caption {
+  caption-side: top;
+  text-align: left;
+  padding-bottom: 0.3rem;
+  color: var(--texto-fraco);
+  font-size: 0.8rem;
+}
+
 /* Abaixo do ponto de quebra a lamina toma a largura toda: espremer um grafico
    num terco de 640 px nao mostraria o desvio, que e o que ele existe para
    mostrar. */

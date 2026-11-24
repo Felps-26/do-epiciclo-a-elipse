@@ -75,10 +75,10 @@ test('abrir o laboratório pausa a simulação', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Continuar' })).toBeVisible();
 });
 
-test('mais epiciclos, menos desvio — e o número aparece escrito', async ({ page }) => {
+test('mais harmônicos, menos desvio — e o número aparece escrito', async ({ page }) => {
   await abrirLaboratorio(page, 'Mercúrio');
 
-  const controle = page.getByRole('slider', { name: /Epiciclos/ });
+  const controle = page.getByRole('slider', { name: /Harmônicos/ });
   await controle.fill('1');
   await page.waitForTimeout(80);
   const com1 = await desvios(page);
@@ -87,19 +87,19 @@ test('mais epiciclos, menos desvio — e o número aparece escrito', async ({ pa
   await page.waitForTimeout(80);
   const com8 = await desvios(page);
 
-  expect(com1.maximo, 'um epiciclo já descreveria Mercúrio?').toBeGreaterThan(1000);
+  expect(com1.maximo, 'um harmônico já descreveria Mercúrio?').toBeGreaterThan(1000);
   expect(com8.maximo, `1 → ${com1.maximo} km, 8 → ${com8.maximo} km`).toBeLessThan(com1.maximo / 10);
   expect(com8.medio).toBeLessThanOrEqual(com8.maximo);
 });
 
 test('o número de círculos desenhados acompanha o controle', async ({ page }) => {
   await abrirLaboratorio(page, 'Marte');
-  const controle = page.getByRole('slider', { name: /Epiciclos/ });
+  const controle = page.getByRole('slider', { name: /Harmônicos/ });
 
   for (const n of [1, 3, 10]) {
     await controle.fill(String(n));
     await page.waitForTimeout(80);
-    // Um elo por harmônico com |n| <= termos, menos o n = 0, que não gira.
+    // Dois elos por harmônico (R_n e r_n); o n = 0 não gira.
     const circulos = await page.locator('.lab__grafico g circle').count();
     expect(circulos, `com ${n} no controle`).toBe(2 * n);
   }
@@ -107,7 +107,7 @@ test('o número de círculos desenhados acompanha o controle', async ({ page }) 
 
 test('o controle funciona com as setas do teclado', async ({ page }) => {
   await abrirLaboratorio(page, 'Marte');
-  const controle = page.getByRole('slider', { name: /Epiciclos/ });
+  const controle = page.getByRole('slider', { name: /Harmônicos/ });
   await controle.focus();
   const antes = Number(await controle.inputValue());
   await page.keyboard.press('ArrowRight');
@@ -119,11 +119,26 @@ test('o gráfico tem descrição em texto, com o desvio dentro', async ({ page }
   // Um <svg> é um retângulo para quem usa leitor de tela, exatamente como o
   // canvas da cena. O número que o desenho mostra precisa estar escrito.
   await abrirLaboratorio(page, 'Mercúrio');
-  await page.getByRole('slider', { name: /Epiciclos/ }).fill('4');
+  await page.getByRole('slider', { name: /Harmônicos/ }).fill('4');
   await page.waitForTimeout(80);
   const descricao = await page.locator('.lab__grafico').getAttribute('aria-label');
-  expect(descricao).toMatch(/A órbita de Mercúrio e a soma de 4 epiciclos/);
+  expect(descricao).toMatch(/A órbita de Mercúrio e a série de Fourier com 4 harmônicos, 8 epiciclos/);
   expect(descricao).toMatch(/desvio máximo entre as duas é de [\d.,]+ km/);
+});
+
+test('a série vem escrita, com uma linha de coeficientes por harmônico', async ({ page }) => {
+  // Como no TCC de origem (Farias, 2016): x e y em senos e cossenos, e R_n,
+  // r_n de cada harmônico. A tabela acompanha o controle: n = 0 até N.
+  await abrirLaboratorio(page, 'Mercúrio');
+  const serie = page.getByRole('region', { name: 'A série de Fourier da órbita' });
+  await expect(serie).toContainText('x(t) = a₀');
+  await page.getByRole('slider', { name: /Harmônicos/ }).fill('5');
+  await page.waitForTimeout(80);
+  await expect(serie.locator('tbody tr')).toHaveCount(6);
+  // Com o periélio no eixo x, a₀ = -3ae/2 e c₀ = 0: Mercúrio, a ≈ 0,387 UA,
+  // e ≈ 0,206 dá a₀ ≈ -0,12 UA.
+  const a0 = await serie.locator('tbody tr').first().locator('td').first().textContent();
+  expect(Number(a0!.replace(',', '.'))).toBeCloseTo(-0.12, 1);
 });
 
 test('o Sol não tem volta para decompor, e a lâmina diz isso', async ({ page }) => {
