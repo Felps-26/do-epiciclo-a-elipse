@@ -43,7 +43,7 @@ npm ci
 npm test
 ```
 
-O `npm test` roda, nesta ordem, tipos, lint, regras de arquitetura (`dependency-cruiser`), testes de unidade e testes ponta a ponta com Playwright. Cada etapa roda sozinha: `npm run tipos`, `lint`, `arquitetura`, `unidade`, `e2e`. A suíte de unidade inclui a validação do integrador contra a DE440s do JPL em ±100 anos. As mesmas etapas rodam a cada push em `.github/workflows/ci.yml`, no Ubuntu e no Windows.
+O `npm test` roda, nesta ordem, tipos, lint, regras de arquitetura (`dependency-cruiser`), testes de unidade e testes ponta a ponta com Playwright. Cada etapa roda sozinha: `npm run tipos`, `lint`, `arquitetura`, `unidade`, `e2e`. A suíte de unidade inclui a validação do integrador contra a DE440s do JPL em ±100 anos. A cada push, `.github/workflows/ci.yml` roda tipos, lint, arquitetura e unidade no Ubuntu e no Windows, em poucos minutos. A suíte ponta a ponta fica fora do push: as máquinas do GitHub não têm placa de vídeo, o 3D é desenhado por software e a suíte leva mais de uma hora lá. Ela roda quando alguém pede, pela aba Actions ("Run workflow"), ou na máquina local com `npm run e2e`.
 
 ## Como reproduzir os experimentos
 

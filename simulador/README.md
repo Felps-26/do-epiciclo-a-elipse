@@ -58,7 +58,7 @@ npm run build   # gera dist/
 
 O desenho usa WebGPU por padrão; `?render=webgl2` força WebGL2.
 
-As specs e o CI rodam no Chromium com SwiftShader (`--use-angle=swiftshader`), que desenha igual em qualquer máquina. Sem placa de vídeo, o Chromium não entrega adaptador WebGPU e o programa cai para WebGL2: as imagens de referência fiscalizam esse caminho, no Windows e no Linux. No Linux a opção `--enable-unsafe-webgpu` ligaria um WebGPU por software cujo canvas sai vazio na captura, e por isso ela não é passada. As imagens guardam só o desenho 3D: o texto por cima do canvas é escondido na captura, porque a fonte sai diferente em cada sistema. Os testes marcados `@gpu` medem o que acontece por quadro e só fazem sentido com placa de vídeo; os marcados `@lento` rodam à mão.
+As specs rodam no Chromium com SwiftShader (`--use-angle=swiftshader`), que desenha igual em qualquer máquina. Sem placa de vídeo, o Chromium não entrega adaptador WebGPU e o programa cai para WebGL2: as imagens de referência fiscalizam esse caminho, no Windows e no Linux. No Linux a opção `--enable-unsafe-webgpu` ligaria um WebGPU por software cujo canvas sai vazio na captura, e por isso ela não é passada. As imagens guardam só o desenho 3D: o texto por cima do canvas é escondido na captura, porque a fonte sai diferente em cada sistema. Os testes marcados `@gpu` medem o que acontece por quadro e só fazem sentido com placa de vídeo; os marcados `@lento` rodam à mão. No GitHub a suíte ponta a ponta não roda a cada push, porque sem placa de vídeo ela leva mais de uma hora: roda pela aba Actions ("Run workflow") ou com `npm run e2e`.
 
 ### Navegadores
 

@@ -43,7 +43,7 @@ npm ci
 npm test
 ```
 
-`npm test` runs type checking, lint, the architecture rules (`dependency-cruiser`), unit tests and the Playwright end-to-end tests, in that order. Each step can be run on its own: `npm run tipos`, `lint`, `arquitetura`, `unidade`, `e2e`. The unit suite includes the validation of the integrator against the JPL DE440s over ±100 years. The same steps run on every push in `.github/workflows/ci.yml`, on Ubuntu and Windows.
+`npm test` runs type checking, lint, the architecture rules (`dependency-cruiser`), unit tests and the Playwright end-to-end tests, in that order. Each step can be run on its own: `npm run tipos`, `lint`, `arquitetura`, `unidade`, `e2e`. The unit suite includes the validation of the integrator against the JPL DE440s over ±100 years. Every push runs type checking, lint, the architecture rules and the unit tests in `.github/workflows/ci.yml`, on Ubuntu and Windows, in a few minutes. The end-to-end suite is left out of the push: GitHub's runners have no graphics card, the 3D is drawn in software and the suite takes over an hour there. It runs on demand from the Actions tab ("Run workflow") or locally with `npm run e2e`.
 
 ## Reproducing the experiments
 

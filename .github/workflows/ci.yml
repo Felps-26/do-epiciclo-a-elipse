@@ -6,6 +6,8 @@ on:
     paths: ['simulador/**', '.github/workflows/**']
   pull_request:
     paths: ['simulador/**', '.github/workflows/**']
+  # A ponta a ponta roda só quando alguém pede, pela aba Actions ("Run workflow").
+  workflow_dispatch:
 
 # Um push novo no mesmo ramo cancela a execução anterior: a suíte de ponta a ponta
 # leva mais de uma hora, e num repositório privado cada minuto sai da cota da conta.
@@ -40,7 +42,12 @@ jobs:
   # imagens de referência foram gravadas com ele. Ficam de fora o @lento (percorre
   # todas as dicas pelo teclado) e os @gpu, que medem o que acontece por quadro
   # (giro, voo, placas) e precisam de uma placa de vídeo de verdade; rodam à mão.
+  #
+  # Fora do push: sem placa de vídeo o executor desenha por software e a suíte leva
+  # mais de uma hora. Ela roda à mão (workflow_dispatch) ou na máquina de quem mexe no
+  # programa, com `npm run e2e`.
   ponta-a-ponta:
+    if: github.event_name == 'workflow_dispatch'
     # Fixo, e não ubuntu-latest: o rótulo muda de versão sozinho (desde 19/10/2026 é o
     # 26.04), e as imagens de referência foram gravadas e conferidas no 24.04. Trocar de
     # versão é uma decisão, com as imagens conferidas de novo.
