@@ -4,12 +4,14 @@
  * Runge-Kutta 4 erra menos num passo isolado, mas a orbita encolhe aos poucos.
  *
  * O padrao e Yoshida de 4a ordem com passo fixo de 0,5 dia. Erro de posicao de
- * Mercurio contra o JPL Horizons em 10 anos (avaliacoes de forca contadas com a
- * aceleracao reaproveitada entre passos):
+ * Mercurio contra o ponto de +10 anos do JPL Horizons (3652 dias), com as
+ * avaliacoes de forca contadas com a aceleracao reaproveitada entre passos. Sao os
+ * numeros de `artigo/experimentos/e2.json`, os da figura de custo e precisao do
+ * artigo:
  *
- *     leapfrog dt=0,25 d      14 610 avaliacoes    erro 1,0e6 km
- *     leapfrog dt=0,021 d    175 320 avaliacoes    erro 5,4e3 km
- *     Yoshida4 dt=0,5 d       21 915 avaliacoes    erro 1,4e4 km
+ *     leapfrog dt=0,25 d      14 608 avaliacoes    erro 1,1e6 km
+ *     leapfrog dt=1/32 d     116 864 avaliacoes    erro 1,5e4 km
+ *     Yoshida4 dt=0,5 d       21 912 avaliacoes    erro 1,4e4 km
  *
  * Para chegar ao erro do Yoshida o leapfrog precisa de mais de cinco vezes o
  * custo.
