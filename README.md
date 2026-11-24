@@ -76,7 +76,7 @@ To compile the paper, run `artigo/compilar.bat` with MiKTeX or TeX Live (pdfLaTe
 
 A visual sweep of the simulator on 6 November 2026 listed 40 visual defects, and two more turned up later when the tests ran on Linux. All 42 are fixed, each with a test: those marked `testes/e2e/` were also checked on screen, the others by a unit test on the function that decides what is drawn. The full list, with severity, file and visible effect, is in `simulador/ACHADOS-VISUAIS.md`.
 
-The online version has only the 2K textures. When the camera gets close to a body, the program asks for the 4K and 8K files, which are not there, and the surface stays at 2K.
+The online version has only the 2K textures, so close-ups look softer than in a local copy with the 4K and 8K files. The build drops from the texture manifest every level whose file is missing (`simulador/ferramentas/podarTexturas.ts`), so the online version never asks for the 4K and 8K files.
 
 ## Future work
 

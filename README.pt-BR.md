@@ -76,7 +76,7 @@ Para compilar o artigo, rode `artigo/compilar.bat` com MiKTeX ou TeX Live (pdfLa
 
 Uma varredura visual do simulador em 06/11/2026 listou 40 defeitos visuais, e outros dois apareceram depois, ao rodar os testes no Linux. Os 42 estão corrigidos, cada um com teste: os marcados com `testes/e2e/` foram também conferidos na tela, e os demais por teste de unidade sobre a função que decide o que se desenha. A lista completa, com gravidade, arquivo e efeito visível, está em `simulador/ACHADOS-VISUAIS.md`.
 
-A versão online tem só as texturas 2K. Quando a câmera chega perto de um corpo, o programa pede os arquivos 4K e 8K, que não estão lá, e a superfície fica em 2K.
+A versão online tem só as texturas 2K, então as aproximações ficam mais suaves do que numa cópia local com os arquivos 4K e 8K. O build tira do manifesto de texturas todo nível cujo arquivo não existe (`simulador/ferramentas/podarTexturas.ts`), e por isso a versão online nunca pede os arquivos 4K e 8K.
 
 ## Trabalho futuro
 
