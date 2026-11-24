@@ -1,11 +1,11 @@
 \section{Como reproduzir}\label{ap:reproducao}
 % orçamento: curto
 
-O código, os dados e os roteiros deste artigo estão no repositório do projeto. A versão entregue em primeiro lugar está marcada como \codigo{v1.0}; a descrita aqui, revista em novembro de 2026, é a do ramo \codigo{lapidacao}. A pasta \arquivo{simulador/} contém o programa, \arquivo{artigo/} contém este texto e os roteiros dos experimentos, e \arquivo{versoes-anteriores/} guarda as duas primeiras versões.
+O código, os dados e os roteiros deste artigo estão no repositório público \url{https://github.com/Felps-26/do-epiciclo-a-elipse}, ramo \codigo{main}. Este texto em PDF acompanha a \emph{Release} \codigo{v1.0} do mesmo repositório (\url{https://github.com/Felps-26/do-epiciclo-a-elipse/releases/tag/v1.0}). A pasta \arquivo{simulador/} contém o programa, \arquivo{artigo/} contém este texto e os roteiros dos experimentos, e \arquivo{versoes-anteriores/} guarda as duas primeiras versões.
 
 \subsection{O simulador}\label{ap:execucao}
 
-A pasta de entrega já traz o programa construído, as texturas e os dados; basta um servidor local. Com o Node.js 20.19 ou mais novo instalado, abra o lançador do sistema: \arquivo{run.bat} no Windows, \arquivo{run.command} no macOS ou \codigo{./run.sh} no Linux. O navegador abre no endereço local, e para encerrar basta fechar a aba. O programa funciona sem internet, e o servidor escuta apenas em \codigo{127.0.0.1}. Para forçar o desenho em WebGL2, acrescente \codigo{?render=webgl2} ao endereço. Abrir o \arquivo{index.html} direto não funciona, porque o navegador bloqueia a leitura dos dados a partir de \codigo{file://}.
+O repositório não traz o programa construído nem as texturas de maior resolução: o lançador instala as bibliotecas e constrói o programa na primeira execução, o que leva um ou dois minutos. Com o Node.js 20.19 ou mais novo instalado, abra o lançador do sistema dentro de \arquivo{simulador/}: \arquivo{run.bat} no Windows, \arquivo{run.command} no macOS ou \codigo{./run.sh} no Linux. O navegador abre no endereço local, e para encerrar basta fechar a aba. Depois de construído, o programa funciona sem internet, e o servidor escuta apenas em \codigo{127.0.0.1}. Há também uma cópia em \url{https://felps-26.github.io/do-epiciclo-a-elipse/}, só com as texturas 2K. Para forçar o desenho em WebGL2, acrescente \codigo{?render=webgl2} ao endereço. Abrir o \arquivo{index.html} direto não funciona, porque o navegador bloqueia a leitura dos dados a partir de \codigo{file://}.
 
 Para desenvolver, dentro de \arquivo{simulador/}:
 
@@ -46,4 +46,4 @@ Todas as tabelas e figuras da \autoref{cap:resultados} que não são capturas de
 
 \subsection{Este artigo}
 
-No Overleaf, envie a pasta \arquivo{artigo/} compactada, escolha o compilador \emph{pdfLaTeX} e o arquivo principal \arquivo{main.tex}. Localmente: \codigo{pdflatex main}, \codigo{bibtex main} e mais duas vezes \codigo{pdflatex main}, com os pacotes \emph{abntex2} e \emph{babel-portuges}.
+O PDF pronto está na \emph{Release} citada acima. Para compilar, dentro de \arquivo{artigo/}, rode \arquivo{compilar.bat} no Windows ou, em qualquer sistema, \codigo{pdflatex main}, \codigo{bibtex main} e mais duas vezes \codigo{pdflatex main}, com o MiKTeX ou o TeX Live e os pacotes \emph{abntex2} e \emph{babel-portuges}. No Overleaf, envie a pasta \arquivo{artigo/} compactada, escolha o compilador \emph{pdfLaTeX} e o arquivo principal \arquivo{main.tex}.

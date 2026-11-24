@@ -1,6 +1,6 @@
 # Experimentos do relatório
 
-Reimplementação independente, em Python + NumPy, do núcleo físico do simulador,
+Segunda implementação, do mesmo algoritmo, em Python + NumPy, do núcleo físico do simulador,
 usada para gerar as tabelas e figuras do capítulo de Resultados.
 
 Pressupõe que a pasta `artigo/` esteja ao lado de `simulador/` (lê o arquivo
@@ -20,9 +20,9 @@ Pressupõe que a pasta `artigo/` esteja ao lado de `simulador/` (lê o arquivo
     python figuras.py           # figuras que dependem do E1, do E2 e do E4
     python figuras2.py          # amostragem em ângulo x tempo
     python figuras3.py          # Marte retrógrado e Sol em torno do baricentro (~1 min)
+    python fig_elementos.py     # desenho dos elementos orbitais
 
 As figuras são gravadas em `artigo/figuras/`.
-    python fig_elementos.py     # desenho dos elementos orbitais
 
 O E6 e o E7 comparam com a efeméride DE440s do JPL, que não vai no repositório (32 MB).
 Baixe `de440s.bsp` de

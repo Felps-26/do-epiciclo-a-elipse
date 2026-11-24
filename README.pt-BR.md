@@ -18,7 +18,7 @@ O projeto partiu de uma pergunta de um trabalho de conclusão de curso (veja os 
 
 Versão no ar: https://felps-26.github.io/do-epiciclo-a-elipse/
 
-A versão online leva só as texturas 2K, então as superfícies ficam mais suaves nas aproximações do que na pasta de entrega, que também traz o 4K.
+A versão online leva só as texturas 2K, então as superfícies ficam mais suaves nas aproximações. O repositório também não traz os arquivos 4K e 8K.
 
 ## Como abrir
 
@@ -30,7 +30,7 @@ A versão online leva só as texturas 2K, então as superfícies ficam mais suav
 | macOS | duplo clique em `run.command` (se o macOS bloquear, botão direito e Abrir) |
 | Linux | `./run.sh` |
 
-Na primeira execução o lançador instala as bibliotecas e constrói o programa, o que leva um ou dois minutos. O zip de entrega já traz o `dist/` pronto, e nele só um servidor local sobe. Sem o Node, o `run.bat` usa um servidor pequeno em Python (`ferramentas/servidor.py`) se o `dist/` existir. O servidor escuta só em 127.0.0.1, e fechar a aba do navegador o encerra.
+Na primeira execução o lançador instala as bibliotecas e constrói o programa, o que leva um ou dois minutos. O `dist/` não está no repositório, então a construção sempre roda na primeira execução. Sem o Node, o `run.bat` usa um servidor pequeno em Python (`ferramentas/servidor.py`), mas só se o `dist/` já existir, por exemplo se alguém o construiu em outra máquina. O servidor escuta só em 127.0.0.1, e fechar a aba do navegador o encerra.
 
 O programa não acessa a rede durante o uso. Só os scripts de `simulador/ferramentas/` acessam, e só quando alguém os roda para regerar dados.
 
@@ -47,7 +47,7 @@ O `npm test` roda, nesta ordem, tipos, lint, regras de arquitetura (`dependency-
 
 ## Como reproduzir os experimentos
 
-As tabelas e figuras do artigo saem de roteiros em Python em `artigo/experimentos/`, que reimplementam o núcleo físico de forma independente e leem as mesmas condições iniciais do simulador.
+As tabelas e figuras do artigo saem de roteiros em Python em `artigo/experimentos/`, que são uma segunda implementação do mesmo algoritmo e leem as mesmas condições iniciais do simulador.
 
 ```bash
 pip install numpy scipy matplotlib jplephem
@@ -60,7 +60,7 @@ python e5_ptolomeu.py
 
 Os experimentos 6 e 7 comparam com a efeméride DE440s, que não vai no repositório (32 MB). Baixe `de440s.bsp` do [arquivo do NAIF](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440s.bsp) para `artigo/experimentos/`. O `artigo/experimentos/LEIAME.md` lista todos os roteiros, a ordem e o tempo de cada um.
 
-Para compilar o artigo, rode `artigo/compilar.bat` com MiKTeX ou TeX Live (pdfLaTeX e BibTeX). O zip de entrega traz o PDF compilado como `artigo.pdf` na raiz.
+Para compilar o artigo, rode `artigo/compilar.bat` com MiKTeX ou TeX Live (pdfLaTeX e BibTeX). O PDF compilado não está no repositório: ele fica anexado à Release do GitHub (veja o link no topo).
 
 ## Estrutura do repositório
 
@@ -72,15 +72,14 @@ Para compilar o artigo, rode `artigo/compilar.bat` com MiKTeX ou TeX Live (pdfLa
 
 ## Defeitos conhecidos
 
-Uma varredura visual do simulador em 06/11/2026 listou 40 achados. Na data da varredura, 15 estavam corrigidos e 25 seguiam abertos: 1 visto na tela, 21 encontrados por leitura de código e não observados na tela, e 3 não testados. A lista completa, com gravidade e efeito visível, está em `simulador/ACHADOS-VISUAIS.md`. Ela pode estar atrasada em relação ao `simulador/CONTRATO.md`, que registra como corrigidos vários itens que a lista ainda mostra como abertos.
+Uma varredura visual do simulador em 06/11/2026 listou 40 defeitos visuais, e outros dois apareceram depois, ao rodar os testes no Linux. Os 42 estão corrigidos, cada um com teste: os marcados com `testes/e2e/` foram também conferidos na tela, e os demais por teste de unidade sobre a função que decide o que se desenha. A lista completa, com gravidade, arquivo e efeito visível, está em `simulador/ACHADOS-VISUAIS.md`.
 
 A versão online tem só as texturas 2K. Quando a câmera chega perto de um corpo, o programa pede os arquivos 4K e 8K, que não estão lá, e a superfície fica em 2K.
 
 ## Trabalho futuro
 
-- Comprimir as texturas em KTX2, para reduzir a entrega e o uso de memória de vídeo.
-- Dividir o `principal.ts` em módulos menores.
-- Juntar as definições de cor duplicadas de `base.css` e `tema.ts` numa fonte só.
+- Comprimir as texturas em KTX2, para reduzir o download e o uso de memória de vídeo.
+- Juntar as definições de cor duplicadas de `tokens.css` e `tema.ts` numa fonte só (hoje o teste `contraste.test.ts` falha se elas divergirem).
 - Acrescentar uma passada para telas SDR sobre o desenho atual.
 
 ## Créditos

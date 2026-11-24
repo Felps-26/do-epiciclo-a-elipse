@@ -18,7 +18,7 @@ The project started from a question in an undergraduate thesis (see Credits): ca
 
 Live version: https://felps-26.github.io/do-epiciclo-a-elipse/
 
-The online version ships only the 2K textures, so surfaces look softer in close-ups than in the delivery folder, which also has 4K.
+The online version ships only the 2K textures, so surfaces look softer in close-ups. The repository does not carry the 4K and 8K files either.
 
 ## Running it locally
 
@@ -30,7 +30,7 @@ You need Node 20.19 or newer ([nodejs.org](https://nodejs.org)). Inside `simulad
 | macOS | double-click `run.command` (if macOS blocks it, right-click and choose Open) |
 | Linux | `./run.sh` |
 
-The first run installs the libraries and builds the program, which takes a minute or two. The delivery zip already includes the built `dist/`, so there only a local server starts. Without Node, `run.bat` falls back to a small Python server (`ferramentas/servidor.py`) when `dist/` is present. The server listens on 127.0.0.1 only, and closing the browser tab shuts it down.
+The first run installs the libraries and builds the program, which takes a minute or two. `dist/` is not in the repository, so the build always runs on the first start. Without Node, `run.bat` falls back to a small Python server (`ferramentas/servidor.py`), but only if `dist/` already exists, for example because someone built it elsewhere. The server listens on 127.0.0.1 only, and closing the browser tab shuts it down.
 
 The program does not touch the network while in use. Only the scripts in `simulador/ferramentas/` do, and only when someone runs them to regenerate data.
 
@@ -47,7 +47,7 @@ npm test
 
 ## Reproducing the experiments
 
-The tables and plots of the paper come from Python scripts in `artigo/experimentos/`, which reimplement the physics core independently and read the same initial conditions as the simulator.
+The tables and plots of the paper come from Python scripts in `artigo/experimentos/`, which are a second implementation of the same algorithm and read the same initial conditions as the simulator.
 
 ```bash
 pip install numpy scipy matplotlib jplephem
@@ -60,7 +60,7 @@ python e5_ptolomeu.py
 
 Experiments 6 and 7 compare against the DE440s ephemeris, which is not in the repository (32 MB). Download `de440s.bsp` from the [NAIF archive](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440s.bsp) into `artigo/experimentos/`. `artigo/experimentos/LEIAME.md` lists every script, the order to run them and how long each takes.
 
-To compile the paper, run `artigo/compilar.bat` with MiKTeX or TeX Live (pdfLaTeX and BibTeX). The delivery zip carries the compiled PDF as `artigo.pdf` at its root.
+To compile the paper, run `artigo/compilar.bat` with MiKTeX or TeX Live (pdfLaTeX and BibTeX). The compiled PDF is not in the repository: it is attached to the GitHub Release (see the link at the top).
 
 ## Repository layout
 
@@ -72,15 +72,14 @@ To compile the paper, run `artigo/compilar.bat` with MiKTeX or TeX Live (pdfLaTe
 
 ## Known defects
 
-A visual sweep of the simulator on 6 November 2026 listed 40 findings. At the time of the sweep, 15 were fixed and 25 were still open: 1 seen on screen, 21 found by reading code but not observed on screen, and 3 not tested. The full list, with severity and visible effect, is in `simulador/ACHADOS-VISUAIS.md`. That list can lag behind `simulador/CONTRATO.md`, which records as fixed several items the list still shows as open.
+A visual sweep of the simulator on 6 November 2026 listed 40 visual defects, and two more turned up later when the tests ran on Linux. All 42 are fixed, each with a test: those marked `testes/e2e/` were also checked on screen, the others by a unit test on the function that decides what is drawn. The full list, with severity, file and visible effect, is in `simulador/ACHADOS-VISUAIS.md`.
 
 The online version has only the 2K textures. When the camera gets close to a body, the program asks for the 4K and 8K files, which are not there, and the surface stays at 2K.
 
 ## Future work
 
-- Compress the textures to KTX2, to shrink the delivery and the video memory use.
-- Split `principal.ts` into smaller modules.
-- Merge the duplicated colour definitions of `base.css` and `tema.ts` into a single source.
+- Compress the textures to KTX2, to shrink the download and the video memory use.
+- Merge the duplicated colour definitions of `tokens.css` and `tema.ts` into a single source (today a test, `contraste.test.ts`, fails if they disagree).
 - Add a pass for SDR displays on top of the current rendering.
 
 ## Credits

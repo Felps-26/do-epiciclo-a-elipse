@@ -1,6 +1,6 @@
 # Defeitos visuais da varredura F10–F14
 
-Sete dimensões foram varridas em paralelo, e cada achado foi depois atacado por um segundo revisor que tentou refutá-lo lendo o código e os testes. Dos 40 achados, 35 resistiram à refutação. Esta lista guarda o resumo de cada um: título, gravidade, arquivo, estado e o efeito visível. O estado vem do rastreador original e pode estar atrasado em relação ao `CONTRATO.md`, que registra como corrigidos vários itens daqui marcados como abertos.
+Sete dimensões foram varridas em paralelo, e cada achado foi depois atacado por um segundo revisor que tentou refutá-lo lendo o código e os testes. A varredura levantou 40 achados e 35 resistiram à refutação: são as linhas #1 a #35, que têm gravidade e arquivo. As linhas #36 a #40 entraram na lista sem passar por essa etapa (não têm gravidade nem arquivo), e esta lista não registra quais foram os 5 refutados nem o motivo. Todas as 40 linhas, as 35 que resistiram e as 5 acrescentadas, foram tratadas como defeitos reais e estão corrigidas. Esta lista guarda o resumo de cada uma: título, gravidade, arquivo, estado e o efeito visível. O estado vem da tabela abaixo, mantida junto com o código; o `CONTRATO.md` registra os mesmos itens.
 
 Estado em 14/11/2026: os 40 achados estão corrigidos. Dois achados posteriores à varredura, #41 e #42, foram corrigidos em 15/11/2026. A coluna de estado diz onde está o teste de cada um: os que apontam para `testes/e2e/` foram conferidos na tela; os demais, por teste de unidade sobre a função que decide o que se desenha.
 
@@ -8,7 +8,7 @@ Em 15/11/2026 #19, #20, #21, #23, #24, #29 e #30 foram também conferidos na tel
 
 "Por leitura de código" quer dizer que o defeito foi encontrado no código, mas não foi observado na tela na triagem de 06/11/2026; por isso o número real de defeitos visíveis pode ser menor.
 
-Um achado refutado não deve ser reaberto sem ler o motivo da refutação.
+Um achado já refutado na varredura não deve ser reaberto sem ler o motivo da refutação.
 
 | # | Achado | Gravidade | Arquivo | Estado | Efeito |
 |---|---|---|---|---|---|

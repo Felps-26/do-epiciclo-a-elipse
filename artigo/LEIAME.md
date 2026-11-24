@@ -1,38 +1,37 @@
-# Relatório — Do epiciclo ao integrador simplético
+# Artigo: Do epiciclo ao integrador simplético
 
-Rascunho completo em LaTeX (abnTeX2), pronto para o Overleaf.
-
-## Como compilar no Overleaf
-
-1. New Project → Upload Project → envie `artigo_overleaf.zip`.
-2. Menu → Compiler: **pdfLaTeX**; Main document: **main.tex**.
-3. Recompile. O BibTeX roda sozinho.
+Artigo em LaTeX (abnTeX2, opção `article`, ABNT NBR 6022) que compara a série de Fourier da órbita kepleriana com os epiciclos de Copérnico e Ptolomeu, usando o simulador da pasta `../simulador/`. O PDF compilado fica anexado à Release `v1.0` do repositório, e não dentro dele.
 
 ## Estrutura
 
-    main.tex                 preâmbulo, dados da capa e ordem dos capítulos
+    main.tex                 preâmbulo do documento, dados do título e ordem das seções
     preambulo/comandos.tex   notação, caixas didáticas, estilo de código
-    pretextuais/             agradecimentos, resumo, abstract, siglas e símbolos
-    capitulos/01..10         o texto
-    apendices/A..E           derivações, código, execução, dados, experimentos
+    pretextuais/             resumo, abstract e agradecimentos
+    secoes/01..07            o texto: introdução, Ptolomeu e Copérnico, Fourier,
+                             método, resultados, discussão, conclusão
+    apendices/               A_derivacoes.tex e B_reproducao.tex
     figuras/                 gráficos (PDF) e capturas de tela (JPG)
-    codigo/                  arquivos .ts citados no Apêndice B (cópias do simulador)
-    experimentos/            roteiros Python que geram figuras e tabelas
-    referencias.bib          referências (ABNT, autor-data)
+    experimentos/            roteiros Python que geram figuras e tabelas (veja o LEIAME da pasta)
+    referencias.bib          referências, estilo autor-data (abntex2cite)
+    compilar.bat             compila no Windows
 
-## O que conferir
+## Como compilar
 
-- `main.tex`: autores, professor, curso, cidade, ano e espaçamento (`\SingleSpacing` ou `\OnehalfSpacing`).
-  A disciplina não consta na capa; se o curso exigir, acrescente uma linha em `\instituicao`.
+Precisa de MiKTeX ou TeX Live com `abntex2` e `babel-portuges`. Dentro de `artigo/`, no Windows, dê duplo clique em `compilar.bat`. Em qualquer sistema, a sequência é:
+
+    pdflatex main
+    bibtex main
+    pdflatex main
+    pdflatex main
+
+O PDF sai como `main.pdf`. No Overleaf, envie a pasta `artigo/` compactada, escolha o compilador pdfLaTeX e o arquivo principal `main.tex`; o BibTeX roda sozinho.
+
+## Onde mudar o quê
+
+- Título, autores e supervisão: `\tituloartigo`, `\autoresartigo` e `\credenciaisartigo`, no começo de `main.tex`.
+- Tabelas e figuras de resultados: saem dos roteiros de `experimentos/`, que gravam em `figuras/`. A ordem de execução e o tempo de cada um estão em `experimentos/LEIAME.md`; o Apêndice B do artigo explica como reproduzir tudo.
 
 ## Pontos para a revisão com o professor
 
-- Formato: hoje é "trabalho acadêmico" (capa, folha de rosto, capítulos).
-  Para virar artigo, ver o comentário no topo de `main.tex`.
-- Espaçamento: está simples; alguns cursos exigem 1,5 (`\OnehalfSpacing`).
-- Seção 5.5 ("Copérnico revisitado") é a parte mais forte e a que mais merece
-  leitura crítica do professor: depende da leitura das frequências do modelo
-  do Commentariolus (frequência zero para o 1º epiciclo), conferida na tradução
-  de Rosen (1939, p. 74–75). Em Vênus o mecanismo é outro (p. 81–82).
-- Relatividade geral: citada como trabalho futuro, à escolha do supervisor.
-- Capítulo 8 (uso em sala): propostas não testadas com estudantes.
+- A seção "Copérnico revisitado" (resultados) é a parte mais forte e a que mais merece leitura crítica: depende de ler a frequência do primeiro epiciclo do *Commentariolus* como zero no referencial fixo, conferida na tradução de Rosen (1939, p. 74-75). Em Vênus o mecanismo é outro (p. 81-82).
+- A relatividade geral entra só como termo pós-newtoniano do Sol, no experimento E7 e na discussão; o que ela deixa de fora está dito no próprio texto.

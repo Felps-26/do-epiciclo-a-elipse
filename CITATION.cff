@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "Se usar este trabalho, cite-o com os dados abaixo."
+title: "Do epiciclo ao integrador simplético: a série de Fourier da órbita kepleriana e os modelos de Copérnico e Ptolomeu"
+type: software
+version: "1.0"
+license: MIT
+repository-code: "https://github.com/Felps-26/do-epiciclo-a-elipse"
+url: "https://felps-26.github.io/do-epiciclo-a-elipse/"
+abstract: "Simulador do Sistema Solar em TypeScript e three.js, com um artigo que compara a série de Fourier da órbita kepleriana com os epiciclos de Copérnico."
+authors:
+  - given-names: Filipi
+    family-names: Ramos
+  - given-names: Thiago
+    family-names: Vinícius
+keywords:
+  - Sistema Solar
+  - série de Fourier
+  - epiciclos
+  - integrador simplético
+language: por
