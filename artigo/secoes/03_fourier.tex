@@ -63,7 +63,9 @@ em que escrevemos $c_n^{(y)}$ para o coeficiente de cosseno de $y$, para não co
 \]
 são exatamente os raios $R_n$ e $r_n$ das equações 22 e 23 de \citeonline{farias2016}, que o TCC chamou de epiciclo de frequência $n\omega$ e epiciclo que gira em sentido contrário.
 
-A forma real não serve para desenhar epiciclos: o par $a_n\cos + b_n\sin$ em $x$ com $c_n\cos + d_n\sin$ em $y$ descreve uma elipse centrada na origem, em geral inclinada, e não um círculo. Por isso o simulador usa a forma complexa, com $n$ percorrendo também os inteiros negativos.
+Cada harmônico $n\geq1$ da forma real é, portanto, um \emph{par} de epiciclos: o par $a_n\cos + b_n\sin$ em $x$ com $c_n^{(y)}\cos + d_n\sin$ em $y$ descreve uma elipse centrada na origem, em geral inclinada, e essa elipse é a soma de dois círculos de mesma frequência e sentidos opostos, de raios $R_n = |c_n|$ e $r_n = |c_{-n}|$. É a construção das equações 24 e 25 de \citeonline{farias2016}, e é a que o simulador mostra: no laboratório o usuário escolhe quantos harmônicos $N$ somar, o programa desenha a cadeia na ordem $R_1, r_1, R_2, r_2, \dots$ e lista ao lado os coeficientes $a_n, b_n, c_n^{(y)}, d_n, R_n$ e $r_n$ (lá escritos sem o índice $(y)$, como no TCC). O cálculo é feito na forma complexa, mais compacta, e a forma real sai dela pela inversa da \autoref{eq:real-complexa}; os testes do programa conferem que as duas reconstroem a mesma órbita até $10^{-14}$\,UA. No laboratório, como no TCC, o termo constante de $x$ é escrito $a_0$, e não $a_0/2$. Com o periastro no eixo $x$ a órbita é simétrica em relação a esse eixo, e $b_n$, $c_n^{(y)}$ e o termo constante de $y$ se anulam.
+
+Trata-se da série inteira, e não de uma construção por aproximações sucessivas. Pela ortogonalidade, cada coeficiente é uma integral sobre a volta completa que não depende de quantos termos serão somados: acrescentar o harmônico $N+1$ não altera nenhum dos anteriores, e truncar em $N$ só escolhe até onde a soma vai.
 
 \subsection{A órbita de Kepler como função do tempo}\label{sec:param-tempo}
 
@@ -146,7 +148,7 @@ No programa, a órbita entra como $A$ amostras igualmente espaçadas no tempo, $
   \hat c_n = \frac{1}{A}\sum_{k=0}^{A-1} z_k\,e^{-2\pi\ii nk/A},
   \label{eq:dft}
 \end{equation}
-a transformada discreta de Fourier (DFT) \cite{press2007}. A soma reproduz a integral exatamente para funções com espectro limitado, mas em geral cada coeficiente calculado é a soma de todos os coeficientes verdadeiros que coincidem com ele nas amostras: $\hat c_n = \sum_{m} c_{n+mA}$. Esse é o fenômeno de \emph{aliasing}. Ele impõe duas regras ao programa:
+a transformada discreta de Fourier (DFT) \cite{press2007}. Para um integrando periódico, a \autoref{eq:dft} é a regra do trapézio aplicada à integral da \autoref{eq:fourier-complexa}, já que o primeiro e o último ponto coincidem; separada em partes real e imaginária, a mesma soma dá os $a_n, b_n, c_n, d_n$ da \autoref{eq:fourier-coef-real}. A soma reproduz a integral exatamente para funções com espectro limitado, mas em geral cada coeficiente calculado é a soma de todos os coeficientes verdadeiros que coincidem com ele nas amostras: $\hat c_n = \sum_{m} c_{n+mA}$. Esse é o fenômeno de \emph{aliasing}. Ele impõe duas regras ao programa:
 
 \begin{enumerate}
   \item com $A$ amostras, só os harmônicos com $|n| < A/2$ são recuperáveis (critério de Nyquist). O programa usa $A = 720$ e $|n|\leq 24$ e \emph{recusa}, com erro explícito, qualquer combinação que viole $2N < A$, em vez de devolver um número errado;
