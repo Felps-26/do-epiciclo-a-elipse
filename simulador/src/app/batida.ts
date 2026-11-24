@@ -9,10 +9,15 @@
  * Quando a aba fica escondida nao paramos de bater: o programa continua rodando atras de outra
  * janela, e encerra-lo porque a pessoa foi olhar outra coisa seria pior que o problema.
  * `pagehide` e que e o fim de verdade, e ele nao dispara em troca de aba.
+ *
+ * Publicado na rede (GitHub Pages) nao ha servidor para manter de pe, e nao se bate.
  */
+import { temServidorLocal } from './servidorLocal.ts';
+
 const INTERVALO_MS = 10_000;
 
 export function manterServidorDePe(): () => void {
+  if (!temServidorLocal()) return () => {};
   let vivo = true;
 
   const bater = (): void => {

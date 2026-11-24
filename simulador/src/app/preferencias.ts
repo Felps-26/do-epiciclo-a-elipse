@@ -17,11 +17,37 @@
  * buscado em vez de embarcado. Preferencia nao e fato: e entrada e saida.
  * Mover foi mais barato que abrir excecao, e deixou as duas pastas com uma
  * definicao mais limpa.
+ *
+ * Publicado na rede (GitHub Pages) nao ha servidor nem arquivo, e ai, so ai, as
+ * preferencias vao para o `localStorage`. La a origem e fixa, entao o problema da porta
+ * nao existe, e o tutorial deixa de voltar em toda visita.
  */
+import { temServidorLocal } from './servidorLocal.ts';
+
 const CAMINHO = '/preferencias.json';
+const CHAVE_NO_NAVEGADOR = 'sistema-solar:preferencias';
 const ESPERA_ANTES_DE_GRAVAR_MS = 400;
 
+function lerDoNavegador(): unknown {
+  try {
+    const texto = localStorage.getItem(CHAVE_NO_NAVEGADOR);
+    return texto ? JSON.parse(texto) : {};
+  } catch {
+    // Janela anonima, armazenamento bloqueado, JSON estragado: padrao, calado.
+    return {};
+  }
+}
+
+function gravarNoNavegador(dados: Record<string, unknown>): void {
+  try {
+    localStorage.setItem(CHAVE_NO_NAVEGADOR, JSON.stringify(dados));
+  } catch {
+    // Sem armazenamento, sem preferencias gravadas. O programa segue igual.
+  }
+}
+
 export async function lerPreferencias(): Promise<unknown> {
+  if (!temServidorLocal()) return lerDoNavegador();
   try {
     const r = await fetch(CAMINHO, { cache: 'no-store' });
     if (!r.ok) return {};
@@ -42,6 +68,10 @@ export function gravarPreferencias(dados: Record<string, unknown>): void {
   if (pendente) clearTimeout(pendente);
   pendente = setTimeout(() => {
     pendente = null;
+    if (!temServidorLocal()) {
+      gravarNoNavegador(dados);
+      return;
+    }
     void fetch(CAMINHO, {
       method: 'PUT',
       headers: { 'content-type': 'application/json' },

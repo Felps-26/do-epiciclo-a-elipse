@@ -59,4 +59,4 @@ O servidor escuta em 127.0.0.1, e não em 0.0.0.0, para que outra máquina da re
 
 A batida é o que faz fechar a aba encerrar o programa. A página bate em `/_batida` a cada 10 s, e sem batida por 30 s o processo sai e remove a trava. Sem isso cada abertura deixaria um processo órfão segurando a porta, e encerrar o programa exigiria um terminal.
 
-As preferências vão para um arquivo, por `PUT /preferencias.json`, e não para `localStorage`. Assim continuam sendo o mesmo `preferencias.json` de sempre, sobrevivem à troca de navegador e não ficam presas à origem (que inclui a porta).
+As preferências vão para um arquivo, por `PUT /preferencias.json`, e não para `localStorage`. Assim continuam sendo o mesmo `preferencias.json` de sempre, sobrevivem à troca de navegador e não ficam presas à origem (que inclui a porta). A exceção é a cópia publicada no GitHub Pages, que não tem servidor: lá, e só lá, elas vão para o `localStorage`, e a batida não é enviada (`src/app/servidorLocal.ts`).
