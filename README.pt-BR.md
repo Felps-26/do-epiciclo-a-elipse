@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+**Artigo (PDF):** [artigo.pdf](https://github.com/Felps-26/do-epiciclo-a-elipse/releases/download/v1.0/artigo.pdf), anexado à [Release v1.0](https://github.com/Felps-26/do-epiciclo-a-elipse/releases/tag/v1.0).
+
 Simulador do Sistema Solar que roda no navegador, feito para uma disciplina da graduação (Ciência da Computação, IDP). Ele integra os nove corpos da efeméride do JPL por N-corpos simplético de quarta ordem (Yoshida, passo de meio dia), desenha as treze luas e traz a camada educativa em português: fichas dos corpos, atividades, um laboratório de Fourier que reescreve uma órbita como cadeia de epiciclos e um modo de criação de corpos.
 
 O projeto partiu de uma pergunta de um trabalho de conclusão de curso (veja os créditos): uma soma de círculos girando consegue descrever a órbita de um planeta? O artigo que acompanha o simulador responde com números, e o simulador é o que o artigo descreve.

@@ -2,6 +2,8 @@
 
 [Português](README.pt-BR.md)
 
+**Paper (PDF, in Portuguese):** [artigo.pdf](https://github.com/Felps-26/do-epiciclo-a-elipse/releases/download/v1.0/artigo.pdf), attached to the [v1.0 Release](https://github.com/Felps-26/do-epiciclo-a-elipse/releases/tag/v1.0).
+
 A solar system simulator that runs in the browser, built for a university course (Computer Science, IDP). It integrates the nine bodies of the JPL ephemeris with a fourth-order symplectic N-body integrator (Yoshida, half-day step), draws the thirteen moons, and carries the educational layer in Portuguese: body sheets, activities, a Fourier laboratory that rewrites an orbit as a chain of epicycles, and a mode for creating new bodies.
 
 The project started from a question in an undergraduate thesis (see Credits): can a sum of rotating circles describe the orbit of a planet? The accompanying paper, in Portuguese, answers it with numbers, and the simulator is what the paper describes.
