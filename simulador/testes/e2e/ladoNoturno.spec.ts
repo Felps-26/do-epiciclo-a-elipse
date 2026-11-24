@@ -116,6 +116,10 @@ for (const corpo of CORPOS) {
   test(`o lado noturno de ${corpo.chave} aparece, com relevo, e continua mais escuro`, async ({
     page,
   }) => {
+    // O prazo das douradas, e pelo mesmo motivo: no CI o desenho é por software,
+    // só o `assentou` pode levar 90 s, e depois vêm dois retratos do canvas. Com
+    // os 120 s padrão, Júpiter estourou o prazo no meio do segundo retrato.
+    test.setTimeout(240_000);
     await chegarPerto(page, corpo.nome);
 
     // O lado de dia, para ter contra o que comparar.
