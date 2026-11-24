@@ -392,6 +392,67 @@ test('abaixo do ponto de quebra, nenhum nome é desenhado ATRÁS do painel', asy
   expect(invadem, `${invadem.join(', ')} ficaram atrás do painel`).toEqual([]);
 });
 
+for (const textoMaior of [false, true]) {
+  test(`a placa que o posicionador supõe cobre a placa desenhada, com texto ${textoMaior ? 'maior' : 'normal'}`, async ({
+    page,
+  }) => {
+    /**
+     * A causa do teste acima reprovar no CI. O posicionador decidia com
+     * `larguraDoTexto(nome, 13) + 10`, e a placa do CSS tem o texto a 13,9 px, padding
+     * de 0,4rem dos dois lados, a barra de cor e o vão. "Planetas internos" ficava 11 px
+     * mais larga do que a conta, e uma placa colocada rente ao painel entrava por baixo
+     * dele. Com "Texto maior" a escala nem entrava na conta.
+     *
+     * Aqui a conta é comparada com cada placa do DOM, sem depender de onde a cena pôs
+     * cada corpo: a calculada tem de cobrir a desenhada, e não passar dela por muito,
+     * senão os nomes se afastam uns dos outros à toa.
+     */
+    if (textoMaior) {
+      await page.locator('summary', { hasText: 'Leitura' }).click();
+      await page.getByRole('checkbox', { name: /Texto maior/ }).check();
+    }
+    // Um corpo escolhido, para que uma placa leve o distintivo "A".
+    await page.getByRole('option', { name: /^Júpiter/ }).click();
+    await page.waitForTimeout(800);
+    await esperarAsPlacasPararem(page);
+
+    const medidas = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>('.rotulos__placa')]
+        .filter((el) => el.style.visibility !== 'hidden')
+        .map((el) => {
+          const marca = el.querySelector('.rotulos__marca');
+          const papel = marca?.classList.contains('rotulos__marca--acompanhado')
+            ? 'acompanhado'
+            : marca?.classList.contains('rotulos__marca--b')
+              ? 'b'
+              : marca
+                ? 'a'
+                : null;
+          // O texto da placa sem o do distintivo.
+          const texto = [...el.childNodes]
+            .filter((n) => n.nodeType === Node.TEXT_NODE)
+            .map((n) => n.textContent ?? '')
+            .join('')
+            .trim();
+          const r = el.getBoundingClientRect();
+          const conta = window.__placaCalculada!(texto, papel);
+          return { texto, papel, largura: r.width, altura: r.height, conta };
+        }),
+    );
+    expect(medidas.length, 'nenhuma placa na tela').toBeGreaterThan(2);
+    expect(medidas.some((m) => m.papel === 'a'), 'nenhuma placa com o distintivo A').toBe(true);
+    for (const m of medidas) {
+      const qual = `"${m.texto}"${m.papel ? ` (${m.papel})` : ''}`;
+      expect(m.conta.largura, `${qual}: a conta dá ${m.conta.largura.toFixed(1)} px e a placa tem ${m.largura.toFixed(1)}`)
+        .toBeGreaterThanOrEqual(m.largura);
+      expect(m.conta.largura, `${qual}: a conta passa da placa por mais de 6 px`).toBeLessThanOrEqual(m.largura + 6);
+      expect(m.conta.altura, `${qual}: a conta dá ${m.conta.altura.toFixed(1)} px de altura e a placa tem ${m.altura.toFixed(1)}`)
+        .toBeGreaterThanOrEqual(m.altura);
+      expect(m.conta.altura, `${qual}: a altura passa da placa por mais de 6 px`).toBeLessThanOrEqual(m.altura + 6);
+    }
+  });
+}
+
 test('com a câmera padrão, todo nome fica a menos de 12 px do corpo ou ganha linha', async ({ page }) => {
   await page.waitForTimeout(1200);
   const longe = await page.evaluate(() => {

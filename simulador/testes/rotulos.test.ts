@@ -17,13 +17,14 @@
 import { describe, expect, it } from 'vitest';
 import { abreviar, colocar, type Candidato, type Opcoes, type Retangulo } from '@rotulos/posicionador.ts';
 
-const medir = (t: string): number => t.length * 7;
+/** A placa inteira: texto mais o padding e a barra. */
+const medir = (t: string): number => t.length * 7 + 10;
 
 function opcoes(extra: Partial<Opcoes> = {}): Opcoes {
   return {
     larguraTela: 1200,
     alturaTela: 800,
-    alturaDoTexto: 20,
+    alturaDaPlaca: 26,
     obstaculos: [],
     medir,
     memoria: new Map(),

@@ -11,7 +11,7 @@ import type { EstadoCamera } from '../cena/camera/cameraOrbital.ts';
 import { tetoComDiscos } from '../cena/escala/foco.ts';
 import { CHAVE_DOS_INTERNOS, agruparInternos } from './agrupamento.ts';
 import { criarMemoriaDoDesvio, escrever, posicoesSuavizadas } from './ancoragem.ts';
-import { larguraDoTexto } from './medida.ts';
+import { alturaDaPlaca, larguraDaPlaca } from './medida.ts';
 import { abreviar, colocar, type Candidato, type Retangulo, type RotuloColocado } from './posicionador.ts';
 
 /** O pedaco do estado da interface que decide quem ganha nome. */
@@ -95,9 +95,9 @@ export function criarRotulosDoQuadro(dependencias: {
     return colocar(agrupados, {
       larguraTela: L,
       alturaTela: A,
-      alturaDoTexto: 14,
+      alturaDaPlaca: alturaDaPlaca(),
       obstaculos: ultimosObstaculos,
-      medir: (t) => larguraDoTexto(t, 13),
+      medir: larguraDaPlaca,
       memoria: memoriaDeDirecao,
       camaraGirandoRapido: girandoRapido,
       // O foco afina a multidao descendo o teto, e nao a opacidade das placas, que

@@ -18,6 +18,7 @@ declare global {
     __foco?: () => number;
     __cascaEmRaios?: (chave: string) => number | null;
     __obstaculosDosRotulos?: () => { x: number; y: number; largura: number; altura: number }[];
+    __placaCalculada?: (texto: string, papel: 'a' | 'b' | 'acompanhado' | null) => { largura: number; altura: number };
     __orientacaoDe?: (chave: string) => [number, number, number, number] | null;
     __fita?: (
       chave: string,

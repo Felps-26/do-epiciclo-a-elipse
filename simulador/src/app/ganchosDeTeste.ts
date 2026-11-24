@@ -4,6 +4,7 @@
  * teste posicionar a cena sem arrastar o mouse por nove ordens de grandeza.
  */
 import { posicaoDaCamera, type EstadoCamera } from '../cena/camera/cameraOrbital.ts';
+import { alturaDaPlaca, larguraDaPlaca } from '../rotulos/medida.ts';
 import type { Retangulo } from '../rotulos/posicionador.ts';
 import type { Consultas } from './consultas.ts';
 import type { Programa } from './programa.ts';
@@ -25,6 +26,7 @@ declare global {
     __raioAparente?: (chave: string) => number;
     __foco?: () => number;
     __obstaculosDosRotulos?: () => Retangulo[];
+    __placaCalculada?: (texto: string, papel: 'a' | 'b' | 'acompanhado' | null) => { largura: number; altura: number };
     __fita?: (chave: string) => unknown;
     __cascaEmRaios?: (chave: string) => number | null;
     __orientacaoDe?: (chave: string) => [number, number, number, number] | null;
@@ -51,6 +53,8 @@ export function publicarGanchos(p: Programa, c: Consultas, obstaculos: () => rea
     return q ? [q.x, q.y, q.z, q.w] : null;
   };
   window.__obstaculosDosRotulos = () => obstaculos().map((o) => ({ ...o }));
+  /** O tamanho que o posicionador supoe para uma placa, para comparar com o do DOM. */
+  window.__placaCalculada = (texto, papel) => ({ largura: larguraDaPlaca(texto, papel), altura: alturaDaPlaca() });
   window.__foco = () => p.cena?.foco ?? 0;
   window.__fita = (chave) => p.cena?.estadoDaFita(chave) ?? null;
   window.__cascaEmRaios = (chave) => p.cena?.cascaEmRaios(chave) ?? null;

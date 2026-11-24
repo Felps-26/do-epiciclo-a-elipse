@@ -96,10 +96,15 @@ function colide(a: Retangulo, b: Retangulo): boolean {
 export interface Opcoes {
   larguraTela: number;
   alturaTela: number;
-  alturaDoTexto: number;
+  /** Altura da placa inteira, com padding, em pixels CSS. */
+  alturaDaPlaca: number;
   /** Retangulos da interface. Nenhum rotulo e colocado sobre eles. */
   obstaculos: readonly Retangulo[];
-  medir: (texto: string) => number;
+  /**
+   * Largura da PLACA inteira (texto, padding, barra, distintivo), e nao so do texto.
+   * Uma conta curta aqui deixa a placa que encosta num obstaculo entrar nele.
+   */
+  medir: (texto: string, papel: Papel | null) => number;
   /** Direcao escolhida no quadro anterior, por chave. A histerese vive aqui. */
   memoria: Map<string, number>;
   /** Acima deste valor a escolha de direcao fica congelada. Radianos por segundo. */
@@ -109,7 +114,7 @@ export interface Opcoes {
 }
 
 export function colocar(candidatos: readonly Candidato[], opcoes: Opcoes): RotuloColocado[] {
-  const { larguraTela: L, alturaTela: A, alturaDoTexto: H } = opcoes;
+  const { larguraTela: L, alturaTela: A, alturaDaPlaca: H } = opcoes;
 
   // Fora da tela nao entra na disputa.
   const visiveis = candidatos
@@ -149,8 +154,8 @@ export function colocar(candidatos: readonly Candidato[], opcoes: Opcoes): Rotul
     let colocado: RotuloColocado | null = null;
 
     for (const { forma, texto } of formas) {
-      const largura = forma === 'ponto' ? 6 : opcoes.medir(texto) + 10;
-      const altura = forma === 'ponto' ? 6 : H + 6;
+      const largura = forma === 'ponto' ? 6 : opcoes.medir(texto, c.papel);
+      const altura = forma === 'ponto' ? 6 : H;
       const afastamento = c.raioPx + 6;
 
       for (const iDir of direcoes) {
