@@ -1,6 +1,9 @@
+"""Série de Fourier da órbita kepleriana: elementos osculadores, amostragem, DFT e a
+forma fechada com funções de Bessel. Mesmo cálculo de simulador/src/nucleo/fourier.ts."""
 import numpy as np
 from scipy.special import jv, jvp
-from nbody import *
+
+from nbody import estado_inicial
 
 def elementos(i):
     p,v,gm = estado_inicial()

@@ -7,9 +7,13 @@
    termo, nos passos de 0,5 e 0,05 dia. Grava o erro de posição de Mercúrio em km
    (a cada 10 anos) em e7.json.
 """
-import json, os, time
+import json
+import os
+import time
+
 import numpy as np
-from nbody import *
+
+from nbody import AQUI, ORDEM, UA_KM, estado_inicial, integrar
 from referencia_jpl import posicoes_jpl
 
 SEG = 180 / np.pi * 3600
@@ -74,9 +78,10 @@ if __name__ == '__main__':
 
     erros = {k: {'mais_100_anos_km': r['mais']['erro_km'][-1],
                  'menos_100_anos_km': r['menos']['erro_km'][-1]} for k, r in resultados.items()}
-    json.dump({'perielio_dois_corpos_seg_por_seculo': teste, 'passo_teste_dias': 0.05,
-               'mercurio_100_anos': erros, 'segundos_por_integracao': segundos, 'series': resultados},
-              open(os.path.join(AQUI, 'e7.json'), 'w'), indent=1)
+    with open(os.path.join(AQUI, 'e7.json'), 'w') as f:
+        json.dump({'perielio_dois_corpos_seg_por_seculo': teste, 'passo_teste_dias': 0.05,
+                   'mercurio_100_anos': erros, 'segundos_por_integracao': segundos, 'series': resultados},
+                  f, indent=1)
     print(f'\n{"":22s} {"+100 anos":>12s} {"-100 anos":>12s}')
     for k, e in erros.items():
         print(f'{k:22s} {e["mais_100_anos_km"]:12.1f} {e["menos_100_anos_km"]:12.1f}')

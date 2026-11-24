@@ -1,13 +1,16 @@
 """Reimplementacao em numpy do nucleo fisico do simulador (forcas.ts, integrador.ts),
 usada so para gerar as figuras e tabelas do artigo."""
 import json
+import os
+
 import numpy as np
 
 UA_KM = 149597870.7
-import os
 AQUI = os.path.dirname(os.path.abspath(__file__))
 # o arquivo de condicoes iniciais do proprio simulador (copiado byte a byte do JPL Horizons)
-EF = json.load(open(os.path.join(AQUI, '..', '..', 'simulador', 'src', 'dados', 'efemeride_2026-01-01.json'), encoding='utf-8'))
+with open(os.path.join(AQUI, '..', '..', 'simulador', 'src', 'dados', 'efemeride_2026-01-01.json'),
+          encoding='utf-8') as _f:
+    EF = json.load(_f)
 ORDEM = EF['ordem']
 NOMES = [EF['corpos'][k]['nome'] for k in ORDEM]
 

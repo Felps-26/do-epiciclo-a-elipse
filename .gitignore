@@ -20,11 +20,6 @@ __pycache__/
 *.fdb_latexmk
 *.synctex.gz
 artigo/main.pdf
-artigo/experimentos/e1.json
-artigo/experimentos/e4.json
-artigo/experimentos/e5.json
 *.lof
 *.lot
 *.bsp
-artigo/experimentos/e6.json
-artigo/experimentos/e7.json

@@ -1,0 +1,11 @@
+# Versões com que as tabelas e figuras do artigo foram geradas, em Python 3.13.14.
+# Instale com:  pip install -r requirements.txt
+numpy==2.4.4
+scipy==1.18.1
+matplotlib==3.11.1
+jplephem==2.24
+
+# Opcionais: só cortam a margem branca de elementos.pdf em fig_elementos.py.
+# Sem eles a figura sai igual, com a margem que o eixo 3D deixa.
+# pypdfium2
+# pypdf
