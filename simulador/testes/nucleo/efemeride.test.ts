@@ -36,6 +36,26 @@ import { UA_KM } from '@nucleo/unidades.ts';
 
 const TOLERANCIA_RELATIVA = 0.01;
 
+/**
+ * A tabela de validação do artigo (`artigo/secoes/05_resultados.tex`, tab:validacao),
+ * em km, por ponto e por corpo, na ordem do arquivo de dados.
+ *
+ * O critério de 1 % acima é o de aceitação e não muda. Mas ele sozinho não pega
+ * regressão: Vênus está em 0,005 %, e uma mudança que o piorasse cem vezes ainda
+ * passaria. Por isso cada número publicado ganha um teto de duas vezes o valor
+ * (com piso de 1 km, porque abaixo disso a tabela arredonda para 0,0 a 0,4). Se
+ * um destes reprovar, ou o código regrediu, ou o artigo precisa de tabela nova.
+ */
+const PUBLICADO_KM: Record<string, readonly number[]> = {
+  //       sol    mercurio  venus  terra  marte  jupiter saturno urano netuno
+  '-100': [153, 247_115, 5_612, 4_782, 3_420, 195, 173, 238, 709],
+  '-10': [4, 15_637, 556, 489, 297, 35, 8, 3, 7],
+  '1': [0.2, 3_048, 61, 49, 35, 0.4, 0.1, 0.0, 0.1],
+  '10': [1, 14_365, 534, 487, 368, 41, 5, 3, 7],
+  '100': [112, 302_436, 5_725, 4_763, 4_180, 164, 142, 210, 636],
+};
+const tetoKm = (publicado: number): number => Math.max(2 * publicado, 1);
+
 const { corpos, validacao, procedencia } = carregar();
 const pontos = Object.keys(validacao).sort((a, b) => Number(a) - Number(b));
 
@@ -62,6 +82,28 @@ describe('comparacao com a efemeride de referencia do JPL', () => {
       it('chega exatamente na epoca do ponto de referencia', () => {
         // Nao e "quase": 0,5 e exato em binario, entao a igualdade e literal.
         expect(estado.tDias).toBe(dias);
+      });
+
+      const erroKm = (i: number): number => {
+        const ref = ponto.corpos[corpos[i]!.chave]!.posicao_ua;
+        return (
+          Math.hypot(
+            estado.pos[3 * i]! - ref[0],
+            estado.pos[3 * i + 1]! - ref[1],
+            estado.pos[3 * i + 2]! - ref[2],
+          ) * UA_KM
+        );
+      };
+
+      it('nenhum corpo passa de duas vezes o erro publicado no artigo', () => {
+        const publicado = PUBLICADO_KM[chave];
+        expect(publicado, `o ponto ${chave} não está na tabela do artigo`).toBeDefined();
+        expect(publicado!.length).toBe(corpos.length);
+        const acima = corpos
+          .map((c, i) => ({ nome: c.nome, km: erroKm(i), teto: tetoKm(publicado![i]!) }))
+          .filter((x) => x.km > x.teto)
+          .map((x) => `${x.nome}: ${x.km.toFixed(1)} km, teto ${x.teto} km`);
+        expect(acima).toEqual([]);
       });
 
       for (let i = 0; i < corpos.length; i++) {

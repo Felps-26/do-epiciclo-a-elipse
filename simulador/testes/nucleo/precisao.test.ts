@@ -20,8 +20,10 @@ function erroDeMercurioEmDezAnosKm(precisao: Precisao): number {
 }
 
 describe('seletor de precisão', () => {
-  it('no modo alto, Mercúrio fica a menos de 2.000 km do JPL em +10 anos', () => {
-    expect(erroDeMercurioEmDezAnosKm('alta')).toBeLessThan(2000);
+  // O artigo publica 64 km (§5.2). O teto era 2.000, trinta vezes isso, e deixava
+  // passar uma regressão que multiplicasse o erro por vinte.
+  it('no modo alto, Mercúrio fica a menos de 150 km do JPL em +10 anos', () => {
+    expect(erroDeMercurioEmDezAnosKm('alta')).toBeLessThan(150);
   });
 
   it('o padrão continua com cerca de 14.000 km, inalterado', () => {
